@@ -12,7 +12,7 @@ module MMParser exposing
     , ordinaryText
     , rawTextBlock
     , runBlocks
-    , runBlocks2
+    , runBlocks1
     )
 
 import Parser exposing (..)
@@ -111,13 +111,13 @@ blocks =
 > "_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$\\n\\n$$a^2 = 3$$\\n\\n" : String
 
 > runBlocks str
-> MMList [RawBlock ("_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$"),MathDisplayBlock ("a^2 = 3")]
+> MMList [RawBlock ("_foo_ ha ha ha\nho ho ho\n$a^6 + 2$"),MathDisplayBlock ("a^2 = 3")]
 
     : MMBlock
 
 -}
-runBlocks : String -> MMBlock
-runBlocks str =
+runBlocks1 : String -> MMBlock
+runBlocks1 str =
     Parser.run blocks str
         |> resolveBlockResult
 
@@ -133,8 +133,8 @@ runBlocks str =
     : List MMBlock
 
 -}
-runBlocks2 : String -> List MMBlock
-runBlocks2 str =
+runBlocks : String -> List MMBlock
+runBlocks str =
     case Parser.run (many block) str of
         Ok list ->
             List.map closeBlock list
