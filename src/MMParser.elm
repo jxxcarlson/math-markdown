@@ -1,15 +1,18 @@
 module MMParser exposing
     ( MMBlock(..)
     , MMInline(..)
+    , block
+    , blocks
+    , closeBlock
     , inline
     , inlineList
     , inlineMath
     , italicText
     , mathBlock
     , ordinaryText
-    , rawBlock
-    , rawBlocks
     , rawTextBlock
+    , runBlocks
+    , runBlocks2
     )
 
 import Parser exposing (..)
@@ -21,31 +24,31 @@ type MMBlock
     | Block MMBlock
     | RawBlock String
     | MathDisplayBlock String
+    | ClosedBlock MMInline
 
 
 type MMInline
     = OrdinaryText String
     | ItalicText String
     | InlineMath String
-    | MMInlineList MMInline
+    | MMInlineList (List MMInline)
     | Error (List MMInline)
 
 
+{-|
 
--- parseToBlocks : String -> Result (List DeadEnd) MMExpr
---
--- parseToBlocks str =
---     Parser.run rawBlocks str
---         |> decodeResult
---
--- |> List.map parseRawBlock
--- |> Parser.map inlineList
---
--- line : Parser String
--- line =
---     getChompedString <|
---         succeed ()
---             |. chompUntil "\n"
+> closeBlock <| RawBlock ("_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$")
+> ClosedBlock (MMInlineList [ItalicText ("foo "),OrdinaryText ("ha ha ha"),OrdinaryText ("ho ho ho"),InlineMath ("a^6 + 2")])
+
+-}
+closeBlock : MMBlock -> MMBlock
+closeBlock block_ =
+    case block_ of
+        RawBlock str ->
+            runInlineList str |> ClosedBlock
+
+        _ ->
+            block_
 
 
 {-|
@@ -86,7 +89,7 @@ mathBlock =
         |> map MathDisplayBlock
 
 
-rawBlock =
+block =
     oneOf [ mathBlock, rawTextBlock ]
 
 
@@ -96,10 +99,69 @@ rawBlock =
 > Ok (MMList [MathDisplayBlock ("a^2 - 7"),RawBlock ("ho ho ho!!")])
 
 -}
-rawBlocks : Parser MMBlock
-rawBlocks =
-    many rawBlock
+blocks : Parser MMBlock
+blocks =
+    many block
         |> map MMList
+
+
+{-|
+
+> str
+> "_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$\\n\\n$$a^2 = 3$$\\n\\n" : String
+
+> runBlocks str
+> MMList [RawBlock ("_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$"),MathDisplayBlock ("a^2 = 3")]
+
+    : MMBlock
+
+-}
+runBlocks : String -> MMBlock
+runBlocks str =
+    Parser.run blocks str
+        |> resolveBlockResult
+
+
+{-|
+
+> str
+> "_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$\\n\\n$$a^2 = 3$$\\n\\n" : String
+
+> runBlocks2 str
+> [ClosedBlock (MMInlineList [ItalicText ("foo "),OrdinaryText ("ha ha ha"),OrdinaryText ("ho ho ho"),InlineMath ("a^6 + 2")]),MathDisplayBlock ("a^2 = 3")]
+
+    : List MMBlock
+
+-}
+runBlocks2 : String -> List MMBlock
+runBlocks2 str =
+    case Parser.run (many block) str of
+        Ok list ->
+            List.map closeBlock list
+
+        Err _ ->
+            [ ClosedBlock (OrdinaryText "Error") ]
+
+
+
+-- |> resolveBlockResult
+
+
+resolveBlockResult : Result (List DeadEnd) MMBlock -> MMBlock
+resolveBlockResult result =
+    case result of
+        Ok res_ ->
+            res_
+
+        Err err ->
+            List.map decodeBlockError err
+                |> MMInlineList
+                |> ClosedBlock
+
+
+decodeBlockError : DeadEnd -> MMInline
+decodeBlockError err =
+    OrdinaryText "error"
 
 
 
@@ -190,6 +252,23 @@ inline =
 inlineList : Parser (List MMInline)
 inlineList =
     many inline
+
+
+runInlineList : String -> MMInline
+runInlineList str =
+    run inlineList str
+        |> resolveInlineResult
+
+
+resolveInlineResult : Result (List DeadEnd) (List MMInline) -> MMInline
+resolveInlineResult result =
+    case result of
+        Ok res_ ->
+            res_ |> MMInlineList
+
+        Err err ->
+            List.map decodeInlineError err
+                |> MMInlineList
 
 
 decodeInlineError : DeadEnd -> MMInline
