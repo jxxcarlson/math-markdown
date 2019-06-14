@@ -1,12 +1,12 @@
 module MMParser exposing
-    ( MMExpr(..)
+    ( MMBlock(..)
+    , MMInline(..)
     , inline
     , inlineList
     , inlineMath
-    , line
+    , italicText
     , mathBlock
     , ordinaryText
-    , parseToBlocks
     , rawBlock
     , rawBlocks
     , rawTextBlock
@@ -16,32 +16,45 @@ import Parser exposing (..)
 import Parser.Extras exposing (many)
 
 
-type MMExpr
-    = MMList (List MMExpr)
+type MMBlock
+    = MMList (List MMBlock)
+    | Block MMBlock
     | RawBlock String
-    | Block (List MMExpr)
     | MathDisplayBlock String
-      -- inline
-    | OrdinaryText String
+
+
+type MMInline
+    = OrdinaryText String
     | ItalicText String
     | InlineMath String
+    | MMInlineList MMInline
+    | Error (List MMInline)
 
 
-parseToBlocks : String -> Result (List DeadEnd) MMExpr
-parseToBlocks str =
-    Parser.run rawBlocks str
+
+-- parseToBlocks : String -> Result (List DeadEnd) MMExpr
+--
+-- parseToBlocks str =
+--     Parser.run rawBlocks str
+--         |> decodeResult
+--
+-- |> List.map parseRawBlock
+-- |> Parser.map inlineList
+--
+-- line : Parser String
+-- line =
+--     getChompedString <|
+--         succeed ()
+--             |. chompUntil "\n"
 
 
-line : Parser String
-line =
-    getChompedString <|
-        succeed ()
-            |. chompUntil "\n"
+{-|
 
+> run rawTextBlock "a b c\\n\\n"
+> Ok (RawBlock ("a b c"))
 
-{-| Unparsed paragraph
 -}
-rawTextBlock : Parser MMExpr
+rawTextBlock : Parser MMBlock
 rawTextBlock =
     (succeed ()
         |. chompUntil "\n\n"
@@ -52,9 +65,13 @@ rawTextBlock =
         |> map RawBlock
 
 
-{-| }$$ ... $$
+{-|
+
+> run mathBlock "$$a^2 - 7$$\\n\\n"
+> Ok (MathDisplayBlock ("a^2 - 7"))
+
 -}
-mathBlock : Parser MMExpr
+mathBlock : Parser MMBlock
 mathBlock =
     (succeed ()
         |. symbol "$$"
@@ -73,7 +90,13 @@ rawBlock =
     oneOf [ mathBlock, rawTextBlock ]
 
 
-rawBlocks : Parser MMExpr
+{-|
+
+> run rawBlocks "$$a^2 - 7$$\\n\\nho ho ho!!\\n\\n"
+> Ok (MMList [MathDisplayBlock ("a^2 - 7"),RawBlock ("ho ho ho!!")])
+
+-}
+rawBlocks : Parser MMBlock
 rawBlocks =
     many rawBlock
         |> map MMList
@@ -85,31 +108,127 @@ rawBlocks =
 --
 
 
-ordinaryText : Parser MMExpr
+{-|
+
+> run ordinaryText "abc"
+> Ok (OrdinaryText "abc")
+
+-}
+ordinaryText : Parser MMInline
 ordinaryText =
-    chompWhile (\c -> not <| List.member c [ '$', '*' ])
+    (succeed ()
+        |. chompIf (\c -> not <| List.member c [ '$', '*', '\n' ])
+        |. chompWhile (\c -> not <| List.member c [ '$', '*', '\n' ])
+    )
         |> getChompedString
         |> map OrdinaryText
 
 
-inlineMath : Parser MMExpr
-inlineMath =
+{-|
+
+> run italicText "_abc_"
+> Ok (ItalicText "abc")
+
+-}
+italicText : Parser MMInline
+italicText =
     (succeed ()
-        |. symbol "$"
-        |. chompUntil "$"
-        |. symbol "$"
+        |. symbol "*"
+        |. chompWhile (\c -> c /= '*')
+        |. symbol "*"
+        |. spaces
     )
         |> getChompedString
         |> map (String.dropLeft 1)
+        |> map (String.replace "*" "")
+        |> map ItalicText
+
+
+{-|
+
+> run inlineMath "$a^5 = 3$"
+> Ok (InlineMath ("a^5 = 3"))
+
+-}
+inlineMath : Parser MMInline
+inlineMath =
+    (succeed ()
+        |. symbol "$"
+        |. chompWhile (\c -> c /= '$')
+        |. symbol "$"
+        |. spaces
+    )
+        |> getChompedString
+        |> map (String.dropLeft 1)
+        |> map (String.dropRight 1)
         |> map InlineMath
 
 
-inline : Parser MMExpr
+{-|
+
+> run inline "$a^5 = 1$"
+> Ok (InlineMath ("a^5 = 1"))
+
+> run inline "_abc_"
+> Ok (ItalicText "abc")
+
+> run inline "hahaha"
+> Ok (OrdinaryText "hahaha")
+
+-}
+inline : Parser MMInline
 inline =
-    oneOf [ ordinaryText, inlineMath ]
+    oneOf [ italicText, inlineMath, ordinaryText ]
 
 
-inlineList : Parser MMExpr
+{-|
+
+> run inlineList "_foo_ hahaha\\nnhohoh\\nn$a^6 + 2$"
+> Ok [ItalicText ("foo "),OrdinaryText "hahaha",OrdinaryText "nhohoh",OrdinaryText "n",InlineMath ("a^6 + 2")]
+
+-}
+inlineList : Parser (List MMInline)
 inlineList =
     many inline
-        |> map MMList
+
+
+decodeInlineError : DeadEnd -> MMInline
+decodeInlineError err =
+    OrdinaryText "error"
+
+
+
+-- |> map MMInlineList
+-- -- parseRawBlock : RawBlock String -> MMExpr
+-- -- MMList (List MMExpr)
+-- -- parseRawBlock : MMExpr
+-- --
+--
+--
+-- parseRawBlock : MMBlock -> MMInline
+-- parseRawBlock (RawBlock str) =
+--     let
+--         result =
+--             Parser.run inlineList str
+--     in
+--     case result of
+--         Ok mmExpr ->
+--             Block mmExpr
+--
+--         Err err ->
+--             Error (List.map decodeError err)
+--
+--
+--
+--
+-- --
+-- -- decodeResult : Result (List DeadEnd) MMExpr -> MMExpr
+-- -- decodeResult result =
+-- --     case result of
+-- --         Ok result_ ->
+-- --             result_
+-- --
+-- --         Err err ->
+-- --             List.map decodeError err
+-- --                 |> MMList
+-- -- Error (Result (List DeadEnd) MMExpr)
