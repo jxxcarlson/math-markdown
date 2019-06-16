@@ -4,12 +4,14 @@ module MMParser exposing
     , block
     , blocks
     , closeBlock
+    , headingBlock
     , inline
     , inlineList
     , inlineMath
     , italicText
     , mathBlock
     , ordinaryText
+    , parseUntil
     , rawTextBlock
     , runBlocks
     , runBlocks1
@@ -23,6 +25,7 @@ type MMBlock
     = MMList (List MMBlock)
     | Block MMBlock
     | RawBlock String
+    | HeadingBlock Int String
     | MathDisplayBlock String
     | ClosedBlock MMInline
 
@@ -30,6 +33,7 @@ type MMBlock
 type MMInline
     = OrdinaryText String
     | ItalicText String
+    | BoldText String
     | InlineMath String
     | MMInlineList (List MMInline)
     | Error (List MMInline)
@@ -87,6 +91,41 @@ mathBlock =
         |> map (String.dropLeft 2)
         |> map (String.dropRight 2)
         |> map MathDisplayBlock
+
+
+type alias PrefixedString =
+    { prefix : String, text : String }
+
+
+{-|
+
+> run headingBlock "### foo bar \\n\\n"
+> Ok (HeadingBlock 3 ("foo bar"))
+
+-}
+headingBlock : Parser MMBlock
+headingBlock =
+    (succeed PrefixedString
+        |= parseWhile (\c -> c == '#')
+        |= parseUntil "\n\n"
+    )
+        |> map (\ps -> HeadingBlock (String.length ps.prefix) (String.trim ps.text))
+
+
+{-|
+
+> run (parseUntil ";;") "a b c;;"
+> Ok ("a b c") : Result (List P.DeadEnd) String
+
+-}
+parseUntil : String -> Parser String
+parseUntil end =
+    chompUntil end |> getChompedString
+
+
+parseWhile : (Char -> Bool) -> Parser String
+parseWhile accepting =
+    chompWhile accepting |> getChompedString
 
 
 block =
@@ -206,6 +245,20 @@ italicText =
         |> map ItalicText
 
 
+boldText : Parser MMInline
+boldText =
+    (succeed ()
+        |. symbol "**"
+        |. chompWhile (\c -> c /= '*')
+        |. symbol "**"
+        |. spaces
+    )
+        |> getChompedString
+        |> map (String.dropLeft 1)
+        |> map (String.replace "**" "")
+        |> map BoldText
+
+
 {-|
 
 > run inlineMath "$a^5 = 3$"
@@ -240,7 +293,7 @@ inlineMath =
 -}
 inline : Parser MMInline
 inline =
-    oneOf [ italicText, inlineMath, ordinaryText ]
+    oneOf [ boldText, italicText, inlineMath, ordinaryText ]
 
 
 {-|
