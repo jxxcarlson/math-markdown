@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Math + MarkDown</title>
+
+		<script type="text/x-mathjax-config">
+		// Same as kokoc3
+			MathJax.Hub.Config(
+				{ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+					processEscapes: true,
+					messageStyle: "none",
+					processSectionDelay: 0,
+					processUpdateTime: 0,
+					"fast-preview": {disabled: true},
+					TeX: { equationNumbers: {autoNumber: "AMS"},
+						   noErrors: {disabled: true},
+						   extensions: ["mhchem.js"]
+						  }
+				}
+	        );
+
+
+		</script>
+
+
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+		<script>
+				MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+		</script>
+
+		<script src="Main.js" charset="utf-8"></script>
+
+	</head>
+
+	<body>
+
+
+
+	<div id="main"></div>
+
+
+
+ 	<script>
+
+		var root = document.getElementById('main');
+		var app = Elm.Main.init({node: root, flags:  { width:  1200, height: 900 }});
+
+	 </script>
+
+
+	</body>
+</html>

@@ -1,15 +1,28 @@
-module MMRender exposing (render, renderClosedBlock)
+module MMRender exposing (render, renderBlock, renderClosedBlock)
 
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import MMParser exposing (MMBlock(..), MMInline(..))
 
 
-render : List MMBlock -> List (Html msg)
-render blockList =
+{-|
+
+> runBlocks "~~Elimininate this~~, _please_\\n\\n" |> render
+> <internals> : Html.Html msg
+
+-}
+render : List (Html.Attribute msg) -> List MMBlock -> Html msg
+render attrList blockList =
     List.map renderBlock blockList
+        |> (\stuff -> div attrList stuff)
 
 
+{-|
+
+> runBlocks "~~Elimininate this~~, _please_\\n\\n" |> List.map renderBlock
+> [<internals>] : List (Html.Html msg)
+
+-}
 renderBlock : MMBlock -> Html msg
 renderBlock block_ =
     case block_ of
@@ -21,6 +34,14 @@ renderBlock block_ =
 
         RawBlock str ->
             div [] [ text str ]
+
+        HeadingBlock level str ->
+            case level of
+                1 ->
+                    h1 [] [ text str ]
+
+                _ ->
+                    h5 [] [ text str ]
 
         MathDisplayBlock str ->
             div [] [ text <| "$$" ++ str ++ "$$" ]
@@ -37,6 +58,12 @@ renderClosedBlock mmInline =
 
         ItalicText str ->
             em [] [ text str ]
+
+        BoldText str ->
+            strong [] [ text str ]
+
+        StrikeThroughText str ->
+            strong [] [ text str ]
 
         InlineMath str ->
             span [] [ text <| "$" ++ str ++ "$" ]

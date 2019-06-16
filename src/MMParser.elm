@@ -35,6 +35,7 @@ type MMInline
     | ItalicText String
     | BoldText String
     | InlineMath String
+    | StrikeThroughText String
     | MMInlineList (List MMInline)
     | Error (List MMInline)
 
@@ -150,7 +151,7 @@ blocks =
 > "_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$\\n\\n$$a^2 = 3$$\\n\\n" : String
 
 > runBlocks str
-> MMList [RawBlock ("_foo_ ha ha ha\nho ho ho\n$a^6 + 2$"),MathDisplayBlock ("a^2 = 3")]
+> MMList [RawBlock ("_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$"),MathDisplayBlock ("a^2 = 3")]
 
     : MMBlock
 
@@ -245,6 +246,20 @@ italicText =
         |> map ItalicText
 
 
+strikeThroughText : Parser MMInline
+strikeThroughText =
+    (succeed ()
+        |. symbol "~~"
+        |. chompWhile (\c -> c /= '~')
+        |. symbol "~~"
+        |. spaces
+    )
+        |> getChompedString
+        |> map (String.dropLeft 2)
+        |> map (String.replace "~~" "")
+        |> map StrikeThroughText
+
+
 boldText : Parser MMInline
 boldText =
     (succeed ()
@@ -254,7 +269,7 @@ boldText =
         |. spaces
     )
         |> getChompedString
-        |> map (String.dropLeft 1)
+        |> map (String.dropLeft 2)
         |> map (String.replace "**" "")
         |> map BoldText
 
@@ -293,7 +308,7 @@ inlineMath =
 -}
 inline : Parser MMInline
 inline =
-    oneOf [ boldText, italicText, inlineMath, ordinaryText ]
+    oneOf [ boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
 
 
 {-|
