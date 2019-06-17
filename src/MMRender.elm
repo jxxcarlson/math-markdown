@@ -27,7 +27,7 @@ renderBlock : MMBlock -> Html msg
 renderBlock block_ =
     case block_ of
         MMList list ->
-            div [] [ text "MMList" ]
+            div [] (List.map renderBlock list)
 
         Block block__ ->
             div [] [ text "Block" ]
@@ -38,13 +38,28 @@ renderBlock block_ =
         HeadingBlock level str ->
             case level of
                 1 ->
-                    h1 [] [ text str ]
+                    h1 [ style "font-size" "24pt" ] [ text str ]
+
+                2 ->
+                    h1 [ style "font-size" "18pt" ] [ text str ]
 
                 _ ->
                     h5 [] [ text str ]
 
         MathDisplayBlock str ->
             div [] [ text <| "$$" ++ str ++ "$$" ]
+
+        CodeBlock str ->
+            pre [] [ text str ]
+
+        ListItemBlock k str ->
+            let
+                margin =
+                    Debug.log "OFFSET" <|
+                        String.fromInt (12 * k)
+                            ++ "px"
+            in
+            li [ style "margin-left" margin ] [ text str ]
 
         ClosedBlock mmInline ->
             renderClosedBlock mmInline
@@ -63,13 +78,16 @@ renderClosedBlock mmInline =
             strong [] [ text str ]
 
         StrikeThroughText str ->
-            strong [] [ text str ]
+            span [ style "text-decoration" "line-through" ] [ text str ]
+
+        Code str ->
+            span [ style "font" "Coureir, Monaco, monospace" ] [ text str ]
 
         InlineMath str ->
             span [] [ text <| "$" ++ str ++ "$" ]
 
         MMInlineList list ->
-            div [] [ text "MMInlineList" ]
+            div [ style "margin-bottom" "12px" ] (List.map renderClosedBlock list)
 
         Error _ ->
             div [] [ text "Error" ]

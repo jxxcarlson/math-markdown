@@ -1,43 +1,90 @@
 module MMParser exposing
     ( MMBlock(..)
     , MMInline(..)
+    , PrefixedString
+    , blankLines
     , block
     , blocks
-    , closeBlock
-    , headingBlock
     , inline
     , inlineList
-    , inlineMath
-    , italicText
-    , mathBlock
-    , ordinaryText
-    , parseUntil
-    , rawTextBlock
+    , line
+    , lines
+    , many
+    , paragraph
+    , paragraphs
     , runBlocks
-    , runBlocks1
+    , runInlineList
     )
 
 import Parser exposing (..)
-import Parser.Extras exposing (many)
 
 
 type MMBlock
     = MMList (List MMBlock)
     | Block MMBlock
+    | ClosedBlock MMInline
+      --
     | RawBlock String
     | HeadingBlock Int String
     | MathDisplayBlock String
-    | ClosedBlock MMInline
+    | CodeBlock String
+    | ListItemBlock Int String
 
 
 type MMInline
     = OrdinaryText String
     | ItalicText String
     | BoldText String
+    | Code String
     | InlineMath String
     | StrikeThroughText String
     | MMInlineList (List MMInline)
     | Error (List MMInline)
+
+
+block =
+    oneOf
+        [ unorderedListItemBlock
+        , headingBlock
+        , codeBlock
+        , mathBlock
+        , rawTextBlock
+
+        -- , blankParagraph
+        ]
+
+
+{-|
+
+> run rawBlocks "$$a^2 - 7$$\\n\\nho ho ho!!\\n\\n"
+> Ok (MMList [MathDisplayBlock ("a^2 - 7"),RawBlock ("ho ho ho!!")])
+
+-}
+blocks : Parser MMBlock
+blocks =
+    many block
+        |> map MMList
+
+
+{-|
+
+> str
+> "_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$\\n\\n$$a^2 = 3$$\\n\\n" : String
+
+> runBlocks str
+> [ClosedBlock (MMInlineList [ItalicText ("foo "),OrdinaryText ("ha ha ha"),OrdinaryText ("ho ho ho"),InlineMath ("a^6 + 2")]),MathDisplayBlock ("a^2 = 3")]
+
+    : List MMBlock
+
+-}
+runBlocks : String -> List MMBlock
+runBlocks str =
+    case Parser.run (many block) str of
+        Ok list ->
+            List.map closeBlock list
+
+        Err _ ->
+            [ ClosedBlock (OrdinaryText "Error") ]
 
 
 {-|
@@ -64,13 +111,57 @@ closeBlock block_ =
 -}
 rawTextBlock : Parser MMBlock
 rawTextBlock =
-    (succeed ()
-        |. chompUntil "\n\n"
-        |. spaces
+    (succeed identity
+        |= parseWhile (\c -> c /= '\n')
+        |. chompIf (\c -> c == '\n')
+        |. chompIf (\c -> c == '\n')
     )
-        |> getChompedString
         |> map String.trim
         |> map RawBlock
+
+
+line : Parser String
+line =
+    map String.trim <|
+        getChompedString <|
+            succeed ()
+                -- |. chompIf Char.isAlphaNum
+                |. chompIf (\c -> not <| List.member c [ '$', '#', '-', '\n' ])
+                |. chompWhile (\c -> c /= '\n')
+                |. symbol "\n"
+
+
+blankLines : Parser ()
+blankLines =
+    chompWhile (\c -> c == '\n')
+
+
+
+-- blankParagraph : Parser MMBlock
+-- blankParagraph =
+--     blankLines |> map BlankParagraph
+--|. chompIf (\c -> c == '\n')
+-- |> map String.trim
+
+
+lines : Parser (List String)
+lines =
+    many line
+
+
+paragraph : Parser String
+paragraph =
+    (succeed identity
+        |= lines
+        |. symbol "\n"
+        |. blankLines
+    )
+        |> map (String.join "\n")
+
+
+paragraphs : Parser (List String)
+paragraphs =
+    many paragraph
 
 
 {-|
@@ -85,13 +176,29 @@ mathBlock =
         |. symbol "$$"
         |. chompWhile (\c -> c /= '$')
         |. symbol "$$"
-        |. spaces
+        |. symbol "\n\n"
     )
         |> getChompedString
         |> map String.trim
         |> map (String.dropLeft 2)
         |> map (String.dropRight 2)
         |> map MathDisplayBlock
+
+
+codeBlock : Parser MMBlock
+codeBlock =
+    (succeed ()
+        |. symbol "```"
+        |. chompWhile (\c -> c /= '`')
+        |. symbol "```"
+        |. symbol "\n\n"
+    )
+        |> getChompedString
+        |> map String.trim
+        |> map (String.dropLeft 3)
+        |> map (String.dropRight 3)
+        |> map String.trim
+        |> map CodeBlock
 
 
 type alias PrefixedString =
@@ -107,10 +214,41 @@ type alias PrefixedString =
 headingBlock : Parser MMBlock
 headingBlock =
     (succeed PrefixedString
+        |. symbol "#"
         |= parseWhile (\c -> c == '#')
-        |= parseUntil "\n\n"
+        -- |. symbol " "
+        |= parseWhile (\c -> c /= '\n')
+        |. symbol "\n\n"
     )
-        |> map (\ps -> HeadingBlock (String.length ps.prefix) (String.trim ps.text))
+        |> map
+            (\ps ->
+                HeadingBlock
+                    (String.length ps.prefix + 1)
+                    (ps.text |> String.replace "\\n\\n" "" |> String.trim)
+            )
+
+
+unorderedListItemBlock : Parser MMBlock
+unorderedListItemBlock =
+    (succeed PrefixedString
+        |= parseWhile (\c -> c == ' ')
+        |. symbol "- "
+        |= parseWhile (\c -> c /= '\n')
+        |. symbol "\n"
+        |. symbol "\n"
+    )
+        |> map
+            (\ps ->
+                ListItemBlock
+                    ((modBy 3 <| String.length ps.prefix) + 1)
+                    (ps.text |> String.replace "\\n\\n" "" |> String.trim)
+            )
+
+
+
+--
+-- HELPERS
+--
 
 
 {-|
@@ -127,81 +265,6 @@ parseUntil end =
 parseWhile : (Char -> Bool) -> Parser String
 parseWhile accepting =
     chompWhile accepting |> getChompedString
-
-
-block =
-    oneOf [ mathBlock, rawTextBlock ]
-
-
-{-|
-
-> run rawBlocks "$$a^2 - 7$$\\n\\nho ho ho!!\\n\\n"
-> Ok (MMList [MathDisplayBlock ("a^2 - 7"),RawBlock ("ho ho ho!!")])
-
--}
-blocks : Parser MMBlock
-blocks =
-    many block
-        |> map MMList
-
-
-{-|
-
-> str
-> "_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$\\n\\n$$a^2 = 3$$\\n\\n" : String
-
-> runBlocks str
-> MMList [RawBlock ("_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$"),MathDisplayBlock ("a^2 = 3")]
-
-    : MMBlock
-
--}
-runBlocks1 : String -> MMBlock
-runBlocks1 str =
-    Parser.run blocks str
-        |> resolveBlockResult
-
-
-{-|
-
-> str
-> "_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$\\n\\n$$a^2 = 3$$\\n\\n" : String
-
-> runBlocks2 str
-> [ClosedBlock (MMInlineList [ItalicText ("foo "),OrdinaryText ("ha ha ha"),OrdinaryText ("ho ho ho"),InlineMath ("a^6 + 2")]),MathDisplayBlock ("a^2 = 3")]
-
-    : List MMBlock
-
--}
-runBlocks : String -> List MMBlock
-runBlocks str =
-    case Parser.run (many block) str of
-        Ok list ->
-            List.map closeBlock list
-
-        Err _ ->
-            [ ClosedBlock (OrdinaryText "Error") ]
-
-
-
--- |> resolveBlockResult
-
-
-resolveBlockResult : Result (List DeadEnd) MMBlock -> MMBlock
-resolveBlockResult result =
-    case result of
-        Ok res_ ->
-            res_
-
-        Err err ->
-            List.map decodeBlockError err
-                |> MMInlineList
-                |> ClosedBlock
-
-
-decodeBlockError : DeadEnd -> MMInline
-decodeBlockError err =
-    OrdinaryText "error"
 
 
 
@@ -274,6 +337,20 @@ boldText =
         |> map BoldText
 
 
+code : Parser MMInline
+code =
+    (succeed ()
+        |. symbol "`"
+        |. chompWhile (\c -> c /= '`')
+        |. symbol "`"
+        |. spaces
+    )
+        |> getChompedString
+        |> map (String.dropLeft 1)
+        |> map (String.replace "`" "")
+        |> map Code
+
+
 {-|
 
 > run inlineMath "$a^5 = 3$"
@@ -308,7 +385,7 @@ inlineMath =
 -}
 inline : Parser MMInline
 inline =
-    oneOf [ boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
+    oneOf [ code, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
 
 
 {-|
@@ -345,37 +422,23 @@ decodeInlineError err =
 
 
 
--- |> map MMInlineList
--- -- parseRawBlock : RawBlock String -> MMExpr
--- -- MMList (List MMExpr)
--- -- parseRawBlock : MMExpr
--- --
 --
+-- TOOLS
 --
--- parseRawBlock : MMBlock -> MMInline
--- parseRawBlock (RawBlock str) =
---     let
---         result =
---             Parser.run inlineList str
---     in
---     case result of
---         Ok mmExpr ->
---             Block mmExpr
---
---         Err err ->
---             Error (List.map decodeError err)
---
---
---
---
--- --
--- -- decodeResult : Result (List DeadEnd) MMExpr -> MMExpr
--- -- decodeResult result =
--- --     case result of
--- --         Ok result_ ->
--- --             result_
--- --
--- --         Err err ->
--- --             List.map decodeError err
--- --                 |> MMList
--- -- Error (Result (List DeadEnd) MMExpr)
+
+
+{-| Apply a parser zero or more times and return a list of the results.
+-}
+many : Parser a -> Parser (List a)
+many p =
+    loop [] (manyHelp p)
+
+
+manyHelp : Parser a -> List a -> Parser (Step (List a) (List a))
+manyHelp p vs =
+    oneOf
+        [ succeed (\v -> Loop (v :: vs))
+            |= p
+        , succeed ()
+            |> map (\_ -> Done (List.reverse vs))
+        ]
