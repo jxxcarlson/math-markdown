@@ -53,7 +53,7 @@ init flags =
             { sourceText = Strings.initialText
             , counter = 0
             , seed = 0
-            , editRecord = Differ.emptyHtmlMsgRecord
+            , editRecord = Differ.createRecord (MMarkdown.toHtml []) Strings.initialText
             }
     in
     ( model, Cmd.none )
@@ -70,6 +70,7 @@ update msg model =
         GetContent str ->
             ( { model
                 | sourceText = str
+                , editRecord = Differ.update model.counter (MMarkdown.toHtml []) model.editRecord str
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -141,14 +142,19 @@ editor model =
     textarea (editorTextStyle ++ [ onInput GetContent, value model.sourceText ]) []
 
 
-renderedSource : Model -> Html msg
+renderedSource : Model -> Html Msg
 renderedSource model =
+    let
+        token =
+            String.fromInt model.counter
+    in
     Keyed.node "div"
         renderedSourceStyle
-        [ ( String.fromInt model.counter, MMarkdown.toHtml [] (model.sourceText ++ "\n\n") ) ]
+        (List.map (\p -> ( token, p )) model.editRecord.renderedParagraphs)
 
 
 
+-- [ ( String.fromInt model.counter, MMarkdown.toHtml [] (model.sourceText ++ "\n\n") ) ]
 --
 -- BUTTONS
 --
