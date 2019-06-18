@@ -12,6 +12,7 @@ module MMParser exposing
     , many
     , paragraph
     , paragraphs
+    , rawTextBlock
     , runBlocks
     , runInlineList
     )
@@ -110,8 +111,8 @@ closeBlock block_ =
 > Ok (RawBlock ("a b c"))
 
 -}
-rawTextBlock : Parser MMBlock
-rawTextBlock =
+rawTextBlock1 : Parser MMBlock
+rawTextBlock1 =
     (succeed identity
         |= parseWhile (\c -> c /= '\n')
         |. chompIf (\c -> c == '\n')
@@ -119,6 +120,12 @@ rawTextBlock =
         |. chompWhile (\c -> c == '\n')
     )
         |> map String.trim
+        |> map RawBlock
+
+
+rawTextBlock : Parser MMBlock
+rawTextBlock =
+    paragraph
         |> map RawBlock
 
 
@@ -145,12 +152,16 @@ lines =
 
 paragraph : Parser String
 paragraph =
-    (succeed identity
+    paragraphAsList
+        |> map (String.join "\n")
+
+
+paragraphAsList : Parser (List String)
+paragraphAsList =
+    succeed identity
         |= lines
         |. symbol "\n"
         |. chompWhile (\c -> c == '\n')
-    )
-        |> map (String.join "\n")
 
 
 paragraphs : Parser (List String)
@@ -343,7 +354,6 @@ italicText =
         |. spaces
     )
         |> getChompedString
-        -- |> map (String.dropLeft 1)
         |> map (String.replace "*" "")
         |> map ItalicText
 

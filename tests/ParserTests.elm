@@ -206,6 +206,16 @@ runBlocksTest =
                 "a *b* c\n\n"
                     |> runBlocks
                     |> Expect.equal [ ClosedBlock (MMInlineList [ OrdinaryText "a ", ItalicText "b ", OrdinaryText "c" ]) ]
+        , test "two-line paragraph I" <|
+            \_ ->
+                "This is a test\nand so is this\n\n"
+                    |> runBlocks
+                    |> Expect.equal (Ok (MMList []))
+        , test "two-line paragraph II" <|
+            \_ ->
+                "This is a test\nand so is this\n\n"
+                    |> run blocks
+                    |> Expect.equal [ ClosedBlock (MMInlineList [ OrdinaryText "This is a test ", OrdinaryText "and so is this" ]) ]
         ]
 
 

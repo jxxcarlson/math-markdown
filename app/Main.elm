@@ -120,7 +120,8 @@ display : Model -> Html Msg
 display model =
     div []
         [ h1 [ style "margin-left" "20px" ] [ text "Math + Markdown Demo" ]
-        , p [ style "margin-left" "20px" ] [ text "Edit or write new Math + Markdown below." ]
+        , p [ style "margin-left" "20px", style "margin-bottom" "0", style "margin-top" "0" ] [ text "This project is in its very earliest stages ... quite incomplete" ]
+        , p [ style "margin-left" "20px", style "margin-top" "0" ] [ text "Edit or write new Math + Markdown below." ]
         , label <| "counter: " ++ String.fromInt model.counter
         , editor model
         , renderedSource model
@@ -141,7 +142,7 @@ renderedSource : Model -> Html msg
 renderedSource model =
     Keyed.node "div"
         renderedSourceStyle
-        [ ( String.fromInt model.counter, MMarkdown.toHtml [] model.sourceText ) ]
+        [ ( String.fromInt model.counter, MMarkdown.toHtml [] (model.sourceText ++ "\n\n") ) ]
 
 
 
