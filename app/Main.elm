@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Debounce exposing (Debounce)
+import Differ
 import Html exposing (..)
 import Html.Attributes as HA exposing (..)
 import Html.Events exposing (onClick, onInput)
