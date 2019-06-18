@@ -33,8 +33,8 @@ renderBlock block_ =
         Block block__ ->
             div [] [ text "Block" ]
 
-        RawBlock str ->
-            div [] [ text str ]
+        RawBlock stringList ->
+            div [] (List.map text stringList)
 
         HeadingBlock level str ->
             case level of

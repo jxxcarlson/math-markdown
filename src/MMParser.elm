@@ -5,6 +5,7 @@ module MMParser exposing
     , blankLines
     , block
     , blocks
+    , closeBlock
     , inline
     , inlineList
     , line
@@ -25,7 +26,7 @@ type MMBlock
     | Block MMBlock
     | ClosedBlock MMInline
       --
-    | RawBlock String
+    | RawBlock (List String)
     | HeadingBlock Int String
     | MathDisplayBlock String
     | CodeBlock String
@@ -98,8 +99,8 @@ runBlocks str =
 closeBlock : MMBlock -> MMBlock
 closeBlock block_ =
     case block_ of
-        RawBlock str ->
-            runInlineList str |> ClosedBlock
+        RawBlock stringList ->
+            List.map runInlineList stringList |> MMInlineList |> ClosedBlock
 
         _ ->
             block_
@@ -111,21 +112,24 @@ closeBlock block_ =
 > Ok (RawBlock ("a b c"))
 
 -}
-rawTextBlock1 : Parser MMBlock
-rawTextBlock1 =
-    (succeed identity
-        |= parseWhile (\c -> c /= '\n')
-        |. chompIf (\c -> c == '\n')
-        |. chompIf (\c -> c == '\n')
-        |. chompWhile (\c -> c == '\n')
-    )
-        |> map String.trim
-        |> map RawBlock
+
+
+
+-- rawTextBlock1 : Parser MMBlock
+-- rawTextBlock1 =
+--     (succeed identity
+--         |= parseWhile (\c -> c /= '\n')
+--         |. chompIf (\c -> c == '\n')
+--         |. chompIf (\c -> c == '\n')
+--         |. chompWhile (\c -> c == '\n')
+--     )
+--         |> map String.trim
+--         |> map RawBlock
 
 
 rawTextBlock : Parser MMBlock
 rawTextBlock =
-    paragraph
+    paragraphAsList
         |> map RawBlock
 
 
@@ -135,7 +139,7 @@ line =
         getChompedString <|
             succeed ()
                 -- |. chompIf Char.isAlphaNum
-                |. chompIf (\c -> not <| List.member c [ '[', '$', '#', '-', '\n' ])
+                |. chompIf (\c -> not <| List.member c [ '$', '#', '-', '\n' ])
                 |. chompWhile (\c -> c /= '\n')
                 |. symbol "\n"
 

@@ -111,7 +111,7 @@ blockParserTests =
             \_ ->
                 "a b c\n\n"
                     |> run block
-                    |> Expect.equal (Ok (RawBlock "a b c"))
+                    |> Expect.equal (Ok (RawBlock [ "a b c" ]))
         ]
 
 
@@ -136,7 +136,7 @@ listTests =
             \_ ->
                 "ho ho ho\n\n    - Iron\n\n"
                     |> run blocks
-                    |> Expect.equal (Ok (MMList [ RawBlock "ho ho ho", ListItemBlock 2 "Iron" ]))
+                    |> Expect.equal (Ok (MMList [ RawBlock [ "ho ho ho" ], ListItemBlock 2 "Iron" ]))
         , test "listBlocks12" <|
             \_ ->
                 "- Solids\n\n    - Iron\n\n"
@@ -200,22 +200,22 @@ runBlocksTest =
             \_ ->
                 "a\n\nb\n\n"
                     |> runBlocks
-                    |> Expect.equal [ ClosedBlock (MMInlineList [ OrdinaryText "a" ]), ClosedBlock (MMInlineList [ OrdinaryText "b" ]) ]
+                    |> Expect.equal [ ClosedBlock (MMInlineList [ MMInlineList [ OrdinaryText "a" ] ]), ClosedBlock (MMInlineList [ MMInlineList [ OrdinaryText "b" ] ]) ]
         , test "simple runBlocks II" <|
             \_ ->
                 "a *b* c\n\n"
                     |> runBlocks
-                    |> Expect.equal [ ClosedBlock (MMInlineList [ OrdinaryText "a ", ItalicText "b ", OrdinaryText "c" ]) ]
+                    |> Expect.equal [ ClosedBlock (MMInlineList [ MMInlineList [ OrdinaryText "a ", ItalicText "b ", OrdinaryText "c" ] ]) ]
         , test "two-line paragraph I" <|
             \_ ->
                 "This is a test\nand so is this\n\n"
                     |> runBlocks
-                    |> Expect.equal (Ok (MMList []))
+                    |> Expect.equal [ ClosedBlock (MMInlineList [ MMInlineList [ OrdinaryText "This is a test" ], MMInlineList [ OrdinaryText "and so is this" ] ]) ]
         , test "two-line paragraph II" <|
             \_ ->
                 "This is a test\nand so is this\n\n"
                     |> run blocks
-                    |> Expect.equal [ ClosedBlock (MMInlineList [ OrdinaryText "This is a test ", OrdinaryText "and so is this" ]) ]
+                    |> Expect.equal (Ok (MMList [ RawBlock [ "This is a test", "and so is this" ] ]))
         ]
 
 

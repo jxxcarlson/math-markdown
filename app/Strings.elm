@@ -17,6 +17,11 @@ initialText =
 [http://nytimes.com](New York Times)
 
 
+one: $a^2 + b^2 = c^2$
+two: *this is a test.*
+three: **this is a very bold statement.*
+
+
 ## 1
 
 This is a test: $a^2 + b^2 = c^2$.
