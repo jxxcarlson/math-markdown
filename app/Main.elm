@@ -70,7 +70,7 @@ update msg model =
         GetContent str ->
             ( { model
                 | sourceText = str
-                , editRecord = Differ.update model.counter (MMarkdown.toHtml []) model.editRecord str
+                , editRecord = Differ.update model.seed (MMarkdown.toHtml []) model.editRecord str
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -150,7 +150,7 @@ renderedSource model =
     in
     Keyed.node "div"
         renderedSourceStyle
-        (List.map (\p -> ( token, p )) model.editRecord.renderedParagraphs)
+        (List.map2 (\x y -> ( x, y )) model.editRecord.idList model.editRecord.renderedParagraphs)
 
 
 

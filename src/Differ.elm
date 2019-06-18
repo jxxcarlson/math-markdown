@@ -34,6 +34,14 @@ list of rendered parapgraphs. We need to reveiw this strucure.
 type alias EditRecord a =
     { paragraphs : List String
     , renderedParagraphs : List a
+    , idList : List String
+    }
+
+
+type alias IdListPacket =
+    { idList : List String
+    , newIdsStart : Maybe Int
+    , newIdsEnd : Maybe Int
     }
 
 
@@ -41,7 +49,7 @@ type alias EditRecord a =
 -}
 emptyStringRecord : EditRecord String
 emptyStringRecord =
-    EditRecord [] []
+    EditRecord [] [] []
 
 
 {-| An empty EditRecord -- like the integer 0 in another context. For
@@ -49,7 +57,7 @@ renderers with `Html a` as target.
 -}
 emptyHtmlMsgRecord : EditRecord (Html msg)
 emptyHtmlMsgRecord =
-    EditRecord [] []
+    EditRecord [] [] []
 
 
 {-| createRecord: Create an edit record by (1)
@@ -68,8 +76,11 @@ createRecord transformer text =
 
         renderedParagraphs =
             List.map transformer paragraphs
+
+        idList =
+            List.range 1 n |> List.map (prefixer 0)
     in
-    EditRecord paragraphs renderedParagraphs
+    EditRecord paragraphs renderedParagraphs idList
 
 
 {-| An EditRecord is considered to be empyt if its list of parapgraphs
@@ -100,8 +111,11 @@ update seed transformer editRecord text =
 
         newRenderedParagraphs =
             differentialRender transformer diffRecord editRecord
+
+        p =
+            differentialIdList seed diffRecord editRecord
     in
-    EditRecord newParagraphs newRenderedParagraphs
+    EditRecord newParagraphs newRenderedParagraphs p.idList
 
 
 {-| Update the renderedList by applying the transformer onlly to the
@@ -265,3 +279,61 @@ differentialRender renderer diffRecord editRecord =
             List.map renderer diffRecord.middleSegmentInTarget
     in
     initialSegmentRendered ++ middleSegmentRendered ++ terminalSegmentRendered
+
+
+differentialIdList : Int -> DiffRecord -> EditRecord a -> IdListPacket
+differentialIdList seed diffRecord editRecord =
+    let
+        ii =
+            List.length diffRecord.commonInitialSegment
+
+        it =
+            List.length diffRecord.commonTerminalSegment
+
+        ns =
+            List.length diffRecord.middleSegmentInSource
+
+        nt =
+            List.length diffRecord.middleSegmentInTarget
+
+        idListInitial =
+            List.take ii editRecord.idList
+
+        idListMiddle =
+            List.range (ii + 1) (ii + nt) |> List.map (prefixer seed)
+
+        idListTerminal =
+            List.drop (ii + ns) editRecord.idList
+
+        idList =
+            idListInitial ++ idListMiddle ++ idListTerminal
+
+        ( newIdsStart, newIdsEnd ) =
+            if nt == 0 then
+                ( Nothing, Nothing )
+
+            else
+                ( Just ii, Just (ii + nt - 1) )
+    in
+    { idList = idList
+    , newIdsStart = newIdsStart
+    , newIdsEnd = newIdsEnd
+    }
+
+
+freshIdList : Int -> EditRecord a -> IdListPacket
+freshIdList seed editRecord =
+    let
+        newIdsStart =
+            0
+
+        newIdsEnd =
+            List.length editRecord.paragraphs - 1
+
+        idList =
+            List.range newIdsStart newIdsEnd |> List.map (prefixer seed)
+    in
+    { idList = idList
+    , newIdsStart = Just newIdsStart
+    , newIdsEnd = Just newIdsEnd
+    }
