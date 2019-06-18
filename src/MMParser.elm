@@ -47,7 +47,7 @@ type Problem
     | ExpectingLineEnd
     | ExpectingParagraphAsListEnd
     | ExpectingItalicBeginSymbol
-    | ExpectingItalicEndSymbol
+    | ExpectingItalicEndSymbol String
     | ExpectingInlineMathBeginSymbol
     | ExpectingInlineMathEndSymbol
     | ExpectingHeadingBeginSymbol
@@ -375,7 +375,7 @@ italicText =
     (succeed ()
         |. symbol (Token "*" ExpectingItalicBeginSymbol)
         |. chompWhile (\c -> c /= '*')
-        |. symbol (Token "*" ExpectingItalicEndSymbol)
+        |. symbol (Token "*" (ExpectingItalicEndSymbol "italic: need a matching '*'"))
         |. spaces
     )
         |> getChompedString
@@ -479,8 +479,18 @@ resolveInlineResult result =
 
 
 decodeInlineError : List (DeadEnd Context Problem) -> MMInline
-decodeInlineError list =
-    OrdinaryText "error"
+decodeInlineError errorList =
+    let
+        errorMessage =
+            List.map displayDeadEnd errorList
+                |> String.join ";;\n\n"
+    in
+    OrdinaryText errorMessage
+
+
+displayDeadEnd : DeadEnd Context Problem -> String
+displayDeadEnd deadend =
+    Debug.toString deadend
 
 
 
