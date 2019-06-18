@@ -1,4 +1,4 @@
-module Paragraphify exposing (paragraphify)
+module Paragraphs exposing (parse)
 
 {-| This module exports just one function,
 intended to turn a string into a lisst
@@ -13,7 +13,6 @@ finite-state machine.
 -}
 
 import Regex
-import Stack exposing (Stack)
 
 
 type ParserState
@@ -165,8 +164,8 @@ para =
         Regex.fromString "\\n\\n+"
 
 
-paragraphify : String -> List String
-paragraphify text =
+parse : String -> List String
+parse text =
     --String.split "\n\n" text
     Regex.split para text
         |> List.filter (\x -> String.length x /= 0)

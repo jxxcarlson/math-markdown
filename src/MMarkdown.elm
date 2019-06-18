@@ -5,8 +5,13 @@ module MMarkdown exposing (toHtml)
 import Html exposing (Html)
 import MMParser
 import MMRender
+import Paragraphs
 
 
 toHtml : List (Html.Attribute msg) -> String -> Html msg
 toHtml attrList str =
-    MMParser.runBlocks str |> MMRender.render attrList
+    str
+        |> Paragraphs.parse
+        |> List.map MMParser.runBlocks
+        |> List.map (MMRender.render attrList)
+        |> Html.div []
