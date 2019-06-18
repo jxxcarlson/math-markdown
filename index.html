@@ -5,6 +5,8 @@
 		<meta name="viewport" content="width=device-width" />
 		<title>Math + MarkDown</title>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/custom-elements/1.1.1/custom-elements.min.js"></script>
+		
 		<script type="text/x-mathjax-config">
 		// Same as kokoc3
 			MathJax.Hub.Config(
@@ -28,6 +30,38 @@
 
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
+	  <script>
+		  customElements.define('math-text', class extends HTMLElement {
+			  constructor() {
+				super()
+				this._content = this.content
+			  }
+
+				get content() {
+					// console.log("get content: " + this._content)
+					return this._content
+				}
+
+				set content(value) {
+					// console.log("set content: " + value)
+					if (this._content === value) return
+					this._content = value
+					var jaxScript = this.querySelector('script')
+					if (!jaxScript) return
+					jaxScript.textContent = this._content
+					enqueueUpdate(this)
+				}
+
+				connectedCallback() {
+					// console.log("connectedCallback: " + this._content )
+					this.textContent = this._content
+					this._connected = true
+					this.style.opacity = 1
+					this.style.display = 'inline'
+						enqueueTypeset(this)
+				}
+			})
+	 </script>
 
 		<script>
 				MathJax.Hub.Queue(["Typeset",MathJax.Hub]);

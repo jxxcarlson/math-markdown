@@ -186,6 +186,11 @@ inlineParserTests =
                             , InlineMath "a^6 + 2"
                             ]
                         )
+        , test "links" <|
+            \_ ->
+                "[http://nytimes.com](New York Times)"
+                    |> run inline
+                    |> Expect.equal (Ok (Link "http://nytimes.com" "New York Times"))
         ]
 
 

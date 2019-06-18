@@ -1,7 +1,8 @@
 module MMRender exposing (render, renderBlock, renderClosedBlock)
 
 import Html exposing (..)
-import Html.Attributes exposing (style)
+import Html.Attributes as HA exposing (style)
+import Json.Encode
 import MMParser exposing (MMBlock(..), MMInline(..))
 
 
@@ -47,8 +48,9 @@ renderBlock block_ =
                     h5 [] [ text str ]
 
         MathDisplayBlock str ->
-            div [] [ text <| "$$" ++ str ++ "$$" ]
+            displayMathText str
 
+        -- div [] [ text <| "$$" ++ str ++ "$$" ]
         CodeBlock str ->
             pre [] [ text str ]
 
@@ -84,10 +86,14 @@ renderClosedBlock mmInline =
             span [ style "font" "Coureir, Monaco, monospace" ] [ text str ]
 
         InlineMath str ->
-            span [] [ text <| "$" ++ str ++ "$" ]
+            inlineMathText str
 
+        -- span [] [ text <| "$" ++ str ++ "$" ]
         MMInlineList list ->
             div [ style "margin-bottom" "12px" ] (List.map renderClosedBlock list)
+
+        Link url label ->
+            a [ HA.href url ] [ text label ]
 
         Error _ ->
             div [] [ text "Error" ]
@@ -96,3 +102,24 @@ renderClosedBlock mmInline =
 
 -- [ClosedBlock (MMInlineList [ItalicText ("foo "),OrdinaryText ("ha ha ha"),OrdinaryText ("ho ho ho"),InlineMath ("a^6 + 2")]),MathDisplayBlock ("a^2 = 3")]
 --     : List MMBlock
+
+
+mathText : String -> Html msg
+mathText content =
+    Html.node "math-text"
+        [ HA.property "content" (Json.Encode.string content) ]
+        []
+
+
+inlineMathText : String -> Html msg
+inlineMathText str =
+    mathText <| "$ " ++ String.trim str ++ " $"
+
+
+displayMathText : String -> Html msg
+displayMathText str =
+    let
+        str2 =
+            String.trim str
+    in
+    mathText <| "$$\n" ++ str2 ++ "\n$$"

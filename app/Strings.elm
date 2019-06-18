@@ -1,7 +1,7 @@
 module Strings exposing (initialText, mathExampleText)
 
 
-initialText =
+initialTextAll =
     "# Tests\n\n## 1\n\nThis is a test: $a^2 + b^2 = c^2$.\n\n## 2\n\nSo is this:\n\n"
         ++ "$$\n\\int_0^1 x^n dx = \\frac{1}{n+1}\n$$\n\n"
         ++ "**bold** *italic* ~~strike it out~~\n\nCode: `a := b;`\n\n"
@@ -10,9 +10,12 @@ initialText =
         ++ "## 4. Lists\n\n- Solids\n\n    - Iron\n\n    - Copper\n\n"
 
 
-initialTextAll =
-    """
-# Tests
+initialText =
+    """# Tests
+
+
+[http://nytimes.com](New York Times)
+
 
 ## 1
 

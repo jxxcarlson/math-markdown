@@ -38,6 +38,7 @@ type MMInline
     | Code String
     | InlineMath String
     | StrikeThroughText String
+    | Link String String
     | MMInlineList (List MMInline)
     | Error (List MMInline)
 
@@ -115,6 +116,7 @@ rawTextBlock =
         |= parseWhile (\c -> c /= '\n')
         |. chompIf (\c -> c == '\n')
         |. chompIf (\c -> c == '\n')
+        |. chompWhile (\c -> c == '\n')
     )
         |> map String.trim
         |> map RawBlock
@@ -126,7 +128,7 @@ line =
         getChompedString <|
             succeed ()
                 -- |. chompIf Char.isAlphaNum
-                |. chompIf (\c -> not <| List.member c [ '$', '#', '-', '\n' ])
+                |. chompIf (\c -> not <| List.member c [ '[', '$', '#', '-', '\n' ])
                 |. chompWhile (\c -> c /= '\n')
                 |. symbol "\n"
 
@@ -134,14 +136,6 @@ line =
 blankLines : Parser ()
 blankLines =
     chompWhile (\c -> c == '\n')
-
-
-
--- blankParagraph : Parser MMBlock
--- blankParagraph =
---     blankLines |> map BlankParagraph
---|. chompIf (\c -> c == '\n')
--- |> map String.trim
 
 
 lines : Parser (List String)
@@ -154,7 +148,7 @@ paragraph =
     (succeed identity
         |= lines
         |. symbol "\n"
-        |. blankLines
+        |. chompWhile (\c -> c == '\n')
     )
         |> map (String.join "\n")
 
@@ -177,6 +171,7 @@ mathBlock =
         |. chompWhile (\c -> c /= '$')
         |. symbol "$$"
         |. symbol "\n\n"
+        |. chompWhile (\c -> c == '\n')
     )
         |> getChompedString
         |> map String.trim
@@ -192,6 +187,7 @@ codeBlock =
         |. chompWhile (\c -> c /= '`')
         |. symbol "```"
         |. symbol "\n\n"
+        |. chompWhile (\c -> c == '\n')
     )
         |> getChompedString
         |> map String.trim
@@ -219,6 +215,7 @@ headingBlock =
         -- |. symbol " "
         |= parseWhile (\c -> c /= '\n')
         |. symbol "\n\n"
+        |. chompWhile (\c -> c == '\n')
     )
         |> map
             (\ps ->
@@ -236,6 +233,7 @@ unorderedListItemBlock =
         |= parseWhile (\c -> c /= '\n')
         |. symbol "\n"
         |. symbol "\n"
+        |. chompWhile (\c -> c == '\n')
     )
         |> map
             (\ps ->
@@ -295,18 +293,17 @@ ordinaryText =
 > Ok (ItalicText "abc")
 
 -}
-italicText : Parser MMInline
-italicText =
-    (succeed ()
-        |. symbol "*"
-        |. chompWhile (\c -> c /= '*')
-        |. symbol "*"
+link : Parser MMInline
+link =
+    (succeed PrefixedString
+        |. symbol "["
+        |= parseWhile (\c -> c /= ']')
+        |. symbol "]("
+        |= parseWhile (\c -> c /= ')')
+        |. symbol ")"
         |. spaces
     )
-        |> getChompedString
-        |> map (String.dropLeft 1)
-        |> map (String.replace "*" "")
-        |> map ItalicText
+        |> map (\ps -> Link ps.prefix ps.text)
 
 
 strikeThroughText : Parser MMInline
@@ -335,6 +332,35 @@ boldText =
         |> map (String.dropLeft 2)
         |> map (String.replace "**" "")
         |> map BoldText
+
+
+italicText : Parser MMInline
+italicText =
+    (succeed ()
+        |. symbol "*"
+        |. chompWhile (\c -> c /= '*')
+        |. symbol "*"
+        |. spaces
+    )
+        |> getChompedString
+        |> map (String.dropLeft 1)
+        |> map (String.replace "*" "")
+        |> map ItalicText
+
+
+
+-- boldText : Parser MMInline
+-- boldText =
+--     (succeed ()
+--         |. symbol "**"
+--         |. chompWhile (\c -> c /= '*')
+--         |. symbol "**"
+--         |. spaces
+--     )
+--         |> getChompedString
+--         |> map (String.dropLeft 2)
+--         |> map (String.replace "**" "")
+--         |> map BoldText
 
 
 code : Parser MMInline
@@ -385,7 +411,7 @@ inlineMath =
 -}
 inline : Parser MMInline
 inline =
-    oneOf [ code, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
+    oneOf [ link, code, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
 
 
 {-|
