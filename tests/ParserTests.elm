@@ -3,8 +3,7 @@ module ParserTests exposing (suite)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import MMParser exposing (..)
-import Parser exposing (run)
-import ParserHelpers exposing (many)
+import Parser.Advanced exposing (run)
 import Test exposing (..)
 
 

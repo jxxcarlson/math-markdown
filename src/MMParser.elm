@@ -17,8 +17,48 @@ module MMParser exposing
     , runInlineList
     )
 
-import Parser exposing (..)
-import ParserHelpers exposing (many)
+import Parser.Advanced exposing (..)
+
+
+type alias Parser a =
+    Parser.Advanced.Parser Context Problem a
+
+
+type Context
+    = Definition String
+    | List
+    | Record
+
+
+type Problem
+    = BadIndent
+    | BadKeyword String
+    | ExpectingStrikeThroughSymbol
+    | ExpectingListStartSymbol
+    | ExpectingParagraphEnd
+    | ExpectingEndString String
+    | ExpectingOrdinaryTextPrefix
+    | ExpectingMathDisplayStartSymbol
+    | ExpectingMathDisplayEndSymbol
+    | ExpectingLinkPrefix
+    | ExpectingLinkInfix
+    | ExpectingLinkSuffix
+    | ExpectingLineStart
+    | ExpectingLineEnd
+    | ExpectingParagraphAsListEnd
+    | ExpectingItalicBeginSymbol
+    | ExpectingItalicEndSymbol
+    | ExpectingInlineMathBeginSymbol
+    | ExpectingInlineMathEndSymbol
+    | ExpectingHeadingBeginSymbol
+    | ExpectingHeadingEndSymbol
+    | ExpectingBeginCodeBlockSymbol
+    | ExpectingEndCodeBlockSymbol
+    | ExpectingCodeBlockParagraphTerminator
+    | ExpectingInlineCodeBeginSymbol
+    | ExpectingInlineCodeEndSymbol
+    | ExpectingBoldBeginSymbol
+    | ExpectingBoldEndSymbol
 
 
 type MMBlock
@@ -79,7 +119,7 @@ blocks =
 -}
 runBlocks : String -> List MMBlock
 runBlocks str =
-    case Parser.run (many block) str of
+    case run (many block) str of
         Ok list ->
             List.map closeBlock list
 
@@ -121,9 +161,9 @@ line =
         getChompedString <|
             succeed ()
                 -- |. chompIf Char.isAlphaNum
-                |. chompIf (\c -> not <| List.member c [ '$', '#', '-', '\n' ])
+                |. chompIf (\c -> not <| List.member c [ '$', '#', '-', '\n' ]) ExpectingLineStart
                 |. chompWhile (\c -> c /= '\n')
-                |. symbol "\n"
+                |. symbol (Token "\n" ExpectingLineEnd)
 
 
 blankLines : Parser ()
@@ -146,7 +186,7 @@ paragraphAsList : Parser (List String)
 paragraphAsList =
     succeed identity
         |= lines
-        |. symbol "\n"
+        |. symbol (Token "\n" ExpectingParagraphAsListEnd)
         |. chompWhile (\c -> c == '\n')
 
 
@@ -164,10 +204,10 @@ paragraphs =
 mathBlock : Parser MMBlock
 mathBlock =
     (succeed ()
-        |. symbol "$$"
+        |. symbol (Token "$$" ExpectingMathDisplayStartSymbol)
         |. chompWhile (\c -> c /= '$')
-        |. symbol "$$"
-        |. symbol "\n\n"
+        |. symbol (Token "$$" ExpectingMathDisplayEndSymbol)
+        |. symbol (Token "\n\n" ExpectingParagraphEnd)
         |. chompWhile (\c -> c == '\n')
     )
         |> getChompedString
@@ -180,10 +220,10 @@ mathBlock =
 codeBlock : Parser MMBlock
 codeBlock =
     (succeed ()
-        |. symbol "```"
+        |. symbol (Token "```" ExpectingBeginCodeBlockSymbol)
         |. chompWhile (\c -> c /= '`')
-        |. symbol "```"
-        |. symbol "\n\n"
+        |. symbol (Token "```" ExpectingEndCodeBlockSymbol)
+        |. symbol (Token "\n\n" ExpectingCodeBlockParagraphTerminator)
         |. chompWhile (\c -> c == '\n')
     )
         |> getChompedString
@@ -207,11 +247,11 @@ type alias PrefixedString =
 headingBlock : Parser MMBlock
 headingBlock =
     (succeed PrefixedString
-        |. symbol "#"
+        |. symbol (Token "#" ExpectingHeadingBeginSymbol)
         |= parseWhile (\c -> c == '#')
         -- |. symbol " "
         |= parseWhile (\c -> c /= '\n')
-        |. symbol "\n\n"
+        |. symbol (Token "\n\n" ExpectingHeadingEndSymbol)
         |. chompWhile (\c -> c == '\n')
     )
         |> map
@@ -226,10 +266,9 @@ unorderedListItemBlock : Parser MMBlock
 unorderedListItemBlock =
     (succeed PrefixedString
         |= parseWhile (\c -> c == ' ')
-        |. symbol "- "
+        |. symbol (Token "- " ExpectingListStartSymbol)
         |= parseWhile (\c -> c /= '\n')
-        |. symbol "\n"
-        |. symbol "\n"
+        |. symbol (Token "\n\n" ExpectingParagraphEnd)
         |. chompWhile (\c -> c == '\n')
     )
         |> map
@@ -254,7 +293,7 @@ unorderedListItemBlock =
 -}
 parseUntil : String -> Parser String
 parseUntil end =
-    chompUntil end |> getChompedString
+    chompUntil (Token end (ExpectingEndString end)) |> getChompedString
 
 
 parseWhile : (Char -> Bool) -> Parser String
@@ -277,7 +316,7 @@ parseWhile accepting =
 ordinaryText : Parser MMInline
 ordinaryText =
     (succeed ()
-        |. chompIf (\c -> not <| List.member c [ '$', '*', '\n' ])
+        |. chompIf (\c -> not <| List.member c [ '$', '*', '\n' ]) ExpectingOrdinaryTextPrefix
         |. chompWhile (\c -> not <| List.member c [ '$', '*', '\n' ])
     )
         |> getChompedString
@@ -293,11 +332,11 @@ ordinaryText =
 link : Parser MMInline
 link =
     (succeed PrefixedString
-        |. symbol "["
+        |. symbol (Token "[" ExpectingLinkPrefix)
         |= parseWhile (\c -> c /= ']')
-        |. symbol "]("
+        |. symbol (Token "](" ExpectingLinkInfix)
         |= parseWhile (\c -> c /= ')')
-        |. symbol ")"
+        |. symbol (Token ")" ExpectingLinkSuffix)
         |. spaces
     )
         |> map (\ps -> Link ps.prefix ps.text)
@@ -306,9 +345,9 @@ link =
 strikeThroughText : Parser MMInline
 strikeThroughText =
     (succeed ()
-        |. symbol "~~"
+        |. symbol (Token "~~" ExpectingStrikeThroughSymbol)
         |. chompWhile (\c -> c /= '~')
-        |. symbol "~~"
+        |. symbol (Token "~~" ExpectingStrikeThroughSymbol)
         |. spaces
     )
         |> getChompedString
@@ -320,9 +359,9 @@ strikeThroughText =
 boldText : Parser MMInline
 boldText =
     (succeed ()
-        |. symbol "**"
+        |. symbol (Token "**" ExpectingBoldBeginSymbol)
         |. chompWhile (\c -> c /= '*')
-        |. symbol "**"
+        |. symbol (Token "**" ExpectingBoldEndSymbol)
         |. spaces
     )
         |> getChompedString
@@ -334,9 +373,9 @@ boldText =
 italicText : Parser MMInline
 italicText =
     (succeed ()
-        |. symbol "*"
+        |. symbol (Token "*" ExpectingItalicBeginSymbol)
         |. chompWhile (\c -> c /= '*')
-        |. symbol "*"
+        |. symbol (Token "*" ExpectingItalicEndSymbol)
         |. spaces
     )
         |> getChompedString
@@ -362,9 +401,9 @@ italicText =
 code : Parser MMInline
 code =
     (succeed ()
-        |. symbol "`"
+        |. symbol (Token "`" ExpectingInlineCodeBeginSymbol)
         |. chompWhile (\c -> c /= '`')
-        |. symbol "`"
+        |. symbol (Token "`" ExpectingInlineCodeEndSymbol)
         |. chompWhile (\c -> c /= ' ')
     )
         |> getChompedString
@@ -383,9 +422,9 @@ code =
 inlineMath : Parser MMInline
 inlineMath =
     (succeed ()
-        |. symbol "$"
+        |. symbol (Token "$" ExpectingInlineMathBeginSymbol)
         |. chompWhile (\c -> c /= '$')
-        |. symbol "$"
+        |. symbol (Token "$" ExpectingInlineMathEndSymbol)
         |. chompWhile (\c -> c == ' ')
     )
         |> getChompedString
@@ -429,17 +468,37 @@ runInlineList str =
         |> resolveInlineResult
 
 
-resolveInlineResult : Result (List DeadEnd) (List MMInline) -> MMInline
+resolveInlineResult : Result (List (DeadEnd Context Problem)) (List MMInline) -> MMInline
 resolveInlineResult result =
     case result of
         Ok res_ ->
             res_ |> MMInlineList
 
-        Err err ->
-            List.map decodeInlineError err
-                |> MMInlineList
+        Err list ->
+            decodeInlineError list
 
 
-decodeInlineError : DeadEnd -> MMInline
-decodeInlineError err =
+decodeInlineError : List (DeadEnd Context Problem) -> MMInline
+decodeInlineError list =
     OrdinaryText "error"
+
+
+
+---
+-- HELPERS
+--
+
+
+many : Parser a -> Parser (List a)
+many p =
+    loop [] (manyHelp p)
+
+
+manyHelp : Parser a -> List a -> Parser (Step (List a) (List a))
+manyHelp p vs =
+    oneOf
+        [ succeed (\v -> Loop (v :: vs))
+            |= p
+        , succeed ()
+            |> map (\_ -> Done (List.reverse vs))
+        ]
