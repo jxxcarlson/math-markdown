@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Debounce exposing (Debounce)
-import Differ
+import Differ exposing (EditRecord)
 import Html exposing (..)
 import Html.Attributes as HA exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -27,6 +27,7 @@ main =
 
 type alias Model =
     { sourceText : String
+    , editRecord : EditRecord (Html Msg)
     , counter : Int
     , seed : Int
     }
@@ -52,6 +53,7 @@ init flags =
             { sourceText = Strings.initialText
             , counter = 0
             , seed = 0
+            , editRecord = Differ.emptyHtmlMsgRecord
             }
     in
     ( model, Cmd.none )
