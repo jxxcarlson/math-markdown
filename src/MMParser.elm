@@ -343,7 +343,7 @@ italicText =
         |. spaces
     )
         |> getChompedString
-        |> map (String.dropLeft 1)
+        -- |> map (String.dropLeft 1)
         |> map (String.replace "*" "")
         |> map ItalicText
 
