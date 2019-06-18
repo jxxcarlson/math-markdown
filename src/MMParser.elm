@@ -10,23 +10,22 @@ module MMParser exposing
     , inlineList
     , line
     , lines
-    , many
     , paragraph
+    , paragraphBlock
     , paragraphs
-    , rawTextBlock
     , runBlocks
     , runInlineList
     )
 
 import Parser exposing (..)
+import ParserHelpers exposing (many)
 
 
 type MMBlock
     = MMList (List MMBlock)
-    | Block MMBlock
     | ClosedBlock MMInline
       --
-    | RawBlock (List String)
+    | Paragraph (List String)
     | HeadingBlock Int String
     | MathDisplayBlock String
     | CodeBlock String
@@ -51,16 +50,14 @@ block =
         , headingBlock
         , codeBlock
         , mathBlock
-        , rawTextBlock
-
-        -- , blankParagraph
+        , paragraphBlock
         ]
 
 
 {-|
 
 > run rawBlocks "$$a^2 - 7$$\\n\\nho ho ho!!\\n\\n"
-> Ok (MMList [MathDisplayBlock ("a^2 - 7"),RawBlock ("ho ho ho!!")])
+> Ok (MMList [MathDisplayBlock ("a^2 - 7"),Paragraph ("ho ho ho!!")])
 
 -}
 blocks : Parser MMBlock
@@ -92,14 +89,14 @@ runBlocks str =
 
 {-|
 
-> closeBlock <| RawBlock ("_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$")
+> closeBlock <| Paragraph ("_foo_ ha ha ha\\nho ho ho\\n$a^6 + 2$")
 > ClosedBlock (MMInlineList [ItalicText ("foo "),OrdinaryText ("ha ha ha"),OrdinaryText ("ho ho ho"),InlineMath ("a^6 + 2")])
 
 -}
 closeBlock : MMBlock -> MMBlock
 closeBlock block_ =
     case block_ of
-        RawBlock stringList ->
+        Paragraph stringList ->
             List.map runInlineList stringList |> MMInlineList |> ClosedBlock
 
         _ ->
@@ -108,29 +105,14 @@ closeBlock block_ =
 
 {-|
 
-> run rawTextBlock "a b c\\n\\n"
-> Ok (RawBlock ("a b c"))
+> run paragraphBlock "a b c\\n\\n"
+> Ok (Paragraph ("a b c"))
 
 -}
-
-
-
--- rawTextBlock1 : Parser MMBlock
--- rawTextBlock1 =
---     (succeed identity
---         |= parseWhile (\c -> c /= '\n')
---         |. chompIf (\c -> c == '\n')
---         |. chompIf (\c -> c == '\n')
---         |. chompWhile (\c -> c == '\n')
---     )
---         |> map String.trim
---         |> map RawBlock
-
-
-rawTextBlock : Parser MMBlock
-rawTextBlock =
+paragraphBlock : Parser MMBlock
+paragraphBlock =
     paragraphAsList
-        |> map RawBlock
+        |> map Paragraph
 
 
 line : Parser String
@@ -383,11 +365,12 @@ code =
         |. symbol "`"
         |. chompWhile (\c -> c /= '`')
         |. symbol "`"
-        |. spaces
+        |. chompWhile (\c -> c /= ' ')
     )
         |> getChompedString
+        |> map String.trim
         |> map (String.dropLeft 1)
-        |> map (String.replace "`" "")
+        |> map (String.dropRight 1)
         |> map Code
 
 
@@ -403,9 +386,10 @@ inlineMath =
         |. symbol "$"
         |. chompWhile (\c -> c /= '$')
         |. symbol "$"
-        |. spaces
+        |. chompWhile (\c -> c == ' ')
     )
         |> getChompedString
+        |> map String.trim
         |> map (String.dropLeft 1)
         |> map (String.dropRight 1)
         |> map InlineMath
@@ -459,26 +443,3 @@ resolveInlineResult result =
 decodeInlineError : DeadEnd -> MMInline
 decodeInlineError err =
     OrdinaryText "error"
-
-
-
---
--- TOOLS
---
-
-
-{-| Apply a parser zero or more times and return a list of the results.
--}
-many : Parser a -> Parser (List a)
-many p =
-    loop [] (manyHelp p)
-
-
-manyHelp : Parser a -> List a -> Parser (Step (List a) (List a))
-manyHelp p vs =
-    oneOf
-        [ succeed (\v -> Loop (v :: vs))
-            |= p
-        , succeed ()
-            |> map (\_ -> Done (List.reverse vs))
-        ]

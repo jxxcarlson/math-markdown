@@ -17,16 +17,16 @@ initialText =
 [http://nytimes.com](New York Times)
 
 
-one: $a^2 + b^2 = c^2$
-two: *this is a test.*
-three: **this is a very bold statement.*
+one: $a^2 + b^2 = c^2$ (Pythagoras)
+two: *this is a test.* (Ho ho ho!)
+three: **this is a very bold statement.** (La di dah.)
 
 
-## 1
+## 1 Inline Math
 
 This is a test: $a^2 + b^2 = c^2$.
 
-## 2
+## 2 Display Math
 
 So is this:
 
@@ -36,11 +36,10 @@ $$
 
 **bold** *italic* ~~strike it out~~
 
-Code: `a := b;`
 
 ## 3. Code
 
-He said that `sum = 0` is an initialization statement.
+He said that `a := 0` is an initialization statement.
 
 ```
 sum = 0
@@ -49,7 +48,7 @@ for n in range(1..100):
 sum
 ```
 
-### 4. Lists
+## 4. Lists
 
 - Solids
 

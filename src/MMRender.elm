@@ -30,10 +30,7 @@ renderBlock block_ =
         MMList list ->
             div [] (List.map renderBlock list)
 
-        Block block__ ->
-            div [] [ text "Block" ]
-
-        RawBlock stringList ->
+        Paragraph stringList ->
             div [] (List.map text stringList)
 
         HeadingBlock level str ->
@@ -52,7 +49,7 @@ renderBlock block_ =
 
         -- div [] [ text <| "$$" ++ str ++ "$$" ]
         CodeBlock str ->
-            pre [] [ text str ]
+            pre [ style "font" "16px courier", style "padding" "12px", style "background-color" "#eee" ] [ text str ]
 
         ListItemBlock k str ->
             let
@@ -64,7 +61,7 @@ renderBlock block_ =
             li [ style "margin-left" margin ] [ text str ]
 
         ClosedBlock mmInline ->
-            renderClosedBlock mmInline
+            div [ style "margin-bottom" "12px" ] [ renderClosedBlock mmInline ]
 
 
 renderClosedBlock : MMInline -> Html msg
@@ -83,15 +80,18 @@ renderClosedBlock mmInline =
             span [ style "text-decoration" "line-through" ] [ text str ]
 
         Code str ->
-            span [ style "font" "Coureir, Monaco, monospace" ] [ text str ]
+            span [ style "font" "16px courier", style "background-color" "#eee" ] [ text str ]
 
         InlineMath str ->
             inlineMathText str
 
         -- span [] [ text <| "$" ++ str ++ "$" ]
         MMInlineList list ->
-            div [ style "margin-bottom" "12px" ] (List.map renderClosedBlock list)
+            --div [ style "margin-bottom" "12px" ] (List.map renderClosedBlock list)
+            --div [ style "margin-bottom" "12px" ]
+            div [] (List.map renderClosedBlock list)
 
+        --]
         Link url label ->
             a [ HA.href url ] [ text label ]
 
@@ -113,7 +113,7 @@ mathText content =
 
 inlineMathText : String -> Html msg
 inlineMathText str =
-    mathText <| "$ " ++ String.trim str ++ " $"
+    mathText <| "$ " ++ String.trim str ++ " $ "
 
 
 displayMathText : String -> Html msg

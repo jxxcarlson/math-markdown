@@ -4,7 +4,7 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import MMParser exposing (..)
 import Parser exposing (run)
-import Parser.Extras exposing (many)
+import ParserHelpers exposing (many)
 import Test exposing (..)
 
 
@@ -107,11 +107,11 @@ blockParserTests =
                 "```\nfoo == bar\n```\n\n"
                     |> run block
                     |> Expect.equal (Ok (CodeBlock "foo == bar"))
-        , test "rawTextBlock" <|
+        , test "paragraphBlock" <|
             \_ ->
                 "a b c\n\n"
                     |> run block
-                    |> Expect.equal (Ok (RawBlock [ "a b c" ]))
+                    |> Expect.equal (Ok (Paragraph [ "a b c" ]))
         ]
 
 
@@ -136,7 +136,7 @@ listTests =
             \_ ->
                 "ho ho ho\n\n    - Iron\n\n"
                     |> run blocks
-                    |> Expect.equal (Ok (MMList [ RawBlock [ "ho ho ho" ], ListItemBlock 2 "Iron" ]))
+                    |> Expect.equal (Ok (MMList [ Paragraph [ "ho ho ho" ], ListItemBlock 2 "Iron" ]))
         , test "listBlocks12" <|
             \_ ->
                 "- Solids\n\n    - Iron\n\n"
@@ -215,7 +215,7 @@ runBlocksTest =
             \_ ->
                 "This is a test\nand so is this\n\n"
                     |> run blocks
-                    |> Expect.equal (Ok (MMList [ RawBlock [ "This is a test", "and so is this" ] ]))
+                    |> Expect.equal (Ok (MMList [ Paragraph [ "This is a test", "and so is this" ] ]))
         ]
 
 
