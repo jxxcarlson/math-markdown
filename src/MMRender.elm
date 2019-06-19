@@ -56,9 +56,6 @@ renderBlock block_ =
 
         ListItemBlock k str ->
             let
-                _ =
-                    Debug.log "level" k
-
                 margin =
                     String.fromInt (12 * k)
                         ++ "px"

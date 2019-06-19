@@ -537,7 +537,7 @@ decodeInlineError errorList =
 
 displayDeadEnd : DeadEnd Context Problem -> String
 displayDeadEnd deadend =
-    Debug.toString deadend
+    "error"
 
 
 
