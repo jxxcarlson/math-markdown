@@ -85,6 +85,7 @@ update msg model =
         Clear ->
             ( { model
                 | sourceText = ""
+                , editRecord = Differ.createRecord (MMarkdown.toHtml []) ""
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -94,6 +95,7 @@ update msg model =
             ( { model
                 | counter = model.counter + 1
                 , sourceText = Strings.initialText
+                , editRecord = Differ.createRecord (MMarkdown.toHtml []) Strings.initialText
               }
             , Cmd.none
             )

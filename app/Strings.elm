@@ -13,12 +13,16 @@ initialTextAll =
 initialText =
     """# Math Markdown
 
+$$
+  f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz
+$$
+
 This is an experimental app using the even more experimental jxxcarlson/elm-mathmarkdown
 library.  The parser is still a very long ways from implementing the
 CommonMark spec, something that we eventually hope to do.  Nonetheless, MathMarkdown
 does offer basic functionality plus (and this is the main point), the ability to
 render math-mode LaTeX: the stuff between dollar signs.  Rendering of math
-text is provide by [https://mathjax.org](MathJax).
+text is provided by [https://mathjax.org](MathJax).
 
 If you need a more sophisticated live math app, please take
 a look at [https://minilatex.io](minilatex.io).
@@ -31,9 +35,9 @@ the source text on the left with the rendered text on the right.
 
 Hummingbird (Meditation)
 
-Links: [http://nytimes.com](New York Times)
+Link: [http://nytimes.com](New York Times)
 
-Text style: **bold** *italic* ~~strike it out~~
+Text styles: **bold** *italic* ~~strike it out~~
 
 
 ## 1 Inline Math
@@ -74,39 +78,22 @@ sum
 
     - Beer
 
-"""
+## 5. To do
 
+- Numbered lists
 
-initialText1 =
-    """
+- Tight lists
 
-# Tests
+- Quotations
 
-## 1
+- Thematic breaks
 
-This is a test: $a^2 + b^2 = c^2$.
+- Better error handling/messages
 
-## 2
-
-So is this:
-
-$$
-    \\int_0^1 x^n dx = \\frac{1}{n + 1}
-$$
-
-
-I think that **bold text** is working,
-as well as *italic text*.  ~~If not, let's try again.~~
-
-[Working Example](https://ellie-app.com/5M6pVvF5BRta1)
-
-[Working Example 2](https://ellie-app.com/5M7wMJZ4T83a1)
+- Better recursion
 
 """
 
 
 mathExampleText =
-    """
-ddd
-
-"""
+    "Nothing here"
