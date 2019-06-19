@@ -1,7 +1,7 @@
 {
     "type": "package",
     "name": "jxxcarlson/math-markdown",
-    "summary": "Experimental markdown poarser that also handles math",
+    "summary": "Experimental markdown parser that also handles math",
     "license": "BSD-3-Clause",
     "version": "1.0.0",
     "exposed-modules": [
