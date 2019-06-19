@@ -56,10 +56,12 @@ renderBlock block_ =
 
         ListItemBlock k str ->
             let
+                _ =
+                    Debug.log "level" k
+
                 margin =
-                    Debug.log "OFFSET" <|
-                        String.fromInt (12 * k)
-                            ++ "px"
+                    String.fromInt (12 * k)
+                        ++ "px"
             in
             li [ style "margin-left" margin ] [ text str ]
 
@@ -82,19 +84,18 @@ renderClosedBlock mmInline =
         StrikeThroughText str ->
             span [ style "text-decoration" "line-through" ] [ text str ]
 
+        BracketedText str ->
+            span [] [ text <| "[" ++ str ++ "]" ]
+
         Code str ->
             span [ style "font" "16px courier", style "background-color" "#eee" ] [ text str ]
 
         InlineMath str ->
             inlineMathText str
 
-        -- span [] [ text <| "$" ++ str ++ "$" ]
         MMInlineList list ->
-            --div [ style "margin-bottom" "12px" ] (List.map renderClosedBlock list)
-            --div [ style "margin-bottom" "12px" ]
             div [] (List.map renderClosedBlock list)
 
-        --]
         Link url label ->
             a [ HA.href url ] [ text label ]
 

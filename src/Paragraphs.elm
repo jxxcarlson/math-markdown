@@ -169,4 +169,4 @@ parse text =
     --String.split "\n\n" text
     Regex.split para text
         |> List.filter (\x -> String.length x /= 0)
-        |> List.map (String.trim >> (\x -> x ++ "\n\n"))
+        |> List.map (\x -> x ++ "\n\n")

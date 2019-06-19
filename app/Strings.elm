@@ -11,16 +11,28 @@ initialTextAll =
 
 
 initialText =
-    """# Tests
+    """# Math Markdown
+
+This is an experimental app using the even more experimental jxxcarlson/elm-mathmarkdown
+library.  The parser is still a very long ways from implementing the
+CommonMark spec, something that we eventually hope to do.  Nonetheless, MathMarkdown
+does offer basic functionality plus (and this is the main point), the ability to
+render math-mode LaTeX: the stuff between dollar signs.
+
+If you need a more sophisticated live math app, please take
+a look at [https://minilatex.io](minilatex.io).
+
+The present document illustrates most of the features of MathMarkdown.  Just compare
+the source text on the left with the rendered text on the right.
+
 
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
-[http://nytimes.com](New York Times)
+Hummingbird (Meditation)
 
+Links: [http://nytimes.com](New York Times)
 
-one: $a^2 + b^2 = c^2$ (Pythagoras)
-two: *this is a test.* (Ho ho ho!)
-three: **this is a very bold statement.** (La di dah.)
+Text style: **bold** *italic* ~~strike it out~~
 
 
 ## 1 Inline Math
@@ -34,8 +46,6 @@ So is this:
 $$
 \\int_0^1 x^n dx = \\frac{1}{n+1}
 $$
-
-**bold** *italic* ~~strike it out~~
 
 
 ## 3. Code

@@ -199,17 +199,17 @@ runBlocksTest =
             \_ ->
                 "a\n\nb\n\n"
                     |> runBlocks
-                    |> Expect.equal [ ClosedBlock (MMInlineList [ MMInlineList [ OrdinaryText "a" ] ]), ClosedBlock (MMInlineList [ MMInlineList [ OrdinaryText "b" ] ]) ]
+                    |> Expect.equal [ ClosedBlock (MMInlineList [ OrdinaryText "a" ]), ClosedBlock (MMInlineList [ OrdinaryText "b" ]) ]
         , test "simple runBlocks II" <|
             \_ ->
                 "a *b* c\n\n"
                     |> runBlocks
-                    |> Expect.equal [ ClosedBlock (MMInlineList [ MMInlineList [ OrdinaryText "a ", ItalicText "b ", OrdinaryText "c" ] ]) ]
+                    |> Expect.equal [ ClosedBlock (MMInlineList [ OrdinaryText "a ", ItalicText "b ", OrdinaryText "c" ]) ]
         , test "two-line paragraph I" <|
             \_ ->
                 "This is a test\nand so is this\n\n"
                     |> runBlocks
-                    |> Expect.equal [ ClosedBlock (MMInlineList [ MMInlineList [ OrdinaryText "This is a test" ], MMInlineList [ OrdinaryText "and so is this" ] ]) ]
+                    |> Expect.equal [ ClosedBlock (MMInlineList [ OrdinaryText "This is a test and so is this" ]) ]
         , test "two-line paragraph II" <|
             \_ ->
                 "This is a test\nand so is this\n\n"

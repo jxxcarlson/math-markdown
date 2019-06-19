@@ -62,6 +62,8 @@ type Problem
     | ExpectingImageBlockPrefix
     | ExpectingImageBlockInfix
     | ExpectingImageBlockSuffix
+    | ExpectingBracketedTextPrefix
+    | ExpectingBracketedTextSuffix
 
 
 type MMBlock
@@ -83,6 +85,7 @@ type MMInline
     | Code String
     | InlineMath String
     | StrikeThroughText String
+    | BracketedText String
     | Link String String
     | MMInlineList (List MMInline)
     | Error (List MMInline)
@@ -142,7 +145,7 @@ closeBlock : MMBlock -> MMBlock
 closeBlock block_ =
     case block_ of
         Paragraph stringList ->
-            List.map runInlineList stringList |> MMInlineList |> ClosedBlock
+            stringList |> String.join " " |> runInlineList |> ClosedBlock
 
         _ ->
             block_
@@ -165,7 +168,6 @@ line =
     map String.trim <|
         getChompedString <|
             succeed ()
-                -- |. chompIf Char.isAlphaNum
                 |. chompIf (\c -> not <| List.member c [ '!', '$', '#', '-', '\n' ]) ExpectingLineStart
                 |. chompWhile (\c -> c /= '\n')
                 |. symbol (Token "\n" ExpectingLineEnd)
@@ -334,8 +336,8 @@ parseWhile accepting =
 ordinaryText : Parser MMInline
 ordinaryText =
     (succeed ()
-        |. chompIf (\c -> not <| List.member c [ '$', '*', '\n' ]) ExpectingOrdinaryTextPrefix
-        |. chompWhile (\c -> not <| List.member c [ '$', '*', '\n' ])
+        |. chompIf (\c -> not <| List.member c [ '~', '[', '$', '*', '\n' ]) ExpectingOrdinaryTextPrefix
+        |. chompWhile (\c -> not <| List.member c [ '~', '[', ']', '$', '*', '\n' ])
     )
         |> getChompedString
         |> map OrdinaryText
@@ -358,6 +360,17 @@ link =
         |. spaces
     )
         |> map (\ps -> Link ps.prefix ps.text)
+
+
+bracketedText : Parser MMInline
+bracketedText =
+    (succeed identity
+        |. symbol (Token "[" ExpectingBracketedTextPrefix)
+        |= parseWhile (\c -> c /= ']')
+        |. symbol (Token "] " ExpectingBracketedTextSuffix)
+        |. spaces
+    )
+        |> map BracketedText
 
 
 strikeThroughText : Parser MMInline
@@ -466,7 +479,7 @@ inlineMath =
 -}
 inline : Parser MMInline
 inline =
-    oneOf [ link, code, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
+    oneOf [ backtrackable bracketedText, link, code, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
 
 
 {-|
