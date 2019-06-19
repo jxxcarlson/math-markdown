@@ -150,7 +150,7 @@ renderedSource model =
     in
     Keyed.node "div"
         renderedSourceStyle
-        (List.map2 (\x y -> ( x, y )) (Debug.log "IDS" model.editRecord.idList) model.editRecord.renderedParagraphs)
+        (List.map2 (\x y -> ( x, y )) model.editRecord.idList model.editRecord.renderedParagraphs)
 
 
 
