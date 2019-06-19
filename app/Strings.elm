@@ -17,7 +17,8 @@ This is an experimental app using the even more experimental jxxcarlson/elm-math
 library.  The parser is still a very long ways from implementing the
 CommonMark spec, something that we eventually hope to do.  Nonetheless, MathMarkdown
 does offer basic functionality plus (and this is the main point), the ability to
-render math-mode LaTeX: the stuff between dollar signs.
+render math-mode LaTeX: the stuff between dollar signs.  Rendering of math
+text is provide by [https://mathjax.org](MathJax).
 
 If you need a more sophisticated live math app, please take
 a look at [https://minilatex.io](minilatex.io).
