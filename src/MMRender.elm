@@ -44,6 +44,9 @@ renderBlock block_ =
                 _ ->
                     h5 [] [ text str ]
 
+        ImageBlock label url ->
+            img [ HA.src url, style "width" "100%" ] [ text label ]
+
         MathDisplayBlock str ->
             displayMathText str
 

@@ -13,6 +13,7 @@ initialTextAll =
 initialText =
     """# Tests
 
+![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
 [http://nytimes.com](New York Times)
 

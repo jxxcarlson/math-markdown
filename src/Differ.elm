@@ -1,13 +1,10 @@
-module Differ exposing (EditRecord, emptyStringRecord, emptyHtmlMsgRecord, isEmpty, createRecord, diff, prefixer, update, simpleDifferentialRender)
+module Differ exposing (EditRecord, createRecord, update)
 
 {-| This module is used to speed up parsing-rendering by
 comparing the old and new lists of paragraphs, noting the changes,
 then parsing and rendering the changed paragraphs.
 
-
-# API
-
-@docs EditRecord, emptyStringRecord, emptyHtmlMsgRecord, isEmpty, createRecord, diff, prefixer, update, simpleDifferentialRender
+@docs EditRecord, createRecord, update
 
 -}
 

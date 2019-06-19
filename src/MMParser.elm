@@ -59,6 +59,9 @@ type Problem
     | ExpectingInlineCodeEndSymbol
     | ExpectingBoldBeginSymbol
     | ExpectingBoldEndSymbol
+    | ExpectingImageBlockPrefix
+    | ExpectingImageBlockInfix
+    | ExpectingImageBlockSuffix
 
 
 type MMBlock
@@ -70,6 +73,7 @@ type MMBlock
     | MathDisplayBlock String
     | CodeBlock String
     | ListItemBlock Int String
+    | ImageBlock String String
 
 
 type MMInline
@@ -86,7 +90,8 @@ type MMInline
 
 block =
     oneOf
-        [ unorderedListItemBlock
+        [ imageBlock
+        , unorderedListItemBlock
         , headingBlock
         , codeBlock
         , mathBlock
@@ -161,7 +166,7 @@ line =
         getChompedString <|
             succeed ()
                 -- |. chompIf Char.isAlphaNum
-                |. chompIf (\c -> not <| List.member c [ '$', '#', '-', '\n' ]) ExpectingLineStart
+                |. chompIf (\c -> not <| List.member c [ '!', '$', '#', '-', '\n' ]) ExpectingLineStart
                 |. chompWhile (\c -> c /= '\n')
                 |. symbol (Token "\n" ExpectingLineEnd)
 
@@ -232,6 +237,19 @@ codeBlock =
         |> map (String.dropRight 3)
         |> map String.trim
         |> map CodeBlock
+
+
+imageBlock : Parser MMBlock
+imageBlock =
+    (succeed PrefixedString
+        |. symbol (Token "![" ExpectingImageBlockPrefix)
+        |= parseWhile (\c -> c /= ']')
+        |. symbol (Token "](" ExpectingImageBlockInfix)
+        |= parseWhile (\c -> c /= ')')
+        |. symbol (Token ")\n\n" ExpectingImageBlockSuffix)
+        |. chompWhile (\c -> c == '\n')
+    )
+        |> map (\ps -> ImageBlock ps.prefix ps.text)
 
 
 type alias PrefixedString =
