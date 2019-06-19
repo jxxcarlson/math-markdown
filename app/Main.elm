@@ -126,7 +126,6 @@ display model =
         [ h1 [ style "margin-left" "20px" ] [ text "Math + Markdown Demo" ]
         , p [ style "margin-left" "20px", style "margin-bottom" "0", style "margin-top" "0" ] [ text "This project is in its very earliest stages ... quite incomplete" ]
         , p [ style "margin-left" "20px", style "margin-top" "0" ] [ text "Edit or write new Math + Markdown below." ]
-        , label <| "counter: " ++ String.fromInt model.counter
         , editor model
         , renderedSource model
         , p [ style "clear" "left", style "margin-left" "20px", style "margin-top" "-20px" ] [ clearButton 60, restoreTextButton 80 ]

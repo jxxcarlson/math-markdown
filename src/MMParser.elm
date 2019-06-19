@@ -62,8 +62,9 @@ type Problem
     | ExpectingImageBlockPrefix
     | ExpectingImageBlockInfix
     | ExpectingImageBlockSuffix
-    | ExpectingBracketedTextPrefix
-    | ExpectingBracketedTextSuffix
+    | ExpectingUrlPrefix
+    | ExpectingUrlSuffix
+    | DummyExpectation
 
 
 type MMBlock
@@ -354,23 +355,38 @@ link =
     (succeed PrefixedString
         |. symbol (Token "[" ExpectingLinkPrefix)
         |= parseWhile (\c -> c /= ']')
-        |. symbol (Token "](" ExpectingLinkInfix)
+        |. symbol (Token "]" ExpectingLinkInfix)
+        |= oneOf [ linkUrl, terminateBracket ]
+        |. spaces
+    )
+        |> map (\ps -> linkOrBracket ps)
+
+
+linkOrBracket : PrefixedString -> MMInline
+linkOrBracket ps =
+    case ps.text of
+        " " ->
+            BracketedText ps.prefix
+
+        _ ->
+            Link ps.prefix ps.text
+
+
+linkUrl : Parser String
+linkUrl =
+    succeed identity
+        |. symbol (Token "(" ExpectingUrlPrefix)
         |= parseWhile (\c -> c /= ')')
-        |. symbol (Token ")" ExpectingLinkSuffix)
+        |. symbol (Token ")" ExpectingUrlSuffix)
         |. spaces
-    )
-        |> map (\ps -> Link ps.prefix ps.text)
 
 
-bracketedText : Parser MMInline
-bracketedText =
-    (succeed identity
-        |. symbol (Token "[" ExpectingBracketedTextPrefix)
-        |= parseWhile (\c -> c /= ']')
-        |. symbol (Token "] " ExpectingBracketedTextSuffix)
-        |. spaces
+terminateBracket : Parser String
+terminateBracket =
+    (succeed ()
+     -- |. symbol (Token " " DummyExpectation)
     )
-        |> map BracketedText
+        |> map (\_ -> " ")
 
 
 strikeThroughText : Parser MMInline
@@ -479,7 +495,7 @@ inlineMath =
 -}
 inline : Parser MMInline
 inline =
-    oneOf [ backtrackable bracketedText, link, code, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
+    oneOf [ link, code, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
 
 
 {-|
