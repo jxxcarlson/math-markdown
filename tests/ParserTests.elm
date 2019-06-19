@@ -190,6 +190,16 @@ inlineParserTests =
                 "[http://nytimes.com](New York Times)"
                     |> run inline
                     |> Expect.equal (Ok (Link "http://nytimes.com" "New York Times"))
+        , test "bracketedText" <|
+            \_ ->
+                "a [b] c"
+                    |> runInlineList
+                    |> Expect.equal (MMInlineList [ OrdinaryText "a ", BracketedText "b", OrdinaryText "c" ])
+        , test "bracketedText 2" <|
+            \_ ->
+                "a [b]c"
+                    |> runInlineList
+                    |> Expect.equal (MMInlineList [ OrdinaryText "a ", BracketedText "b", OrdinaryText "c" ])
         ]
 
 
