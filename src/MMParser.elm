@@ -304,7 +304,6 @@ unorderedListItemBlock =
                         |> String.replace "\n\n" ""
                         |> String.trim
                         |> (\x -> x ++ "\n\n")
-                        |> Debug.log "ARG(2)"
                         |> runInlineList
                     )
             )
