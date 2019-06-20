@@ -13,6 +13,7 @@ module MMParser exposing
     , paragraph
     , paragraphBlock
     , paragraphs
+    , quotationBlock
     , runBlocks
     , runInlineList
     )
@@ -65,6 +66,13 @@ type Problem
     | ExpectingUrlPrefix
     | ExpectingUrlSuffix
     | DummyExpectation
+    | ExpectingQuotationStartSymbol String
+
+
+
+--
+-- AST
+--
 
 
 type MMBlock
@@ -77,6 +85,7 @@ type MMBlock
     | CodeBlock String
     | ListItemBlock Int MMInline
     | ImageBlock String String
+    | QuotationBlock MMInline
 
 
 type MMInline
@@ -223,6 +232,19 @@ mathBlock =
         |> map (String.dropLeft 2)
         |> map (String.dropRight 2)
         |> map MathDisplayBlock
+
+
+quotationBlock : Parser MMBlock
+quotationBlock =
+    (succeed identity
+        |. symbol (Token ">" (ExpectingQuotationStartSymbol "expexcting '>' to begin quotation"))
+        |= chompUntil (Token "\n\n" DummyExpectation)
+        |. symbol (Token "\n\n" ExpectingParagraphEnd)
+        |. chompWhile (\c -> c == '\n')
+    )
+        |> getChompedString
+        |> map runInlineList
+        |> map QuotationBlock
 
 
 codeBlock : Parser MMBlock
