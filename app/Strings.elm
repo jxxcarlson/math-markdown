@@ -78,13 +78,22 @@ sum
 
     - Water *(Ok to drink)*
 
-## 5. To do
+## 5. Quotations
+
+Of course, we would like to have quotations, like this one:
+
+> This is a Test
+I repeat, a test.
+I repeat, I repeat, I repeat ...
+
+Isn't that nice?
+
+
+## 6. To do
 
 - Numbered lists
 
 - Tight lists
-
-- Quotations
 
 - Thematic breaks
 
@@ -92,15 +101,6 @@ sum
 
 - Better recursion
 
-## 6. Quotations
-
-Of course, we would like to have quotation:
-
-> This is a Test
-I repeat, a test.
-I repeat, I repeat, I repeat ... 
-
-Isn't that nice?
 
 """
 
