@@ -66,10 +66,19 @@ renderBlock block_ =
             li [ style "margin-left" margin ] [ renderClosedBlock mmInline ]
 
         QuotationBlock mmInline ->
-            div [ style "margin-left" "24px", style "margin-top" "18px", style "margin-bottom" "24px" ] [ renderClosedBlock mmInline ]
+            div
+                [ style "margin-left" "24px"
+                , style "margin-top" "18px"
+                , style "margin-right" "36px"
+                , style "margin-bottom" "18px"
+                ]
+                [ renderClosedBlock mmInline ]
 
         ClosedBlock mmInline ->
             div [ style "margin-bottom" "12px" ] [ renderClosedBlock mmInline ]
+
+        ErrorBlock errorMessage ->
+            div [ style "color" "red", style "margin-bottom" "12px" ] [ text errorMessage ]
 
 
 renderClosedBlock : MMInline -> Html msg

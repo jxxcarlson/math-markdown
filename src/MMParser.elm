@@ -67,6 +67,7 @@ type Problem
     | ExpectingUrlSuffix
     | DummyExpectation
     | ExpectingQuotationStartSymbol String
+    | Expecting String
 
 
 
@@ -78,6 +79,7 @@ type Problem
 type MMBlock
     = MMList (List MMBlock)
     | ClosedBlock MMInline
+    | ErrorBlock String
       --
     | Paragraph (List String)
     | HeadingBlock Int MMInline
@@ -142,8 +144,8 @@ runBlocks str =
         Ok list ->
             List.map closeBlock list
 
-        Err _ ->
-            [ ClosedBlock (OrdinaryText "Error") ]
+        Err error ->
+            [ ErrorBlock (errorString error) ]
 
 
 {-|
@@ -238,7 +240,19 @@ mathBlock =
 quotationBlock : Parser MMBlock
 quotationBlock =
     (succeed identity
-        |. symbol (Token ">" (ExpectingQuotationStartSymbol "expexcting '>' to begin quotation"))
+        |. symbol (Token ">" (Expecting "expexcting '>' to begin quotation"))
+        |= paragraphAsList
+    )
+        |> map (String.join " ")
+        |> map runInlineList
+        -- |> map MMInlineList
+        |> map QuotationBlock
+
+
+quotationBlock1 : Parser MMBlock
+quotationBlock1 =
+    (succeed identity
+        |. symbol (Token ">" (Expecting "expexcting '>' to begin quotation"))
         |= paragraphAsList
     )
         |> map (List.map runInlineList)
@@ -565,9 +579,20 @@ decodeInlineError errorList =
     OrdinaryText errorMessage
 
 
+errorString : List (DeadEnd Context Problem) -> String
+errorString errorList =
+    List.map displayDeadEnd errorList
+        |> String.join "\n"
+
+
 displayDeadEnd : DeadEnd Context Problem -> String
 displayDeadEnd deadend =
-    "error"
+    case deadend.problem of
+        Expecting error ->
+            error
+
+        _ ->
+            "error"
 
 
 
