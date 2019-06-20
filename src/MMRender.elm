@@ -74,6 +74,15 @@ renderBlock block_ =
                 ]
                 [ renderClosedBlock mmInline ]
 
+        PoetryBlock mmInline ->
+            div
+                [ style "margin-left" "24px"
+                , style "margin-top" "18px"
+                , style "margin-right" "36px"
+                , style "margin-bottom" "18px"
+                ]
+                [ renderClosedBlock mmInline ]
+
         ClosedBlock mmInline ->
             div [ style "margin-bottom" "12px" ] [ renderClosedBlock mmInline ]
 

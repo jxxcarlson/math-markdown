@@ -88,6 +88,7 @@ type MMBlock
     | ListItemBlock Int MMInline
     | ImageBlock String String
     | QuotationBlock MMInline
+    | PoetryBlock MMInline
 
 
 type MMInline
@@ -105,7 +106,8 @@ type MMInline
 
 block =
     oneOf
-        [ quotationBlock
+        [ poetryBlock
+        , quotationBlock
         , imageBlock
         , unorderedListItemBlock
         , headingBlock
@@ -240,24 +242,23 @@ mathBlock =
 quotationBlock : Parser MMBlock
 quotationBlock =
     (succeed identity
-        |. symbol (Token ">" (Expecting "expexcting '>' to begin quotation"))
+        |. symbol (Token ">" (Expecting "expecting '>' to begin quotation"))
         |= paragraphAsList
     )
         |> map (String.join " ")
         |> map runInlineList
-        -- |> map MMInlineList
         |> map QuotationBlock
 
 
-quotationBlock1 : Parser MMBlock
-quotationBlock1 =
+poetryBlock : Parser MMBlock
+poetryBlock =
     (succeed identity
-        |. symbol (Token ">" (Expecting "expexcting '>' to begin quotation"))
+        |. symbol (Token ">>" (Expecting "expecting '>>' to begin poetry block"))
         |= paragraphAsList
     )
         |> map (List.map runInlineList)
         |> map MMInlineList
-        |> map QuotationBlock
+        |> map PoetryBlock
 
 
 codeBlock : Parser MMBlock

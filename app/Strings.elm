@@ -88,8 +88,25 @@ I repeat, I repeat, I repeat ...
 
 Isn't that nice?
 
+## 6. Poetry
 
-## 6. To do
+Poetry blocks are an extension of Markdown.
+Begin a poetry block with ">>".
+
+>> Twas brillig, and the slithy toves
+Did gyre and gimble in the wabe:
+All mimsy were the borogoves,
+And the mome raths outgrabe.
+
+>> Beware the Jabberwock, my son!
+The jaws that bite, the claws that catch!
+Beware the Jubjub bird, and shun
+The frumious Bandersnatch!
+
+
+Etcetera!
+
+## 7. To do
 
 - Numbered lists
 
