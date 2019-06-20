@@ -65,6 +65,9 @@ renderBlock block_ =
             in
             li [ style "margin-left" margin ] [ renderClosedBlock mmInline ]
 
+        QuotationBlock mmInline ->
+            div [ style "margin-left" "24px", style "margin-top" "18px", style "margin-bottom" "24px" ] [ renderClosedBlock mmInline ]
+
         ClosedBlock mmInline ->
             div [ style "margin-bottom" "12px" ] [ renderClosedBlock mmInline ]
 

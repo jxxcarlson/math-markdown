@@ -103,7 +103,8 @@ type MMInline
 
 block =
     oneOf
-        [ imageBlock
+        [ quotationBlock
+        , imageBlock
         , unorderedListItemBlock
         , headingBlock
         , codeBlock
@@ -178,7 +179,7 @@ line =
     map String.trim <|
         getChompedString <|
             succeed ()
-                |. chompIf (\c -> not <| List.member c [ '!', '$', '#', '-', '\n' ]) ExpectingLineStart
+                |. chompIf (\c -> not <| List.member c [ '>', '!', '$', '#', '-', '\n' ]) ExpectingLineStart
                 |. chompWhile (\c -> c /= '\n')
                 |. symbol (Token "\n" ExpectingLineEnd)
 
@@ -238,12 +239,10 @@ quotationBlock : Parser MMBlock
 quotationBlock =
     (succeed identity
         |. symbol (Token ">" (ExpectingQuotationStartSymbol "expexcting '>' to begin quotation"))
-        |= chompUntil (Token "\n\n" DummyExpectation)
-        |. symbol (Token "\n\n" ExpectingParagraphEnd)
-        |. chompWhile (\c -> c == '\n')
+        |= paragraphAsList
     )
-        |> getChompedString
-        |> map runInlineList
+        |> map (List.map runInlineList)
+        |> map MMInlineList
         |> map QuotationBlock
 
 
