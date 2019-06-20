@@ -32,8 +32,22 @@ There is a demo in `./app`.  To run
 it, go into that folder and say `sh make.sh`.  Then
 double-click on `index.html`.
 
-## Differ
+## Markdown extensions
 
+I am trying to be conservative about extensions to
+Markdown.  However, there is one that I thought
+important enough to add: poetry blocks.  These
+are like quotation blocks, except that they begin
+with ">>" instead of ">".  Line endings are respected
+in poetry blocks.
+
+## Technical stuff: the Differ module
+
+Math Markdown exposes only two modules — `MMarkdown` and `Differ`.
 The purpose of the Differ module is to speed up the parse-render
 operation by reparsing and rerendering only text that has been
-changed.  This module is used in the demo app.   
+changed.  This module is used in the demo app.
+
+I addition increased speed, using `Differ` results in a smoother
+user experience, since only small parts of the document being
+edited need to be re-processed.
