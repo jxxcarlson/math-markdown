@@ -33,16 +33,19 @@ renderBlock block_ =
         Paragraph stringList ->
             div [] (List.map text stringList)
 
-        HeadingBlock level str ->
+        HeadingBlock level mmInlineList ->
             case level of
                 1 ->
-                    h1 [ style "font-size" "24pt" ] [ text str ]
+                    h1 [ style "font-size" "24pt" ] [ renderClosedBlock mmInlineList ]
 
                 2 ->
-                    h1 [ style "font-size" "18pt" ] [ text str ]
+                    h1 [ style "font-size" "18pt" ] [ renderClosedBlock mmInlineList ]
+
+                3 ->
+                    h3 [ style "font-size" "12pt" ] [ renderClosedBlock mmInlineList ]
 
                 _ ->
-                    h5 [] [ text str ]
+                    h4 [] [ renderClosedBlock mmInlineList ]
 
         ImageBlock label url ->
             img [ HA.src url, style "width" "100%" ] [ text label ]

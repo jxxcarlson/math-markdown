@@ -72,7 +72,7 @@ type MMBlock
     | ClosedBlock MMInline
       --
     | Paragraph (List String)
-    | HeadingBlock Int String
+    | HeadingBlock Int MMInline
     | MathDisplayBlock String
     | CodeBlock String
     | ListItemBlock Int String
@@ -279,7 +279,11 @@ headingBlock =
             (\ps ->
                 HeadingBlock
                     (String.length ps.prefix + 1)
-                    (ps.text |> String.replace "\\n\\n" "" |> String.trim)
+                    (ps.text
+                        |> String.replace "\\n\\n" ""
+                        |> String.trim
+                        |> runInlineList
+                    )
             )
 
 
