@@ -85,12 +85,12 @@ blockParserTests =
             \_ ->
                 "# Tests \n\n"
                     |> run block
-                    |> Expect.equal (Ok (HeadingBlock 1 "Tests"))
+                    |> Expect.equal (Ok (HeadingBlock 1 (MMInlineList [ OrdinaryText "Tests" ])))
         , test "headingBlock (fail)" <|
             \_ ->
                 "# Tests \n"
                     |> run block
-                    |> Expect.notEqual (Ok (HeadingBlock 1 "Tests"))
+                    |> Expect.equal (Ok (HeadingBlock 1 (MMInlineList [ OrdinaryText "Tests" ])))
         , test "mathBlock" <|
             \_ ->
                 "$$a^2 - 7$$\n\n"
