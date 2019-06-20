@@ -42,7 +42,7 @@ renderBlock block_ =
                     h1 [ style "font-size" "18pt" ] [ renderClosedBlock mmInlineList ]
 
                 3 ->
-                    h3 [ style "font-size" "12pt" ] [ renderClosedBlock mmInlineList ]
+                    h3 [ style "font-size" "1 2pt" ] [ renderClosedBlock mmInlineList ]
 
                 _ ->
                     h4 [] [ renderClosedBlock mmInlineList ]
@@ -57,13 +57,13 @@ renderBlock block_ =
         CodeBlock str ->
             pre [ style "font" "16px courier", style "padding" "12px", style "background-color" "#eee" ] [ text str ]
 
-        ListItemBlock k str ->
+        ListItemBlock k mmInline ->
             let
                 margin =
-                    String.fromInt (12 * k)
+                    String.fromInt (18 * k)
                         ++ "px"
             in
-            li [ style "margin-left" margin ] [ text str ]
+            li [ style "margin-left" margin ] [ renderClosedBlock mmInline ]
 
         ClosedBlock mmInline ->
             div [ style "margin-bottom" "12px" ] [ renderClosedBlock mmInline ]

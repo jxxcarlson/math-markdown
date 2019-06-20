@@ -68,15 +68,15 @@ sum
 
 - Solids
 
-    - Bacon
+    - Iron *(metal)*
 
-    - Eggs
+    - Selenium *(use for solar cells)*
 
 - Liquids
 
-    - Orange Juice
+    - Alcohol *(careful!)*
 
-    - Beer
+    - Water *(Ok to drink)*
 
 ## 5. To do
 

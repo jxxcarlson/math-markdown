@@ -75,7 +75,7 @@ type MMBlock
     | HeadingBlock Int MMInline
     | MathDisplayBlock String
     | CodeBlock String
-    | ListItemBlock Int String
+    | ListItemBlock Int MMInline
     | ImageBlock String String
 
 
@@ -300,7 +300,13 @@ unorderedListItemBlock =
             (\ps ->
                 ListItemBlock
                     ((modBy 3 <| String.length ps.prefix) + 1)
-                    (ps.text |> String.replace "\\n\\n" "" |> String.trim)
+                    (ps.text
+                        |> String.replace "\n\n" ""
+                        |> String.trim
+                        |> (\x -> x ++ "\n\n")
+                        |> Debug.log "ARG(2)"
+                        |> runInlineList
+                    )
             )
 
 
