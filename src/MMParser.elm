@@ -85,6 +85,7 @@ type MMBlock
     | HeadingBlock Int MMInline
     | MathDisplayBlock String
     | CodeBlock String
+    | HorizontalRuleBlock
     | ListItemBlock Int MMInline
     | ImageBlock String String
     | QuotationBlock MMInline
@@ -106,7 +107,8 @@ type MMInline
 
 block =
     oneOf
-        [ poetryBlock
+        [ horizontalRuleBlock
+        , poetryBlock
         , quotationBlock
         , imageBlock
         , unorderedListItemBlock
@@ -321,6 +323,17 @@ headingBlock =
                         |> runInlineList
                     )
             )
+
+
+horizontalRuleBlock : Parser MMBlock
+horizontalRuleBlock =
+    (succeed ()
+        |. symbol (Token "___" ExpectingHeadingBeginSymbol)
+        |. parseWhile (\c -> c /= '\n')
+        |. symbol (Token "\n\n" ExpectingHeadingEndSymbol)
+        |. chompWhile (\c -> c == '\n')
+    )
+        |> map (\x -> HorizontalRuleBlock)
 
 
 unorderedListItemBlock : Parser MMBlock

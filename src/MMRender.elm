@@ -83,6 +83,9 @@ renderBlock block_ =
                 ]
                 [ renderClosedBlock mmInline ]
 
+        HorizontalRuleBlock ->
+            hr [] []
+
         ClosedBlock mmInline ->
             div [ style "margin-bottom" "12px" ] [ renderClosedBlock mmInline ]
 
