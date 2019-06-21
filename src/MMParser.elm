@@ -6,6 +6,7 @@ module MMParser exposing
     , block
     , blocks
     , closeBlock
+    , code
     , inline
     , inlineList
     , line
@@ -185,7 +186,7 @@ line =
     map String.trim <|
         getChompedString <|
             succeed ()
-                |. chompIf (\c -> not <| List.member c [ '>', '!', '$', '#', '-', '\n' ]) ExpectingLineStart
+                |. chompIf (\c -> not <| List.member c [ '`', '>', '!', '$', '#', '-', '\n' ]) ExpectingLineStart
                 |. chompWhile (\c -> c /= '\n')
                 |. symbol (Token "\n" ExpectingLineEnd)
 
@@ -395,8 +396,8 @@ parseWhile accepting =
 ordinaryText : Parser MMInline
 ordinaryText =
     (succeed ()
-        |. chompIf (\c -> not <| List.member c [ '~', '[', '$', '*', '\n' ]) ExpectingOrdinaryTextPrefix
-        |. chompWhile (\c -> not <| List.member c [ '~', '[', ']', '$', '*', '\n' ])
+        |. chompIf (\c -> not <| List.member c [ '`', '~', '[', '$', '*', '\n' ]) ExpectingOrdinaryTextPrefix
+        |. chompWhile (\c -> not <| List.member c [ '`', '~', '[', ']', '$', '*', '\n' ])
     )
         |> getChompedString
         |> map OrdinaryText
@@ -503,21 +504,6 @@ italicText =
 --         |> map BoldText
 
 
-code : Parser MMInline
-code =
-    (succeed ()
-        |. symbol (Token "`" ExpectingInlineCodeBeginSymbol)
-        |. chompWhile (\c -> c /= '`')
-        |. symbol (Token "`" ExpectingInlineCodeEndSymbol)
-        |. chompWhile (\c -> c /= ' ')
-    )
-        |> getChompedString
-        |> map String.trim
-        |> map (String.dropLeft 1)
-        |> map (String.dropRight 1)
-        |> map Code
-
-
 {-|
 
 > run inlineMath "$a^5 = 3$"
@@ -539,6 +525,21 @@ inlineMath =
         |> map InlineMath
 
 
+code : Parser MMInline
+code =
+    (succeed ()
+        |. symbol (Token "`" ExpectingInlineCodeBeginSymbol)
+        |. chompWhile (\c -> c /= '`')
+        |. symbol (Token "`" ExpectingInlineCodeEndSymbol)
+        |. chompWhile (\c -> c /= ' ')
+    )
+        |> getChompedString
+        |> map String.trim
+        |> map (String.dropLeft 1)
+        |> map (String.dropRight 1)
+        |> map Code
+
+
 {-|
 
 > run inline "$a^5 = 1$"
@@ -553,7 +554,7 @@ inlineMath =
 -}
 inline : Parser MMInline
 inline =
-    oneOf [ link, code, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
+    oneOf [ code, link, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
 
 
 {-|

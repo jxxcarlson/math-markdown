@@ -55,7 +55,8 @@ renderBlock block_ =
 
         -- div [] [ text <| "$$" ++ str ++ "$$" ]
         CodeBlock str ->
-            pre [ style "font" "16px courier", style "padding" "12px", style "background-color" "#eee" ] [ text str ]
+            pre [ style "font" "16px courier", style "padding" "12px", style "background-color" "#eee" ]
+                [ code [] [ text str ] ]
 
         ListItemBlock k mmInline ->
             let
@@ -112,7 +113,9 @@ renderClosedBlock mmInline =
             span [] [ text <| "[" ++ str ++ "]" ]
 
         Code str ->
-            span [ style "font" "16px courier", style "background-color" "#eee" ] [ text str ]
+            span [ style "font" "16px courier", style "background-color" "#eee" ]
+                [ code [] [ text (str ++ "!!") ]
+                ]
 
         InlineMath str ->
             inlineMathText str
