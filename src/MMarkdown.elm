@@ -23,12 +23,8 @@ import Paragraphs
 -}
 toHtml : List (Html.Attribute msg) -> String -> Html msg
 toHtml attrList str =
-    let
-        _ =
-            Debug.log "HERE I AM!"
-    in
     str
         |> Paragraphs.parse
         |> MMAccumulator.parse MMAccumulator.emptyMMState
-        |> MMRender.render attrList
-        |> (\x -> Html.div [] [ x ])
+        |> MMRender.render
+        |> (\x -> Html.div [] x)

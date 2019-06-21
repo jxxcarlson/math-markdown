@@ -18,10 +18,9 @@ import MMParser exposing (MMBlock(..), MMInline(..), joinMMInlineLists)
 > <internals> : Html.Html msg
 
 -}
-render : List (Html.Attribute msg) -> List MMData -> Html msg
-render attrList mmDataList =
+render : List MMData -> List (Html msg)
+render mmDataList =
     List.map renderBlock (List.concat <| fixList mmDataList)
-        |> (\stuff -> div attrList stuff)
 
 
 fixList : List MMData -> List (List ( MMBlock, MMState ))

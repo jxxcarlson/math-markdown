@@ -35,7 +35,6 @@ parse : MMState -> List String -> List MMData
 parse mmState stringList =
     List.foldr parseReducer ( emptyMMState, [] ) (List.reverse stringList)
         |> Tuple.second
-        |> List.reverse
 
 
 parseReducer : String -> ( MMState, List MMData ) -> ( MMState, List MMData )
@@ -48,7 +47,7 @@ parseReducer str ( state, revAugmentedBlockLlist ) =
             Debug.log "NEW STATE"
                 (nextState (Debug.log "OLD STATE" state) newBlockList)
     in
-    ( newState, ( newBlockList, newState ) :: revAugmentedBlockLlist )
+    ( newState, revAugmentedBlockLlist ++ [ ( newBlockList, newState ) ] )
 
 
 

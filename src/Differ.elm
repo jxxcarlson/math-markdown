@@ -77,12 +77,12 @@ createRecord transformer text =
             --List.map transformer paragraphs
             paragraphs
                 |> MMAccumulator.parse MMAccumulator.emptyMMState
-                |> MMRender.render []
+                |> MMRender.render
 
         idList =
             List.range 1 n |> List.map (prefixer 0)
     in
-    EditRecord paragraphs [ renderedParagraphs ] idList
+    EditRecord paragraphs renderedParagraphs idList
 
 
 {-| An EditRecord is considered to be empyt if its list of parapgraphs

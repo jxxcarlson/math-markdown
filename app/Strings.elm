@@ -122,9 +122,9 @@ ___
 
 ##  To do
 
-- Numbered lists
-
 - Tight lists
+
+- Html
 
 - Better error handling/messages
 
