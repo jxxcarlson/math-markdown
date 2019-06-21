@@ -6,7 +6,6 @@ module MMParser exposing
     , block
     , blocks
     , closeBlock
-    , code
     , inline
     , inlineList
     , line
@@ -14,7 +13,6 @@ module MMParser exposing
     , paragraph
     , paragraphBlock
     , paragraphs
-    , quotationBlock
     , runBlocks
     , runInlineList
     )
@@ -88,6 +86,7 @@ type MMBlock
     | CodeBlock String
     | HorizontalRuleBlock
     | ListItemBlock Int MMInline
+    | OrderedListItemBlock Int MMInline
     | ImageBlock String String
     | QuotationBlock MMInline
     | PoetryBlock MMInline
@@ -112,9 +111,8 @@ block =
         , poetryBlock
         , quotationBlock
         , imageBlock
-
-        -- , orderedListItemBlock
-        , unorderedListItemBlock
+        , backtrackable unorderedListItemBlock
+        , orderedListItemBlock
         , headingBlock
         , codeBlock
         , mathBlock
@@ -351,7 +349,7 @@ unorderedListItemBlock =
         |> map
             (\ps ->
                 ListItemBlock
-                    ((modBy 3 <| String.length ps.prefix) + 1)
+                    (String.length ps.prefix // 4 + 1)
                     (ps.text
                         |> String.replace "\n\n" ""
                         |> String.trim
@@ -365,16 +363,17 @@ orderedListItemBlock : Parser MMBlock
 orderedListItemBlock =
     (succeed PrefixedString
         |= parseWhile (\c -> c == ' ')
-        |. parseWhile (\c -> Char.isDigit c)
-        |. symbol (Token ". " ExpectingListStartSymbol)
+        |. chompIf (\c -> Char.isDigit c) DummyExpectation
+        |. chompWhile (\c -> Char.isDigit c)
+        |. symbol (Token ". " (Expecting "expecting period"))
         |= parseWhile (\c -> c /= '\n')
         |. symbol (Token "\n\n" ExpectingParagraphEnd)
         |. chompWhile (\c -> c == '\n')
     )
         |> map
             (\ps ->
-                ListItemBlock
-                    ((modBy 3 <| String.length ps.prefix) + 1)
+                OrderedListItemBlock
+                    (String.length ps.prefix // 4 + 1)
                     (ps.text
                         |> String.replace "\n\n" ""
                         |> String.trim

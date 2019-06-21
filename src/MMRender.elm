@@ -66,6 +66,14 @@ renderBlock block_ =
             in
             li [ style "margin-left" margin ] [ renderClosedBlock mmInline ]
 
+        OrderedListItemBlock k mmInline ->
+            let
+                margin =
+                    String.fromInt (18 * k)
+                        ++ "px"
+            in
+            li [ style "margin-left" margin ] [ renderClosedBlock mmInline ]
+
         QuotationBlock mmInline ->
             div
                 [ style "margin-left" "24px"
