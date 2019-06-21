@@ -85,13 +85,15 @@ sum
 
 ## 5. Numbered lists
 
-1. Apples
+### Problem Set 83
 
-4. Oranges
+1. Compute the coefficient of $a^5b^2$ in $(a + b)^7$.
 
-2. Pears
+4. If $f'(2) = 0$, what can you say about the graph of $f$ at $x = 2$?
 
-7. Grapes
+2. Find integers $a, b, c > 4$ such that $a^2 + b^2 = c^2$
+
+
 
 
 ## 6. Quotations

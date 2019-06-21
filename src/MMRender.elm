@@ -91,7 +91,14 @@ renderBlock ( mmBlock, mmState ) =
                     String.fromInt (18 * k)
                         ++ "px"
             in
-            li [ style "margin-left" margin ] [ renderClosedBlock mmInline ]
+            li
+                [ style "margin-left" margin
+                , style "list-style" "none"
+                , style "margin-bottom" "8px"
+                , style "padding-left" "18px"
+                , style "text-indent" "-18px"
+                ]
+                [ renderClosedBlock mmInline ]
 
         OrderedListItemBlock k mmInline ->
             let
@@ -105,7 +112,14 @@ renderBlock ( mmBlock, mmState ) =
                 content =
                     joinMMInlineLists (MMInlineList [ OrdinaryText label ]) mmInline
             in
-            li [ style "margin-left" margin, style "list-style" "none" ] [ renderClosedBlock content ]
+            li
+                [ style "margin-left" margin
+                , style "list-style" "none"
+                , style "margin-bottom" "8px"
+                , style "padding-left" "18px"
+                , style "text-indent" "-18px"
+                ]
+                [ renderClosedBlock content ]
 
         QuotationBlock mmInline ->
             div
