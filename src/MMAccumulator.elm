@@ -1,5 +1,6 @@
 module MMAccumulator exposing
     ( MMData
+    , MMState
     , emptyMMState
     , getOrderedListItems
     , nextState

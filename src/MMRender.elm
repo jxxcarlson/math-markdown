@@ -1,8 +1,14 @@
-module MMRender exposing (render, renderBlock, renderClosedBlock)
+module MMRender exposing
+    ( fixList
+    , render
+    , renderBlock
+    , renderClosedBlock
+    )
 
 import Html exposing (..)
 import Html.Attributes as HA exposing (style)
 import Json.Encode
+import MMAccumulator exposing (MMData, MMState)
 import MMParser exposing (MMBlock(..), MMInline(..))
 
 
@@ -12,10 +18,29 @@ import MMParser exposing (MMBlock(..), MMInline(..))
 > <internals> : Html.Html msg
 
 -}
-render : List (Html.Attribute msg) -> List MMBlock -> Html msg
-render attrList blockList =
-    List.map renderBlock blockList
+render : List (Html.Attribute msg) -> List MMData -> Html msg
+render attrList mmDataList =
+    List.map renderBlock (List.concat <| fixList mmDataList)
         |> (\stuff -> div attrList stuff)
+
+
+fixList : List MMData -> List (List ( MMBlock, MMState ))
+fixList mmDataList =
+    List.map fix mmDataList
+
+
+
+-- type alias MMData =
+--     ( List MMBlock, MMState )
+
+
+fix : MMData -> List ( MMBlock, MMState )
+fix mmData =
+    let
+        ( blockList, mmState ) =
+            mmData
+    in
+    List.map (\b -> ( b, mmState )) blockList
 
 
 {-|
@@ -24,11 +49,11 @@ render attrList blockList =
 > [<internals>] : List (Html.Html msg)
 
 -}
-renderBlock : MMBlock -> Html msg
-renderBlock block_ =
-    case block_ of
+renderBlock : ( MMBlock, MMState ) -> Html msg
+renderBlock ( mmBlock, mmState ) =
+    case mmBlock of
         MMList list ->
-            div [] (List.map renderBlock list)
+            div [] (List.map renderBlock <| fix ( list, mmState ))
 
         Paragraph stringList ->
             div [] (List.map text stringList)
@@ -50,6 +75,9 @@ renderBlock block_ =
         ImageBlock label url ->
             img [ HA.src url, style "width" "100%" ] [ text label ]
 
+        -- MMList blockList ->
+        --     List.map (\b -> renderBlock ( b, mmState )) blockList
+        --         |> div []
         MathDisplayBlock str ->
             displayMathText str
 
