@@ -9,6 +9,8 @@ then parsing and rendering the changed paragraphs.
 -}
 
 import Html exposing (Html)
+import MMAccumulator
+import MMRender
 import Paragraphs
 
 
@@ -62,7 +64,7 @@ breaking the text in to pargraphs, (2) applying
 the transformer to each string in the resulting
 list of strings.
 -}
-createRecord : (String -> a) -> String -> EditRecord a
+createRecord : (String -> Html msg) -> String -> EditRecord (Html msg)
 createRecord transformer text =
     let
         paragraphs =
@@ -72,12 +74,15 @@ createRecord transformer text =
             List.length paragraphs
 
         renderedParagraphs =
-            List.map transformer paragraphs
+            --List.map transformer paragraphs
+            paragraphs
+                |> MMAccumulator.parse MMAccumulator.emptyMMState
+                |> MMRender.render []
 
         idList =
             List.range 1 n |> List.map (prefixer 0)
     in
-    EditRecord paragraphs renderedParagraphs idList
+    EditRecord paragraphs [ renderedParagraphs ] idList
 
 
 {-| An EditRecord is considered to be empyt if its list of parapgraphs

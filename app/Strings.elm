@@ -78,7 +78,18 @@ sum
 
     - Water *(Ok to drink)*
 
-## 5. Quotations
+## 5. Numbered lists
+
+1. Apples
+
+4. Oranges
+
+2. Pears
+
+7. Grapes
+
+
+## 6. Quotations
 
 Of course, we would like to have quotations, like this one:
 
@@ -88,7 +99,7 @@ I repeat, I repeat, I repeat ...
 
 Isn't that nice?
 
-## 6. Poetry
+## 7. Poetry
 
 Poetry blocks are an extension of Markdown.
 Begin a poetry block with ">>".

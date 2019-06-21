@@ -35,6 +35,13 @@ type alias ParserRecord =
     }
 
 
+parse : String -> List String
+parse text =
+    Regex.split para text
+        |> List.filter (\x -> String.length x /= 0)
+        |> List.map (\x -> x ++ "\n\n")
+
+
 lineType : String -> LineType
 lineType line =
     if line == "" then
@@ -162,11 +169,3 @@ para : Regex.Regex
 para =
     Maybe.withDefault Regex.never <|
         Regex.fromString "\\n\\n+"
-
-
-parse : String -> List String
-parse text =
-    --String.split "\n\n" text
-    Regex.split para text
-        |> List.filter (\x -> String.length x /= 0)
-        |> List.map (\x -> x ++ "\n\n")

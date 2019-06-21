@@ -9,7 +9,7 @@ import Html exposing (..)
 import Html.Attributes as HA exposing (style)
 import Json.Encode
 import MMAccumulator exposing (MMData, MMState)
-import MMParser exposing (MMBlock(..), MMInline(..))
+import MMParser exposing (MMBlock(..), MMInline(..), joinMMInlineLists)
 
 
 {-|
@@ -99,8 +99,14 @@ renderBlock ( mmBlock, mmState ) =
                 margin =
                     String.fromInt (18 * k)
                         ++ "px"
+
+                label =
+                    String.fromInt mmState.itemIndex1 ++ ". "
+
+                content =
+                    joinMMInlineLists (MMInlineList [ OrdinaryText label ]) mmInline
             in
-            li [ style "margin-left" margin ] [ renderClosedBlock mmInline ]
+            li [ style "margin-left" margin, style "list-style" "none" ] [ renderClosedBlock content ]
 
         QuotationBlock mmInline ->
             div

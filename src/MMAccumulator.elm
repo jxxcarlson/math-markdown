@@ -33,19 +33,20 @@ emptyMMState =
 
 parse : MMState -> List String -> List MMData
 parse mmState stringList =
-    List.foldl parseReducer ( emptyMMState, [] ) stringList
+    List.foldr parseReducer ( emptyMMState, [] ) (List.reverse stringList)
         |> Tuple.second
+        |> List.reverse
 
 
 parseReducer : String -> ( MMState, List MMData ) -> ( MMState, List MMData )
 parseReducer str ( state, revAugmentedBlockLlist ) =
     let
         newBlockList =
-            runBlocks str
+            runBlocks (Debug.log "STR" str)
 
         newState =
-            Debug.log "STATE"
-                (nextState state newBlockList)
+            Debug.log "NEW STATE"
+                (nextState (Debug.log "OLD STATE" state) newBlockList)
     in
     ( newState, ( newBlockList, newState ) :: revAugmentedBlockLlist )
 
@@ -58,13 +59,14 @@ nextState state blockList =
     let
         oli =
             getOrderedListItems blockList
-                |> List.map levelOrderedListItem
-                |> List.filter (\c -> c > 0)
 
+        -- |> List.map levelOrderedListItem
+        -- |> List.filter (\c -> c > 0)
         n =
-            List.length oli
+            Debug.log "N" <|
+                List.length oli
     in
-    { state | itemIndex1 = state.itemIndex1 + n }
+    { state | itemIndex1 = state.itemIndex1 + n, itemIndex2 = state.itemIndex2 + 1 }
 
 
 

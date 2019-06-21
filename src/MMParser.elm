@@ -8,6 +8,7 @@ module MMParser exposing
     , closeBlock
     , inline
     , inlineList
+    , joinMMInlineLists
     , line
     , lines
     , paragraph
@@ -638,6 +639,16 @@ displayDeadEnd deadend =
 ---
 -- HELPERS
 --
+
+
+joinMMInlineLists : MMInline -> MMInline -> MMInline
+joinMMInlineLists a b =
+    case ( a, b ) of
+        ( MMInlineList aList, MMInlineList bList ) ->
+            MMInlineList (aList ++ bList)
+
+        ( _, _ ) ->
+            MMInlineList []
 
 
 many : Parser a -> Parser (List a)
