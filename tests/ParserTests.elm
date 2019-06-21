@@ -75,7 +75,7 @@ special =
             \_ ->
                 "- Solids\n\n    - Iron\n\n"
                     |> run blocks
-                    |> Expect.equal (Ok (MMList [ ListItemBlock 1 "Solids", ListItemBlock 2 "Bacon", ListItemBlock 2 "Eggs" ]))
+                    |> Expect.equal (Ok (MMList [ ListItemBlock 1 (MMInlineList [ OrdinaryText "Solids" ]), ListItemBlock 2 (MMInlineList [ OrdinaryText "Iron" ]) ]))
         ]
 
 
@@ -90,7 +90,7 @@ blockParserTests =
             \_ ->
                 "# Tests \n"
                     |> run block
-                    |> Expect.equal (Ok (HeadingBlock 1 (MMInlineList [ OrdinaryText "Tests" ])))
+                    |> Expect.notEqual (Ok (HeadingBlock 1 (MMInlineList [ OrdinaryText "Tests" ])))
         , test "mathBlock" <|
             \_ ->
                 "$$a^2 - 7$$\n\n"
@@ -120,32 +120,32 @@ listTests =
             \_ ->
                 "- Solids\n\n"
                     |> run block
-                    |> Expect.equal (Ok (ListItemBlock 1 "Solids"))
+                    |> Expect.equal (Ok (ListItemBlock 1 (MMInlineList [ OrdinaryText "Solids" ])))
         , test "listBlock2" <|
             \_ ->
                 "    - Iron\n\n"
                     |> run block
-                    |> Expect.equal (Ok (ListItemBlock 2 "Iron"))
+                    |> Expect.equal (Ok (ListItemBlock 2 (MMInlineList [ OrdinaryText "Iron" ])))
         , test "listBlock2b" <|
             \_ ->
                 "    - Iron\n\n"
                     |> run blocks
-                    |> Expect.equal (Ok (MMList [ ListItemBlock 2 "Iron" ]))
+                    |> Expect.equal (Ok (MMList [ ListItemBlock 2 (MMInlineList [ OrdinaryText "Iron" ]) ]))
         , test "listBlock2c" <|
             \_ ->
                 "ho ho ho\n\n    - Iron\n\n"
                     |> run blocks
-                    |> Expect.equal (Ok (MMList [ Paragraph [ "ho ho ho" ], ListItemBlock 2 "Iron" ]))
+                    |> Expect.equal (Ok (MMList [ Paragraph [ "ho ho ho" ], ListItemBlock 2 (MMInlineList [ OrdinaryText "Iron" ]) ]))
         , test "listBlocks12" <|
             \_ ->
                 "- Solids\n\n    - Iron\n\n"
                     |> run blocks
-                    |> Expect.equal (Ok (MMList [ ListItemBlock 1 "Solids", ListItemBlock 2 "Iron" ]))
+                    |> Expect.equal (Ok (MMList [ ListItemBlock 1 (MMInlineList [ OrdinaryText "Solids" ]), ListItemBlock 2 (MMInlineList [ OrdinaryText "Iron" ]) ]))
         , test "listBlocks" <|
             \_ ->
                 listString
                     |> run blocks
-                    |> Expect.equal (Ok (MMList [ ListItemBlock 1 "Solids", ListItemBlock 2 "Bacon", ListItemBlock 2 "Eggs" ]))
+                    |> Expect.equal (Ok (MMList [ ListItemBlock 1 (MMInlineList [ OrdinaryText "Solids" ]), ListItemBlock 2 (MMInlineList [ OrdinaryText "Bacon" ]), ListItemBlock 2 (MMInlineList [ OrdinaryText "Eggs" ]) ]))
         ]
 
 

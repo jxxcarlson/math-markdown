@@ -115,8 +115,6 @@ ___
 
 - Tight lists
 
-- Thematic breaks
-
 - Better error handling/messages
 
 - Better recursion

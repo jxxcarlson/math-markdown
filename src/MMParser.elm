@@ -112,6 +112,8 @@ block =
         , poetryBlock
         , quotationBlock
         , imageBlock
+
+        -- , orderedListItemBlock
         , unorderedListItemBlock
         , headingBlock
         , codeBlock
@@ -342,6 +344,29 @@ unorderedListItemBlock =
     (succeed PrefixedString
         |= parseWhile (\c -> c == ' ')
         |. symbol (Token "- " ExpectingListStartSymbol)
+        |= parseWhile (\c -> c /= '\n')
+        |. symbol (Token "\n\n" ExpectingParagraphEnd)
+        |. chompWhile (\c -> c == '\n')
+    )
+        |> map
+            (\ps ->
+                ListItemBlock
+                    ((modBy 3 <| String.length ps.prefix) + 1)
+                    (ps.text
+                        |> String.replace "\n\n" ""
+                        |> String.trim
+                        |> (\x -> x ++ "\n\n")
+                        |> runInlineList
+                    )
+            )
+
+
+orderedListItemBlock : Parser MMBlock
+orderedListItemBlock =
+    (succeed PrefixedString
+        |= parseWhile (\c -> c == ' ')
+        |. parseWhile (\c -> Char.isDigit c)
+        |. symbol (Token ". " ExpectingListStartSymbol)
         |= parseWhile (\c -> c /= '\n')
         |. symbol (Token "\n\n" ExpectingParagraphEnd)
         |. chompWhile (\c -> c == '\n')
