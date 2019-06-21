@@ -13,7 +13,7 @@ albeit serviceable. See XXX for a demo.
 
 import Html exposing (Html)
 import Html.Attributes as HA
-import MMAccumulator as Accumulator
+import MMAccumulator exposing (MMData)
 import MMParser
 import MMRender
 import Paragraphs
@@ -25,8 +25,8 @@ toHtml : List (Html.Attribute msg) -> String -> Html msg
 toHtml attrList str =
     str
         |> Paragraphs.parse
-        |> Accumulator.parse Accumulator.emptyMMState
-        |> (\( state, parsedText ) -> parsedText)
+        |> MMAccumulator.parse MMAccumulator.emptyMMState
+        |> List.map Tuple.first
         |> List.map (MMRender.render attrList)
         |> Html.div []
 

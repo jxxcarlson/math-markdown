@@ -1,5 +1,6 @@
 module MMAccumulator exposing
-    ( emptyMMState
+    ( MMData
+    , emptyMMState
     , getOrderedListItems
     , nextState
     , parse
@@ -17,6 +18,10 @@ type alias MMState =
     }
 
 
+type alias MMData =
+    ( List MMBlock, MMState )
+
+
 emptyMMState =
     { itemIndex1 = 0
     , itemIndex2 = 0
@@ -25,13 +30,14 @@ emptyMMState =
     }
 
 
-parse : MMState -> List String -> ( MMState, List (List MMBlock) )
+parse : MMState -> List String -> List MMData
 parse mmState stringList =
     List.foldl parseReducer ( emptyMMState, [] ) stringList
+        |> Tuple.second
 
 
-parseReducer : String -> ( MMState, List (List MMBlock) ) -> ( MMState, List (List MMBlock) )
-parseReducer str ( state, revBlockLlist ) =
+parseReducer : String -> ( MMState, List MMData ) -> ( MMState, List MMData )
+parseReducer str ( state, revAugmentedBlockLlist ) =
     let
         newBlockList =
             runBlocks str
@@ -40,7 +46,7 @@ parseReducer str ( state, revBlockLlist ) =
             Debug.log "STATE"
                 (nextState state newBlockList)
     in
-    ( newState, newBlockList :: revBlockLlist )
+    ( newState, ( newBlockList, newState ) :: revAugmentedBlockLlist )
 
 
 
