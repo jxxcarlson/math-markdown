@@ -41,11 +41,10 @@ parseReducer : String -> ( MMState, List MMData ) -> ( MMState, List MMData )
 parseReducer str ( state, revAugmentedBlockLlist ) =
     let
         newBlockList =
-            runBlocks (Debug.log "STR" str)
+            runBlocks str
 
         newState =
-            Debug.log "NEW STATE"
-                (nextState (Debug.log "OLD STATE" state) newBlockList)
+            nextState state newBlockList
     in
     ( newState, revAugmentedBlockLlist ++ [ ( newBlockList, newState ) ] )
 
@@ -62,8 +61,7 @@ nextState state blockList =
         -- |> List.map levelOrderedListItem
         -- |> List.filter (\c -> c > 0)
         n =
-            Debug.log "N" <|
-                List.length oli
+            List.length oli
     in
     { state | itemIndex1 = state.itemIndex1 + n, itemIndex2 = state.itemIndex2 + 1 }
 
