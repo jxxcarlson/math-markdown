@@ -155,8 +155,8 @@ renderClosedBlock mmInline =
             span [] [ text <| "[" ++ str ++ "]" ]
 
         Code str ->
-            span [ style "font" "16px courier", style "background-color" "#eee" ]
-                [ code [] [ text (str ++ "!!") ]
+            span [ HA.class "mm-code" ]
+                [ code [] [ text str ]
                 ]
 
         InlineMath str ->
