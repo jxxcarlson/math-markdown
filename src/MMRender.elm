@@ -52,27 +52,30 @@ renderBlock : ( MMBlock, MMState ) -> Html msg
 renderBlock ( mmBlock, mmState ) =
     case mmBlock of
         MMList list ->
-            div [] (List.map renderBlock <| fix ( list, mmState ))
+            div [ HA.class "mm-list" ] (List.map renderBlock <| fix ( list, mmState ))
 
         Paragraph stringList ->
-            div [] (List.map text stringList)
+            div [ HA.class "mm-paragraph" ] (List.map text stringList)
 
         HeadingBlock level mmInlineList ->
             case level of
                 1 ->
-                    h1 [ style "font-size" "24pt" ] [ renderClosedBlock mmInlineList ]
+                    h1 [ HA.class "mm-h1" ] [ renderClosedBlock mmInlineList ]
 
                 2 ->
-                    h1 [ style "font-size" "18pt" ] [ renderClosedBlock mmInlineList ]
+                    h2 [ HA.class "mm-h2" ] [ renderClosedBlock mmInlineList ]
 
                 3 ->
-                    h3 [ style "font-size" "1 2pt" ] [ renderClosedBlock mmInlineList ]
+                    h3 [ HA.class "mm-h3" ] [ renderClosedBlock mmInlineList ]
+
+                4 ->
+                    h4 [ HA.class "mm-h4" ] [ renderClosedBlock mmInlineList ]
 
                 _ ->
-                    h4 [] [ renderClosedBlock mmInlineList ]
+                    h5 [ HA.class "mm-h5" ] [ renderClosedBlock mmInlineList ]
 
         ImageBlock label url ->
-            img [ HA.src url, style "width" "100%" ] [ text label ]
+            img [ HA.src url, HA.class "mm-image" ] [ text label ]
 
         -- MMList blockList ->
         --     List.map (\b -> renderBlock ( b, mmState )) blockList
@@ -82,7 +85,7 @@ renderBlock ( mmBlock, mmState ) =
 
         -- div [] [ text <| "$$" ++ str ++ "$$" ]
         CodeBlock str ->
-            pre [ style "font" "16px courier", style "padding" "12px", style "background-color" "#eee" ]
+            pre [ HA.class "code" ]
                 [ code [] [ text str ] ]
 
         ListItemBlock k mmInline ->
@@ -92,12 +95,7 @@ renderBlock ( mmBlock, mmState ) =
                         ++ "px"
             in
             li
-                [ style "margin-left" margin
-                , style "list-style" "none"
-                , style "margin-bottom" "8px"
-                , style "padding-left" "18px"
-                , style "text-indent" "-18px"
-                ]
+                [ HA.class "mm-list-item", style "margin-left" margin ]
                 [ renderClosedBlock mmInline ]
 
         OrderedListItemBlock k mmInline ->
@@ -114,39 +112,28 @@ renderBlock ( mmBlock, mmState ) =
             in
             li
                 [ style "margin-left" margin
-                , style "list-style" "none"
-                , style "margin-bottom" "8px"
-                , style "padding-left" "18px"
-                , style "text-indent" "-18px"
+                , HA.class "mm-list-item"
                 ]
                 [ renderClosedBlock content ]
 
         QuotationBlock mmInline ->
             div
-                [ style "margin-left" "24px"
-                , style "margin-top" "18px"
-                , style "margin-right" "36px"
-                , style "margin-bottom" "18px"
-                ]
+                [ HA.class "mm-quotation" ]
                 [ renderClosedBlock mmInline ]
 
         PoetryBlock mmInline ->
             div
-                [ style "margin-left" "24px"
-                , style "margin-top" "18px"
-                , style "margin-right" "36px"
-                , style "margin-bottom" "18px"
-                ]
+                [ HA.class "mm-poetry" ]
                 [ renderClosedBlock mmInline ]
 
         HorizontalRuleBlock ->
             hr [] []
 
         ClosedBlock mmInline ->
-            div [ style "margin-bottom" "12px" ] [ renderClosedBlock mmInline ]
+            div [ HA.class "mm-closed-block" ] [ renderClosedBlock mmInline ]
 
         ErrorBlock errorMessage ->
-            div [ style "color" "red", style "margin-bottom" "12px" ] [ text errorMessage ]
+            div [ HA.class "mm-error-message" ] [ text errorMessage ]
 
 
 renderClosedBlock : MMInline -> Html msg
@@ -176,7 +163,7 @@ renderClosedBlock mmInline =
             inlineMathText str
 
         MMInlineList list ->
-            div [] (List.map renderClosedBlock list)
+            div [ HA.class "mm-inlinelist" ] (List.map renderClosedBlock list)
 
         Link url label ->
             a [ HA.href url ] [ text label ]
