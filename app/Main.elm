@@ -70,7 +70,7 @@ update msg model =
         GetContent str ->
             ( { model
                 | sourceText = str
-                , editRecord = Differ.update model.counter (MMarkdown.toHtml []) model.editRecord str
+                , editRecord = Differ.update (model.counter + 1) (MMarkdown.toHtml []) model.editRecord str
                 , counter = model.counter + 1
               }
             , Cmd.none

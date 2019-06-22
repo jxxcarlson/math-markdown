@@ -11,8 +11,34 @@ initialTextAll =
 
 
 initialText1 =
-    "# Tests\n\n## 1\n\nThis is a test: $a^2 + b^2 = c^2$.\n\n## 2\n\nSo is this:\n\n"
-        ++ "$$\n\\int_0^1 x^n dx = \\frac{1}{n+1}\n$$\n\n"
+    """
+
+
+# Math Markdown
+
+$$
+  f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz
+$$
+
+This is a test: $a^2 + b^2 = c^2$.
+
+So is this:
+
+$$
+\\int_0^1 x^n dx = \\frac{1}{n+1}
+$$
+
+### Problem Set 83
+
+1. Compute the coefficient of $a^5b^2$ in $(a + b)^7$.
+
+4. If $f'(2) = 0$, what can you say about the graph of $f$ at $x = 2$?
+
+2. Find integers $a, b, c > 4$ such that $a^2 + b^2 = c^2$
+
+
+
+"""
 
 
 initialText =

@@ -74,28 +74,9 @@ createRecord transformer text =
             List.length paragraphs
 
         renderedParagraphs =
-            --List.map transformer paragraphs
             paragraphs
                 |> MMAccumulator.parse MMAccumulator.emptyMMState
                 |> MMRender.render
-
-        idList =
-            List.range 1 n |> List.map (prefixer 0)
-    in
-    EditRecord paragraphs renderedParagraphs idList
-
-
-createRecord1 : (String -> a) -> String -> EditRecord a
-createRecord1 transformer text =
-    let
-        paragraphs =
-            Paragraphs.parse text
-
-        n =
-            List.length paragraphs
-
-        renderedParagraphs =
-            List.map transformer paragraphs
 
         idList =
             List.range 1 n |> List.map (prefixer 0)
