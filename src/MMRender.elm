@@ -85,7 +85,7 @@ renderBlock ( mmBlock, mmState ) =
 
         -- div [] [ text <| "$$" ++ str ++ "$$" ]
         CodeBlock str ->
-            pre [ HA.class "code" ]
+            pre [ HA.class "mm-code" ]
                 [ code [] [ text str ] ]
 
         ListItemBlock k mmInline ->
@@ -127,7 +127,7 @@ renderBlock ( mmBlock, mmState ) =
                 [ renderClosedBlock mmInline ]
 
         HorizontalRuleBlock ->
-            hr [] []
+            hr [ HA.class "mm-thematic-break" ] []
 
         ClosedBlock mmInline ->
             div [ HA.class "mm-closed-block" ] [ renderClosedBlock mmInline ]
@@ -140,22 +140,22 @@ renderClosedBlock : MMInline -> Html msg
 renderClosedBlock mmInline =
     case mmInline of
         OrdinaryText str ->
-            span [] [ text str ]
+            span [ HA.class "mm-ordinary-text" ] [ text str ]
 
         ItalicText str ->
-            em [] [ text str ]
+            em [ HA.class "mm-italic" ] [ text str ]
 
         BoldText str ->
-            strong [] [ text str ]
+            strong [ HA.class "mm-bold" ] [ text str ]
 
         StrikeThroughText str ->
             span [ style "text-decoration" "line-through" ] [ text str ]
 
         BracketedText str ->
-            span [] [ text <| "[" ++ str ++ "]" ]
+            span [ HA.class "mm-bracketed-text" ] [ text <| "[" ++ str ++ "]" ]
 
         Code str ->
-            span [ HA.class "mm-code" ]
+            span [ HA.class "mm-inline-code" ]
                 [ code [] [ text str ]
                 ]
 
@@ -169,7 +169,7 @@ renderClosedBlock mmInline =
             a [ HA.href url ] [ text label ]
 
         Error _ ->
-            div [] [ text "Error" ]
+            div [ HA.class "mm-error" ] [ text "Error" ]
 
 
 
