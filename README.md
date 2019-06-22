@@ -32,6 +32,20 @@ There is a demo in `./app`.  To run
 it, go into that folder and say `sh make.sh`.  Then
 double-click on `index.html`.
 
+## Style
+
+The style used by MMarkdown is entirely determined by the
+definitions of the CSS classes given in `index.html`.
+See the code in `./app/index.html` for examles to imitate.
+Consequently they are easily configured for whatever
+application yuo have in mind.
+
+## MathJax
+
+The javascript code in `.app/index.html` is essential to the
+proper rendering of mathematical text.  It should be copied
+verbatim for your own app.
+
 ## Markdown extensions
 
 I am trying to be conservative about extensions to

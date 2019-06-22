@@ -95,7 +95,7 @@ renderBlock ( mmBlock, mmState ) =
                         ++ "px"
             in
             li
-                [ HA.class "mm-list-item", style "margin-left" margin ]
+                [ HA.class "mm-ulist-item", style "margin-left" margin ]
                 [ renderClosedBlock mmInline ]
 
         OrderedListItemBlock k mmInline ->
@@ -112,7 +112,7 @@ renderBlock ( mmBlock, mmState ) =
             in
             li
                 [ style "margin-left" margin
-                , HA.class "mm-list-item"
+                , HA.class "mm-olist-item"
                 ]
                 [ renderClosedBlock content ]
 
