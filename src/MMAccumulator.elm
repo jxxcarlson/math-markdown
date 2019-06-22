@@ -58,12 +58,14 @@ nextState state blockList =
         oli =
             getOrderedListItems blockList
 
-        -- |> List.map levelOrderedListItem
-        -- |> List.filter (\c -> c > 0)
-        n =
-            List.length oli
+        nextIndex1 =
+            if List.length oli > 0 then
+                state.itemIndex1 + 1
+
+            else
+                0
     in
-    { state | itemIndex1 = state.itemIndex1 + n, itemIndex2 = state.itemIndex2 + 1 }
+    { state | itemIndex1 = nextIndex1, itemIndex2 = state.itemIndex2 + 1 }
 
 
 
