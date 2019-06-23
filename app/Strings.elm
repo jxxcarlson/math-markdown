@@ -98,13 +98,18 @@ sum
 
 ## 6. Quotations
 
-Of course, we would like to have quotations, like this one:
+Of course, we want to be able to set of quotations, like this one:
 
 > He was said to have said, **This** is a Test.
 I repeat, a test.
-I repeat, I repeat, I repeat ...
+I repeat, I repeat, I repeat ... *and so he went on
+on and on, caught in a whirlpool of redundancy,
+spiralling ever faster as his verbal circle contracted
+towards a single point, a punctuation mark that
+was both beginning and end.* — Publius Minimus, Esq.
 
-Isn't that nice?
+Hmmm ... don't really know what to make of that.
+
 
 ## 7. Poetry
 

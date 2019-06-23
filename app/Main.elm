@@ -38,6 +38,7 @@ type Msg
     | GenerateSeed
     | NewSeed Int
     | RestoreText
+    | RefreshText
     | ExampleText
 
 
@@ -99,6 +100,14 @@ update msg model =
             , Cmd.none
             )
 
+        RefreshText ->
+            ( { model
+                | counter = model.counter + 1
+                , editRecord = Differ.createRecord (MMarkdown.toHtml []) model.sourceText
+              }
+            , Cmd.none
+            )
+
         ExampleText ->
             ( { model
                 | counter = model.counter + 1
@@ -129,7 +138,7 @@ display model =
         , p [ style "margin-left" "20px", style "margin-top" "0" ] [ text "Edit or write new Math + Markdown below." ]
         , editor model
         , renderedSource model
-        , p [ style "clear" "left", style "margin-left" "20px", style "margin-top" "-20px" ] [ clearButton 60, restoreTextButton 80 ]
+        , p [ style "clear" "left", style "margin-left" "20px", style "margin-top" "-20px" ] [ clearButton 60, restoreTextButton 80, refreshButton 80 ]
         ]
 
 
@@ -166,6 +175,10 @@ clearButton width =
 
 restoreTextButton width =
     button ([ onClick RestoreText ] ++ buttonStyle colorBlue width) [ text "Restore" ]
+
+
+refreshButton width =
+    button ([ onClick RefreshText ] ++ buttonStyle colorBlue width) [ text "Refresh" ]
 
 
 exampleButton width =
