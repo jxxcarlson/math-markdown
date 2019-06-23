@@ -180,7 +180,7 @@ renderClosedBlock mmInline =
 mathText : String -> Html msg
 mathText content =
     Html.node "math-text"
-        [ HA.property "content" (Json.Encode.string content) ]
+        [ HA.class "mm-display-math", HA.property "content" (Json.Encode.string content) ]
         []
 
 
