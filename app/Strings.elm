@@ -75,7 +75,7 @@ sum
 
 ## 5. Numbered lists
 
-#### Problem Set 18
+### Problem Set 18
 
 1. Compute the coefficient of $a^5b^2$ in $(a + b)^7$.
 
@@ -93,7 +93,7 @@ sum
 
 2. In what direction does the wave defined by $u(x,t) = f(x - ct)$ move?
 
-4.  Find a solution of the wave equationthat represents a pulse moving in the opposite direction.
+4.  Find a solution of the wave equation that represents a pulse moving in the opposite direction.
 
 
 ## 6. Quotations
