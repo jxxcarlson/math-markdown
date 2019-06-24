@@ -32,42 +32,7 @@ type Context
 
 
 type Problem
-    = BadIndent
-    | BadKeyword String
-    | ExpectingStrikeThroughSymbol
-    | ExpectingListStartSymbol
-    | ExpectingParagraphEnd
-    | ExpectingEndString String
-    | ExpectingOrdinaryTextPrefix
-    | ExpectingMathDisplayStartSymbol
-    | ExpectingMathDisplayEndSymbol
-    | ExpectingLinkPrefix
-    | ExpectingLinkInfix
-    | ExpectingLinkSuffix
-    | ExpectingLineStart
-    | ExpectingLineEnd
-    | ExpectingParagraphAsListEnd
-    | ExpectingItalicBeginSymbol
-    | ExpectingItalicEndSymbol String
-    | ExpectingInlineMathBeginSymbol
-    | ExpectingInlineMathEndSymbol
-    | ExpectingHeadingBeginSymbol
-    | ExpectingHeadingEndSymbol
-    | ExpectingBeginCodeBlockSymbol
-    | ExpectingEndCodeBlockSymbol
-    | ExpectingCodeBlockParagraphTerminator
-    | ExpectingInlineCodeBeginSymbol
-    | ExpectingInlineCodeEndSymbol
-    | ExpectingBoldBeginSymbol
-    | ExpectingBoldEndSymbol
-    | ExpectingImageBlockPrefix
-    | ExpectingImageBlockInfix
-    | ExpectingImageBlockSuffix
-    | ExpectingUrlPrefix
-    | ExpectingUrlSuffix
-    | DummyExpectation
-    | ExpectingQuotationStartSymbol String
-    | Expecting String
+    = Expecting String
 
 
 
@@ -398,7 +363,7 @@ orderedListItemBlock =
 -}
 parseUntil : String -> Parser String
 parseUntil end =
-    chompUntil (Token end (ExpectingEndString end)) |> getChompedString
+    chompUntil (Token end (Expecting <| "Expecting '" ++ end ++ "' in parseUntil")) |> getChompedString
 
 
 parseWhile : (Char -> Bool) -> Parser String
@@ -630,9 +595,6 @@ displayDeadEnd deadend =
     case deadend.problem of
         Expecting error ->
             error
-
-        _ ->
-            "(error)"
 
 
 
