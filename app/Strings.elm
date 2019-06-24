@@ -12,19 +12,18 @@ f(a) = \\frac{1}{2\\pi i}
         \\oint\\frac{f(z)}{z-a}dz
 ```
 
-Then MathMarkdown uses [https://mathjax.org](MathJax)
-to render the formula like this:
+Then MathMarkdown
+displays the formula like this using [https://mathjax.org](MathJax):
 
 $$
   f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz
 $$
 
-The present document illustrates most of the features of MathMarkdown — math, as
-you have just seen, plus headings,
-bold, italic, and strike-through, links, images, etc. (You can directly
-compare the source and rendered MathMarkdown text
-using the demo app at [https://markdown.minilatex.io](markdown.minilatex.io))
 
+
+The present document illustrates most of the features of MathMarkdown — math, as
+you have just seen, plus the usual Markdown features such as headings,
+bold, italic, and strike-through, links, images, etc. There is one extension, for poetry (see below).
 
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
@@ -144,9 +143,8 @@ ___
 
 ##  To do
 
--  Correct numbering of nested lists, reset numbering on exit from list, proper formatting.
 
-- Tight lists
+- Tight lists ??
 
 - Html ??
 

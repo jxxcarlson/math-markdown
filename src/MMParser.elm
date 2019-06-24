@@ -113,7 +113,7 @@ block =
         , quotationBlock
         , imageBlock
         , backtrackable unorderedListItemBlock
-        , orderedListItemBlock
+        , backtrackable orderedListItemBlock
         , headingBlock
         , codeBlock
         , mathBlock
@@ -187,9 +187,9 @@ line =
     map String.trim <|
         getChompedString <|
             succeed ()
-                |. chompIf (\c -> not <| List.member c [ '`', '>', '!', '$', '#', '-', '\n' ]) ExpectingLineStart
+                |. chompIf (\c -> not <| List.member c [ '`', '>', '!', '$', '#', '-', '\n' ]) (Expecting "Expecting line start")
                 |. chompWhile (\c -> c /= '\n')
-                |. symbol (Token "\n" ExpectingLineEnd)
+                |. symbol (Token "\n" (Expecting "Expecting line end"))
 
 
 blankLines : Parser ()
@@ -212,7 +212,7 @@ paragraphAsList : Parser (List String)
 paragraphAsList =
     succeed identity
         |= lines
-        |. symbol (Token "\n" ExpectingParagraphAsListEnd)
+        |. symbol (Token "\n" (Expecting "Expecting end of paragraph as list"))
         |. chompWhile (\c -> c == '\n')
 
 
@@ -230,10 +230,10 @@ paragraphs =
 mathBlock : Parser MMBlock
 mathBlock =
     (succeed ()
-        |. symbol (Token "$$" ExpectingMathDisplayStartSymbol)
+        |. symbol (Token "$$" (Expecting "Expecting begining $$"))
         |. chompWhile (\c -> c /= '$')
-        |. symbol (Token "$$" ExpectingMathDisplayEndSymbol)
-        |. symbol (Token "\n\n" ExpectingParagraphEnd)
+        |. symbol (Token "$$" (Expecting "Expecting ending $$"))
+        |. symbol (Token "\n\n" (Expecting "Expecting blanklines at end of math display"))
         |. chompWhile (\c -> c == '\n')
     )
         |> getChompedString
@@ -268,10 +268,10 @@ poetryBlock =
 codeBlock : Parser MMBlock
 codeBlock =
     (succeed ()
-        |. symbol (Token "```" ExpectingBeginCodeBlockSymbol)
+        |. symbol (Token "```" (Expecting "Expecting '```' to begin code block"))
         |. chompWhile (\c -> c /= '`')
-        |. symbol (Token "```" ExpectingEndCodeBlockSymbol)
-        |. symbol (Token "\n\n" ExpectingCodeBlockParagraphTerminator)
+        |. symbol (Token "```" (Expecting "Expecting '```' to end code block"))
+        |. symbol (Token "\n\n" (Expecting "Expecting blank lines to end code block"))
         |. chompWhile (\c -> c == '\n')
     )
         |> getChompedString
@@ -285,11 +285,11 @@ codeBlock =
 imageBlock : Parser MMBlock
 imageBlock =
     (succeed PrefixedString
-        |. symbol (Token "![" ExpectingImageBlockPrefix)
+        |. symbol (Token "![" (Expecting "Expecting '![' to begin image block"))
         |= parseWhile (\c -> c /= ']')
-        |. symbol (Token "](" ExpectingImageBlockInfix)
+        |. symbol (Token "](" (Expecting "Expecting ']()' in image block"))
         |= parseWhile (\c -> c /= ')')
-        |. symbol (Token ")\n\n" ExpectingImageBlockSuffix)
+        |. symbol (Token ")\n\n" (Expecting "Expecting ')' plus blank lines to end image block"))
         |. chompWhile (\c -> c == '\n')
     )
         |> map (\ps -> ImageBlock ps.prefix ps.text)
@@ -308,11 +308,11 @@ type alias PrefixedString =
 headingBlock : Parser MMBlock
 headingBlock =
     (succeed PrefixedString
-        |. symbol (Token "#" ExpectingHeadingBeginSymbol)
+        |. symbol (Token "#" (Expecting "Expecting '#' to begin heading block"))
         |= parseWhile (\c -> c == '#')
         -- |. symbol " "
         |= parseWhile (\c -> c /= '\n')
-        |. symbol (Token "\n\n" ExpectingHeadingEndSymbol)
+        |. symbol (Token "\n\n" (Expecting "Expecting blank lines to end heading block"))
         |. chompWhile (\c -> c == '\n')
     )
         |> map
@@ -330,9 +330,9 @@ headingBlock =
 horizontalRuleBlock : Parser MMBlock
 horizontalRuleBlock =
     (succeed ()
-        |. symbol (Token "___" ExpectingHeadingBeginSymbol)
+        |. symbol (Token "___" (Expecting "Expecting at least three underscores to begin thematic break"))
         |. parseWhile (\c -> c /= '\n')
-        |. symbol (Token "\n\n" ExpectingHeadingEndSymbol)
+        |. symbol (Token "\n\n" (Expecting "Expecting blank lines to end thematic break"))
         |. chompWhile (\c -> c == '\n')
     )
         |> map (\x -> HorizontalRuleBlock)
@@ -342,9 +342,9 @@ unorderedListItemBlock : Parser MMBlock
 unorderedListItemBlock =
     (succeed PrefixedString
         |= parseWhile (\c -> c == ' ')
-        |. symbol (Token "- " ExpectingListStartSymbol)
+        |. symbol (Token "- " (Expecting "Expecting '-' to begin list item"))
         |= parseWhile (\c -> c /= '\n')
-        |. symbol (Token "\n\n" ExpectingParagraphEnd)
+        |. symbol (Token "\n\n" (Expecting "Expecting blank lines to end list item"))
         |. chompWhile (\c -> c == '\n')
     )
         |> map
@@ -364,11 +364,11 @@ orderedListItemBlock : Parser MMBlock
 orderedListItemBlock =
     (succeed PrefixedString
         |= parseWhile (\c -> c == ' ')
-        |. chompIf (\c -> Char.isDigit c) DummyExpectation
+        |. chompIf (\c -> Char.isDigit c) (Expecting "Expecting digit to begin ordered list item")
         |. chompWhile (\c -> Char.isDigit c)
         |. symbol (Token ". " (Expecting "expecting period"))
         |= parseWhile (\c -> c /= '\n')
-        |. symbol (Token "\n\n" ExpectingParagraphEnd)
+        |. symbol (Token "\n\n" (Expecting "expecting blanks lines to end ordered list item"))
         |. chompWhile (\c -> c == '\n')
     )
         |> map
@@ -421,7 +421,7 @@ parseWhile accepting =
 ordinaryText : Parser MMInline
 ordinaryText =
     (succeed ()
-        |. chompIf (\c -> not <| List.member c [ '`', '~', '[', '$', '*', '\n' ]) ExpectingOrdinaryTextPrefix
+        |. chompIf (\c -> not <| List.member c [ '`', '~', '[', '$', '*', '\n' ]) (Expecting "expecting regular character to begin ordinary text line")
         |. chompWhile (\c -> not <| List.member c [ '`', '~', '[', ']', '$', '*', '\n' ])
     )
         |> getChompedString
@@ -437,9 +437,9 @@ ordinaryText =
 link : Parser MMInline
 link =
     (succeed PrefixedString
-        |. symbol (Token "[" ExpectingLinkPrefix)
+        |. symbol (Token "[" (Expecting "expecting '[' to begin link"))
         |= parseWhile (\c -> c /= ']')
-        |. symbol (Token "]" ExpectingLinkInfix)
+        |. symbol (Token "]" (Expecting "expecting ']' to end first part of link"))
         |= oneOf [ linkUrl, terminateBracket ]
         |. spaces
     )
@@ -459,9 +459,9 @@ linkOrBracket ps =
 linkUrl : Parser String
 linkUrl =
     succeed identity
-        |. symbol (Token "(" ExpectingUrlPrefix)
+        |. symbol (Token "(" (Expecting "expecting '(' to begin url"))
         |= parseWhile (\c -> c /= ')')
-        |. symbol (Token ")" ExpectingUrlSuffix)
+        |. symbol (Token ")" (Expecting "expecting ')' to end url"))
         |. spaces
 
 
@@ -476,9 +476,9 @@ terminateBracket =
 strikeThroughText : Parser MMInline
 strikeThroughText =
     (succeed ()
-        |. symbol (Token "~~" ExpectingStrikeThroughSymbol)
+        |. symbol (Token "~~" (Expecting "expecting '~~' to begin strikethrough"))
         |. chompWhile (\c -> c /= '~')
-        |. symbol (Token "~~" ExpectingStrikeThroughSymbol)
+        |. symbol (Token "~~" (Expecting "expecting '~~' to end strikethrough"))
         |. spaces
     )
         |> getChompedString
@@ -490,9 +490,9 @@ strikeThroughText =
 boldText : Parser MMInline
 boldText =
     (succeed ()
-        |. symbol (Token "**" ExpectingBoldBeginSymbol)
+        |. symbol (Token "**" (Expecting "expecting '**' to begin bold text"))
         |. chompWhile (\c -> c /= '*')
-        |. symbol (Token "**" ExpectingBoldEndSymbol)
+        |. symbol (Token "**" (Expecting "expecting '**' to end bold text"))
         |. spaces
     )
         |> getChompedString
@@ -504,9 +504,9 @@ boldText =
 italicText : Parser MMInline
 italicText =
     (succeed ()
-        |. symbol (Token "*" ExpectingItalicBeginSymbol)
+        |. symbol (Token "*" (Expecting "Expecting '*' to begin italic text"))
         |. chompWhile (\c -> c /= '*')
-        |. symbol (Token "*" (ExpectingItalicEndSymbol "italic: need a matching '*'"))
+        |. symbol (Token "*" (Expecting "Expecting '*' to end italic text"))
         |. spaces
     )
         |> getChompedString
@@ -538,9 +538,9 @@ italicText =
 inlineMath : Parser MMInline
 inlineMath =
     (succeed ()
-        |. symbol (Token "$" ExpectingInlineMathBeginSymbol)
+        |. symbol (Token "$" (Expecting "Expecting '$' to begin inline math"))
         |. chompWhile (\c -> c /= '$')
-        |. symbol (Token "$" ExpectingInlineMathEndSymbol)
+        |. symbol (Token "$" (Expecting "Expecting '$' to end inline math"))
         |. chompWhile (\c -> c == ' ')
     )
         |> getChompedString
@@ -553,9 +553,9 @@ inlineMath =
 code : Parser MMInline
 code =
     (succeed ()
-        |. symbol (Token "`" ExpectingInlineCodeBeginSymbol)
+        |. symbol (Token "`" (Expecting "Expecting '``' to begin inline code"))
         |. chompWhile (\c -> c /= '`')
-        |. symbol (Token "`" ExpectingInlineCodeEndSymbol)
+        |. symbol (Token "`" (Expecting "Expecting '``' to end inline code"))
         |. chompWhile (\c -> c /= ' ')
     )
         |> getChompedString
@@ -632,7 +632,7 @@ displayDeadEnd deadend =
             error
 
         _ ->
-            "error"
+            "(error)"
 
 
 
