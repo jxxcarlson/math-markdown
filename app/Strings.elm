@@ -28,10 +28,7 @@ bold, italic, and strike-through, links, images, etc. There is one extension, fo
 MathMarkdown is *paragraph-centric*, meaning that elements — headings, list elements,
 displayed math, etc., should be separated by blank lines.
 
-**Limitations:** At the momement, code and verbatim blocks cannot contain blank lines.
-This restriction will soon be removed.
-
-**Note:** MathMarkdown is now one of the markup options at [https://knode.io](knode.io).
+MathMarkdown is now one of the markup options at [https://knode.io](knode.io).
 
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
