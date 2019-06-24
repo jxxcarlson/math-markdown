@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Differ exposing (EditRecord)
+import MMDiffer exposing (EditRecord)
 import Html exposing (..)
 import Html.Attributes as HA exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -53,7 +53,7 @@ init flags =
             { sourceText = Strings.initialText
             , counter = 0
             , seed = 0
-            , editRecord = Differ.createRecord (MMarkdown.toHtml []) Strings.initialText
+            , editRecord = MMDiffer.createRecord (MMarkdown.toHtml []) Strings.initialText
             }
     in
     ( model, Cmd.none )
@@ -70,7 +70,7 @@ update msg model =
         GetContent str ->
             ( { model
                 | sourceText = str
-                , editRecord = Differ.update (model.counter + 1) (MMarkdown.toHtml []) model.editRecord str
+                , editRecord = MMDiffer.update (model.counter + 1) (MMarkdown.toHtml []) model.editRecord str
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -85,7 +85,7 @@ update msg model =
         Clear ->
             ( { model
                 | sourceText = ""
-                , editRecord = Differ.createRecord (MMarkdown.toHtml []) ""
+                , editRecord = MMDiffer.createRecord (MMarkdown.toHtml []) ""
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -95,7 +95,7 @@ update msg model =
             ( { model
                 | counter = model.counter + 1
                 , sourceText = Strings.initialText
-                , editRecord = Differ.createRecord (MMarkdown.toHtml []) Strings.initialText
+                , editRecord = MMDiffer.createRecord (MMarkdown.toHtml []) Strings.initialText
               }
             , Cmd.none
             )
@@ -103,7 +103,7 @@ update msg model =
         RefreshText ->
             ( { model
                 | counter = model.counter + 1
-                , editRecord = Differ.createRecord (MMarkdown.toHtml []) model.sourceText
+                , editRecord = MMDiffer.createRecord (MMarkdown.toHtml []) model.sourceText
               }
             , Cmd.none
             )

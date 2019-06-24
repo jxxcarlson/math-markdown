@@ -1,3 +1,5 @@
 elm-stuff/
 Main.js
 haskell/
+.idea/
+app/package-lock.json

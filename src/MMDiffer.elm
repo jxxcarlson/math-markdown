@@ -1,4 +1,4 @@
-module Differ exposing (EditRecord, createRecord, update)
+module MMDiffer exposing (EditRecord, createRecord, update)
 
 {-| This module is used to speed up parsing-rendering by
 comparing the old and new lists of paragraphs, noting the changes,
@@ -11,7 +11,7 @@ then parsing and rendering the changed paragraphs.
 import Html exposing (Html)
 import MMAccumulator
 import MMRender
-import Paragraphs
+import MMParagraphs
 
 
 
@@ -64,11 +64,11 @@ breaking the text in to pargraphs, (2) applying
 the transformer to each string in the resulting
 list of strings.
 -}
-createRecord : (String -> Html msg) -> String -> EditRecord (Html msg)
+createRecord : (String -> Html a) -> String -> EditRecord (Html a)
 createRecord transformer text =
     let
         paragraphs =
-            Paragraphs.parse text
+            MMParagraphs.parse text
 
         n =
             List.length paragraphs
@@ -105,7 +105,7 @@ update : Int -> (String -> a) -> EditRecord a -> String -> EditRecord a
 update seed transformer editRecord text =
     let
         newParagraphs =
-            Paragraphs.parse text
+            MMParagraphs.parse text
 
         diffRecord =
             diff editRecord.paragraphs newParagraphs

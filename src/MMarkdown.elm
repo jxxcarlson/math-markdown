@@ -16,7 +16,7 @@ import Html.Attributes as HA
 import MMAccumulator exposing (MMData, MMState)
 import MMParser exposing (MMBlock)
 import MMRender exposing (fixList)
-import Paragraphs
+import MMParagraphs
 
 
 {-| MMarkdown.toHtml renders a string of Markdown text to Html
@@ -24,7 +24,7 @@ import Paragraphs
 toHtml : List (Html.Attribute msg) -> String -> Html msg
 toHtml attrList str =
     str
-        |> Paragraphs.parse
+        |> MMParagraphs.parse
         |> MMAccumulator.parse MMAccumulator.emptyMMState
         |> MMRender.render
         |> (\x -> Html.div [] x)
