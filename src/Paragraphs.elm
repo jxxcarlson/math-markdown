@@ -58,7 +58,74 @@ parse text =
     lastState.paragraphList
         ++ [ lastState.currentParagraph ]
         |> List.filter (\x -> x /= "")
-        |> List.map (\paragraph -> String.trim paragraph ++ "\n\n")
+        -- |> List.map (\paragraph -> String.trim paragraph ++ "\n\n")
+        |> List.map (\paragraph -> paragraph ++ "\n\n")
+
+
+logicalParagraphParse : String -> ParserRecord
+logicalParagraphParse text =
+    (text ++ "\n")
+        |> String.split "\n"
+        |> List.foldl updateParserRecord { currentParagraph = "", paragraphList = [], state = Start }
+
+
+{-| Given an line and a parserRecord, compute a new parserRecord.
+The new parserRecord depends on the getNextState of the FSM. Note
+that the state of the machine is part of the parserRecord.
+-}
+updateParserRecord : String -> ParserRecord -> ParserRecord
+updateParserRecord line parserRecord =
+    let
+        nextState =
+            getNextState line parserRecord.state
+    in
+    case nextState of
+        Start ->
+            { parserRecord
+                | currentParagraph = ""
+                , paragraphList = parserRecord.paragraphList ++ [ joinLines parserRecord.currentParagraph line ]
+                , state = nextState
+            }
+
+        InParagraph TextType ->
+            { parserRecord
+                | currentParagraph = joinLines parserRecord.currentParagraph line
+                , state = nextState
+            }
+
+        InParagraph VerbatimType ->
+            let
+                line_ =
+                    if line == "" then
+                        "\n"
+
+                    else
+                        line
+            in
+            { parserRecord
+                | currentParagraph = joinLines parserRecord.currentParagraph line_
+                , state = nextState
+            }
+
+        InParagraph CodeBlockType ->
+            let
+                line_ =
+                    if line == "" then
+                        "\n"
+
+                    else
+                        line
+            in
+            { parserRecord
+                | currentParagraph = joinLines parserRecord.currentParagraph line_
+                , state = nextState
+            }
+
+        IgnoreLine ->
+            parserRecord
+
+        Error ->
+            parserRecord
 
 
 lineType : String -> LineType
@@ -163,72 +230,6 @@ fixLine line =
 
     else
         line
-
-
-{-| Given an line and a parserRecord, compute a new parserRecord.
-The new parserRecord depends on the getNextState of the FSM. Note
-that the state of the machine is part of the parserRecord.
--}
-updateParserRecord : String -> ParserRecord -> ParserRecord
-updateParserRecord line parserRecord =
-    let
-        nextState =
-            getNextState line parserRecord.state
-    in
-    case nextState of
-        Start ->
-            { parserRecord
-                | currentParagraph = ""
-                , paragraphList = parserRecord.paragraphList ++ [ joinLines parserRecord.currentParagraph line ]
-                , state = nextState
-            }
-
-        InParagraph TextType ->
-            { parserRecord
-                | currentParagraph = joinLines parserRecord.currentParagraph line
-                , state = nextState
-            }
-
-        InParagraph VerbatimType ->
-            let
-                line_ =
-                    if line == "" then
-                        "\n"
-
-                    else
-                        line
-            in
-            { parserRecord
-                | currentParagraph = joinLines parserRecord.currentParagraph line_
-                , state = nextState
-            }
-
-        InParagraph CodeBlockType ->
-            let
-                line_ =
-                    if line == "" then
-                        "\n"
-
-                    else
-                        line
-            in
-            { parserRecord
-                | currentParagraph = joinLines parserRecord.currentParagraph line_
-                , state = nextState
-            }
-
-        IgnoreLine ->
-            parserRecord
-
-        Error ->
-            parserRecord
-
-
-logicalParagraphParse : String -> ParserRecord
-logicalParagraphParse text =
-    (text ++ "\n")
-        |> String.split "\n"
-        |> List.foldl updateParserRecord { currentParagraph = "", paragraphList = [], state = Start }
 
 
 para : Regex.Regex
