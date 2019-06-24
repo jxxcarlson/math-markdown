@@ -74,8 +74,10 @@ syntax highlighting.  Verbatim blocks are an extension
 of normal Markdown.
 
 ````
+Verbatim text has many uses:
+
    Element    |    Z
-   ---------------------------
+   --------------------
    Altium     |    4/5
    Brazilium  |    7/5
    Certium    |    9/5

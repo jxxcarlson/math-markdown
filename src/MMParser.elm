@@ -8,6 +8,7 @@ module MMParser exposing
     , closeBlock
     , inline
     , inlineList
+    , isBlankLine
     , joinMMInlineLists
     , line
     , lines
@@ -157,6 +158,30 @@ line =
                 |. chompIf (\c -> not <| List.member c [ '`', '>', '!', '$', '#', '-', '\n' ]) (Expecting "Expecting line start")
                 |. chompWhile (\c -> c /= '\n')
                 |. symbol (Token "\n" (Expecting "Expecting line end"))
+
+
+numberOfLeadingBlanks : Parser Int
+numberOfLeadingBlanks =
+    (succeed ()
+        |. chompWhile (\c -> c == ' ')
+    )
+        |> getChompedString
+        |> map String.length
+
+
+getNumberOfLeadingBlanks : String -> Int
+getNumberOfLeadingBlanks str =
+    case run numberOfLeadingBlanks str of
+        Ok n ->
+            n
+
+        Err _ ->
+            0
+
+
+isBlankLine : String -> Bool
+isBlankLine str =
+    getNumberOfLeadingBlanks str == String.length str
 
 
 blankLines : Parser ()

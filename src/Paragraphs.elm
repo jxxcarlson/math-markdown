@@ -12,12 +12,18 @@ finite-state machine.
 
 -}
 
+import MMParser
 import Regex
+
+
+type ParagraphType
+    = TextType
+    | VerbatimType
 
 
 type ParserState
     = Start
-    | InParagraph
+    | InParagraph ParagraphType
     | IgnoreLine
     | Error
 
@@ -26,6 +32,7 @@ type LineType
     = Blank
     | Ignore
     | Text
+    | VerbatimText
 
 
 type alias ParserRecord =
@@ -35,17 +42,19 @@ type alias ParserRecord =
     }
 
 
-parse : String -> List String
-parse text =
-    Regex.split para text
-        |> List.filter (\x -> String.length x /= 0)
-        |> List.map (\x -> x ++ "\n\n")
+parse2 : String -> List String
+parse2 text =
+    text
+        |> String.lines
 
 
 lineType : String -> LineType
 lineType line =
-    if line == "" then
+    if MMParser.isBlankLine line then
         Blank
+
+    else if String.startsWith "````" line then
+        VerbatimText
 
     else
         Text
@@ -61,23 +70,39 @@ getNextState line parserState =
             Start
 
         ( Start, Text ) ->
-            InParagraph
+            InParagraph TextType
+
+        ( Start, VerbatimText ) ->
+            InParagraph VerbatimType
 
         ( Start, Ignore ) ->
             IgnoreLine
 
+        ---
         ( IgnoreLine, Blank ) ->
             Start
 
         ( IgnoreLine, Text ) ->
-            InParagraph
+            InParagraph TextType
 
-        ( InParagraph, Text ) ->
-            InParagraph
+        ---
+        ( InParagraph TextType, Text ) ->
+            InParagraph TextType
 
-        ( InParagraph, Blank ) ->
+        ---
+        ( InParagraph VerbatimType, Text ) ->
+            InParagraph VerbatimType
+
+        ( InParagraph VerbatimType, Blank ) ->
+            InParagraph VerbatimType
+
+        ( InParagraph VerbatimType, VerbatimText ) ->
             Start
 
+        ( InParagraph _, Blank ) ->
+            Start
+
+        ---
         ( _, _ ) ->
             Error
 
@@ -128,9 +153,23 @@ updateParserRecord line parserRecord =
                 , state = nextState
             }
 
-        InParagraph ->
+        InParagraph TextType ->
             { parserRecord
                 | currentParagraph = joinLines parserRecord.currentParagraph line
+                , state = nextState
+            }
+
+        InParagraph VerbatimType ->
+            let
+                line_ =
+                    if line == "" then
+                        "\n"
+
+                    else
+                        line
+            in
+            { parserRecord
+                | currentParagraph = joinLines parserRecord.currentParagraph line_
                 , state = nextState
             }
 
@@ -153,8 +192,8 @@ parapgraphs, where these are either normal paragraphs, i.e.,
 blocks text with no blank lines surrounded by blank lines,
 or outer blocks of the form \\begin{_} ... \\end{_}.
 -}
-logicalParagraphify : String -> List String
-logicalParagraphify text =
+parse : String -> List String
+parse text =
     let
         lastState =
             logicalParagraphParse text
@@ -169,3 +208,9 @@ para : Regex.Regex
 para =
     Maybe.withDefault Regex.never <|
         Regex.fromString "\\n\\n+"
+
+
+regexBlank : Regex.Regex
+regexBlank =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString " *"
