@@ -49,23 +49,49 @@ parseReducer str ( state, revAugmentedBlockLlist ) =
     ( newState, revAugmentedBlockLlist ++ [ ( newBlockList, newState ) ] )
 
 
-
--- nextState : MMState -> List MMBlock -> MMState
-
-
+nextState : MMState -> List MMBlock -> MMState
 nextState state blockList =
     let
         oli =
             getOrderedListItems blockList
-
-        nextIndex1 =
-            if List.length oli > 0 then
-                state.itemIndex1 + 1
-
-            else
-                0
+                |> List.map levelOrderedListItem
+                |> List.head
     in
-    { state | itemIndex1 = nextIndex1, itemIndex2 = state.itemIndex2 + 1 }
+    case oli of
+        Nothing ->
+            { state
+                | itemIndex1 = 0
+                , itemIndex2 = 0
+                , itemIndex3 = 0
+                , itemIndex4 = 0
+            }
+
+        Just 1 ->
+            { state
+                | itemIndex1 = state.itemIndex1 + 1
+                , itemIndex2 = 0
+                , itemIndex3 = 0
+                , itemIndex4 = 0
+            }
+
+        Just 2 ->
+            { state
+                | itemIndex2 = state.itemIndex2 + 1
+                , itemIndex3 = 0
+                , itemIndex4 = 0
+            }
+
+        Just 3 ->
+            { state
+                | itemIndex3 = state.itemIndex3 + 1
+                , itemIndex4 = 0
+            }
+
+        Just 4 ->
+            { state | itemIndex4 = state.itemIndex4 + 1 }
+
+        _ ->
+            state
 
 
 

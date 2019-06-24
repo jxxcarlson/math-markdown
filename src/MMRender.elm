@@ -105,7 +105,21 @@ renderBlock ( mmBlock, mmState ) =
                         ++ "px"
 
                 label =
-                    String.fromInt mmState.itemIndex1 ++ ". "
+                    case k of
+                        1 ->
+                            String.fromInt mmState.itemIndex1 ++ ". "
+
+                        2 ->
+                            alphabet mmState.itemIndex2 ++ ". "
+
+                        3 ->
+                            romanNumeral mmState.itemIndex2 ++ ". "
+
+                        4 ->
+                            String.fromInt mmState.itemIndex4 ++ ". "
+
+                        _ ->
+                            "N. "
 
                 content =
                     joinMMInlineLists (MMInlineList [ OrdinaryText label ]) mmInline
@@ -134,6 +148,76 @@ renderBlock ( mmBlock, mmState ) =
 
         ErrorBlock errorMessage ->
             div [ HA.class "mm-error-message" ] [ text errorMessage ]
+
+
+alphabet : Int -> String
+alphabet k =
+    let
+        alpha =
+            [ "a"
+            , "b"
+            , "c"
+            , "d"
+            , "e"
+            , "f"
+            , "g"
+            , "h"
+            , "i"
+            , "j"
+            , "k"
+            , "l"
+            , "m"
+            , "n"
+            , "o"
+            , "p"
+            , "q"
+            , "r"
+            , "s"
+            , "t"
+            , "u"
+            , "v"
+            , "w"
+            , "x"
+            , "y"
+            , "z"
+            ]
+    in
+    List.drop (k - 1) alpha |> List.head |> Maybe.withDefault "zz"
+
+
+romanNumeral : Int -> String
+romanNumeral k =
+    let
+        alpha =
+            [ "i"
+            , "ii"
+            , "iii"
+            , "iv"
+            , "v"
+            , "vi"
+            , "vii"
+            , "viii"
+            , "ix"
+            , "x"
+            , "xi"
+            , "xii"
+            , "xiii"
+            , "xiv"
+            , "xv"
+            , "xvi"
+            , "xvii"
+            , "xviii"
+            , "xix"
+            , "xx"
+            , "xxi"
+            , "xxii"
+            , "xxiii"
+            , "xiv"
+            , "xv"
+            , "xvi"
+            ]
+    in
+    List.drop (k - 1) alpha |> List.head |> Maybe.withDefault "zz"
 
 
 renderClosedBlock : MMInline -> Html msg

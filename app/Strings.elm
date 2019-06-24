@@ -77,13 +77,17 @@ sum
 
 ### Problem Set 18
 
+
 1. Compute the coefficient of $a^5b^2$ in $(a + b)^7$.
+
+    1. Do also: coefficient of $a^5b^5$ in $(a + 2b)^{10}$
+
+    2. Do also: coefficient of $a^7b^5$ in $(a - b)^{12}$
 
 4. If $f'(2) = 0$, what can you say about the graph of $f$ at $x = 2$?
 
 
 6. Suppose that in addition, $f''(2) > 0$. What else can say about the graph?
-
 
 ### Problem Set 19
 
