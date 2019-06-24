@@ -19,6 +19,7 @@ import Regex
 type ParagraphType
     = TextType
     | VerbatimType
+    | CodeBlockType
 
 
 type ParserState
@@ -33,6 +34,7 @@ type LineType
     | Ignore
     | Text
     | VerbatimText
+    | CodeBlockText
 
 
 type alias ParserRecord =
@@ -42,10 +44,21 @@ type alias ParserRecord =
     }
 
 
-parse2 : String -> List String
-parse2 text =
-    text
-        |> String.lines
+{-| parse text: split text into logical
+parapgraphs, where these are either normal paragraphs, i.e.,
+blocks text with no blank lines surrounded by blank lines,
+or outer blocks of the form \\begin{_} ... \\end{_}.
+-}
+parse : String -> List String
+parse text =
+    let
+        lastState =
+            logicalParagraphParse text
+    in
+    lastState.paragraphList
+        ++ [ lastState.currentParagraph ]
+        |> List.filter (\x -> x /= "")
+        |> List.map (\paragraph -> String.trim paragraph ++ "\n\n")
 
 
 lineType : String -> LineType
@@ -53,7 +66,10 @@ lineType line =
     if MMParser.isBlankLine line then
         Blank
 
-    else if String.startsWith "````" line then
+    else if line == "```" then
+        CodeBlockText
+
+    else if line == "````" then
         VerbatimText
 
     else
@@ -74,6 +90,9 @@ getNextState line parserState =
 
         ( Start, VerbatimText ) ->
             InParagraph VerbatimType
+
+        ( Start, CodeBlockText ) ->
+            InParagraph CodeBlockType
 
         ( Start, Ignore ) ->
             IgnoreLine
@@ -99,6 +118,17 @@ getNextState line parserState =
         ( InParagraph VerbatimType, VerbatimText ) ->
             Start
 
+        ---
+        ( InParagraph CodeBlockType, Text ) ->
+            InParagraph CodeBlockType
+
+        ( InParagraph CodeBlockType, Blank ) ->
+            InParagraph CodeBlockType
+
+        ( InParagraph CodeBlockType, CodeBlockText ) ->
+            Start
+
+        ---
         ( InParagraph _, Blank ) ->
             Start
 
@@ -173,6 +203,20 @@ updateParserRecord line parserRecord =
                 , state = nextState
             }
 
+        InParagraph CodeBlockType ->
+            let
+                line_ =
+                    if line == "" then
+                        "\n"
+
+                    else
+                        line
+            in
+            { parserRecord
+                | currentParagraph = joinLines parserRecord.currentParagraph line_
+                , state = nextState
+            }
+
         IgnoreLine ->
             parserRecord
 
@@ -185,23 +229,6 @@ logicalParagraphParse text =
     (text ++ "\n")
         |> String.split "\n"
         |> List.foldl updateParserRecord { currentParagraph = "", paragraphList = [], state = Start }
-
-
-{-| logicalParagraphify text: split text into logical
-parapgraphs, where these are either normal paragraphs, i.e.,
-blocks text with no blank lines surrounded by blank lines,
-or outer blocks of the form \\begin{_} ... \\end{_}.
--}
-parse : String -> List String
-parse text =
-    let
-        lastState =
-            logicalParagraphParse text
-    in
-    lastState.paragraphList
-        ++ [ lastState.currentParagraph ]
-        |> List.filter (\x -> x /= "")
-        |> List.map (\paragraph -> String.trim paragraph ++ "\n\n")
 
 
 para : Regex.Regex
