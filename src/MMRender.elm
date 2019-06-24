@@ -88,6 +88,10 @@ renderBlock ( mmBlock, mmState ) =
             pre [ HA.class "mm-code" ]
                 [ code [] [ text str ] ]
 
+        VerbatimBlock str ->
+            pre [ HA.class "mm-verbatim" ]
+                [ text str ]
+
         --
         -- ListItemBlock k mmInline ->
         --     let

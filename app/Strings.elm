@@ -28,7 +28,10 @@ bold, italic, and strike-through, links, images, etc. There is one extension, fo
 MathMarkdown is *paragraph-centric*, meaning that elements — headings, list elements,
 displayed math, etc., should be separated by blank lines.
 
-**NOTE:** MathMarkdown is now one of the markup options at [https://knode.io](knode.io).
+**Limitations:** At the momement, code and verbatim blocks cannot contain blank lines.
+This restriction will soon be removed.
+
+**Note:** MathMarkdown is now one of the markup options at [https://knode.io](knode.io).
 
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
@@ -63,7 +66,22 @@ for n in range(1..100):
 sum
 ```
 
-## 4. Lists
+## 4. Verbatim
+
+A verabatim block begins and ends with four tick marks.
+It is just like a code block, except that there is no
+syntax highlighting.  Verbatim blocks are an extension
+of normal Markdown.
+
+````
+   Element    |    Z
+   ---------------------------
+   Altium     |    4/5
+   Brazilium  |    7/5
+   Certium    |    9/5
+````
+
+## 5. Lists
 
 Indent by four spaces for each level.  List items
 are separated by blank lines.
@@ -84,7 +102,7 @@ are separated by blank lines.
 
     - Water *(Ok to drink)*
 
-## 5. Numbered lists
+## 6. Numbered lists
 
 ### Problem Set 18
 
@@ -111,7 +129,7 @@ are separated by blank lines.
 4.  Find a solution of the wave equation that represents a pulse moving in the opposite direction.
 
 
-## 6. Quotations
+## 7. Quotations
 
 
 Quotations are offset:
@@ -124,9 +142,9 @@ Quotations are offset:
 
 — Abraham Lincoln, *Gettysbug Address*
 
-## 7. Poetry
+## 8. Poetry
 
-Poetry blocks, an extension of standard Markdown,
+Poetry blocks, an extension of normal Markdown,
  begin with ">>"; line endings are respected.
 
 >> Twas brillig, and the slithy toves

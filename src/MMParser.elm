@@ -50,6 +50,7 @@ type MMBlock
     | HeadingBlock Int MMInline
     | MathDisplayBlock String
     | CodeBlock String
+    | VerbatimBlock String
     | HorizontalRuleBlock
     | ListItemBlock Int MMInline
     | OrderedListItemBlock Int MMInline
@@ -80,6 +81,7 @@ block =
         , backtrackable unorderedListItemBlock
         , backtrackable orderedListItemBlock
         , headingBlock
+        , verbatimBlock
         , codeBlock
         , mathBlock
         , paragraphBlock
@@ -245,6 +247,22 @@ codeBlock =
         |> map (String.dropRight 3)
         |> map String.trim
         |> map CodeBlock
+
+
+verbatimBlock : Parser MMBlock
+verbatimBlock =
+    (succeed ()
+        |. symbol (Token "````" (Expecting "Expecting four ticks to begin verbatim block"))
+        |. chompWhile (\c -> c /= '`')
+        |. symbol (Token "````" (Expecting "Expecting four ticks to end verbatim block"))
+        |. symbol (Token "\n\n" (Expecting "Expecting blank lines to end verbatim block"))
+        |. chompWhile (\c -> c == '\n')
+    )
+        |> getChompedString
+        |> map String.trim
+        |> map (String.dropLeft 4)
+        |> map (String.dropRight 4)
+        |> map VerbatimBlock
 
 
 imageBlock : Parser MMBlock
