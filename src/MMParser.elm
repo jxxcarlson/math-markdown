@@ -440,7 +440,7 @@ link =
         |. symbol (Token "[" (Expecting "expecting '[' to begin link"))
         |= parseWhile (\c -> c /= ']')
         |. symbol (Token "]" (Expecting "expecting ']' to end first part of link"))
-        |= oneOf [ linkUrl, terminateBracket ]
+        |= oneOf [ linkLabel, terminateBracket ]
         |. spaces
     )
         |> map (\ps -> linkOrBracket ps)
@@ -456,12 +456,12 @@ linkOrBracket ps =
             Link ps.prefix ps.text
 
 
-linkUrl : Parser String
-linkUrl =
+linkLabel : Parser String
+linkLabel =
     succeed identity
-        |. symbol (Token "(" (Expecting "expecting '(' to begin url"))
+        |. symbol (Token "(" (Expecting "expecting '(' to begin link label"))
         |= parseWhile (\c -> c /= ')')
-        |. symbol (Token ")" (Expecting "expecting ')' to end url"))
+        |. symbol (Token ")" (Expecting "expecting ')' to end link label"))
         |. spaces
 
 
