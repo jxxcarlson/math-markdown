@@ -25,6 +25,9 @@ The present document illustrates most of the features of MathMarkdown — math, 
 you have just seen, plus the usual Markdown features such as headings,
 bold, italic, and strike-through, links, images, etc. There is one extension, for poetry (see below).
 
+MathMarkdown is *paragraph-centric*, meaning that elements — headings, list elements,
+displayed math, etc., should be separated by blank lines.
+
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
 Hummingbird (Meditation)
@@ -60,9 +63,16 @@ sum
 
 ## 4. Lists
 
+Indent by four spaces for each level.  List items
+are separated by blank lines.
+
 - Solids
 
     - Iron *(metal)*
+
+        - Iron disulfide (Pyrite): $FeS_2$, crystalline
+
+        - Iron(II) sulfed $FeS$, not stable, amorphous
 
     - Selenium *(use for solar cells)*
 
@@ -114,8 +124,8 @@ Quotations are offset:
 
 ## 7. Poetry
 
-Poetry blocks are an extension of Markdown.
-Begin a poetry block with ">>".
+Poetry blocks, an extension of standard Markdown,
+ begin with ">>"; line endings are respected.
 
 >> Twas brillig, and the slithy toves
 Did gyre and gimble in the wabe:

@@ -88,15 +88,47 @@ renderBlock ( mmBlock, mmState ) =
             pre [ HA.class "mm-code" ]
                 [ code [] [ text str ] ]
 
+        --
+        -- ListItemBlock k mmInline ->
+        --     let
+        --         margin =
+        --             String.fromInt (18 * k)
+        --                 ++ "px"
+        --     in
+        --     li
+        --         [ HA.class "mm-ulist-item", style "margin-left" margin ]
+        --         [ renderClosedBlock mmInline ]
         ListItemBlock k mmInline ->
             let
                 margin =
                     String.fromInt (18 * k)
                         ++ "px"
+
+                label =
+                    case k of
+                        1 ->
+                            "• "
+
+                        2 ->
+                            "◊ "
+
+                        3 ->
+                            "† "
+
+                        4 ->
+                            "‡ "
+
+                        _ ->
+                            "N. "
+
+                content =
+                    joinMMInlineLists (MMInlineList [ OrdinaryText label ]) mmInline
             in
             li
-                [ HA.class "mm-ulist-item", style "margin-left" margin ]
-                [ renderClosedBlock mmInline ]
+                [ style "margin-left" margin
+                , HA.class "mm-olist-item"
+                ]
+                [ renderClosedBlock content ]
 
         OrderedListItemBlock k mmInline ->
             let
