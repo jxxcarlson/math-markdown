@@ -134,8 +134,8 @@ display : Model -> Html Msg
 display model =
     div []
         [ h1 [ style "margin-left" "20px" ] [ text "MMarkdown Demo" ]
-        , p [ style "margin-left" "20px", style "margin-bottom" "0", style "margin-top" "0", style "width" "400px" ] [ text "MMarkdown renders both Markdown and mathematical formulas written in TeX/LaTeX.  The project is in its earliest stages ... " ]
-        , p [ style "margin-left" "20px", style "margin-top" "0" ] [ text "Edit or write new MMarkdown below." ]
+        , p [ style "margin-left" "20px", style "margin-bottom" "0", style "margin-top" "0", style "width" "490px" ] [ text "MMarkdown renders both Markdown and mathematical formulas written in TeX/LaTeX.  The project is in its earliest stages ... " ]
+        , p [ style "margin-left" "20px", style "margin-top" "8px" ] [ text "Edit or write new MMarkdown below." ]
         , editor model
         , renderedSource model
         , p [ style "clear" "left", style "margin-left" "20px", style "margin-top" "-20px" ] [ clearButton 60, restoreTextButton 80, refreshButton 80 ]
