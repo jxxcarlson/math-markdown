@@ -17,6 +17,7 @@ import MMAccumulator exposing (MMData, MMState)
 import MMParagraphs
 import MMParser exposing (MMBlock)
 import MMRender exposing (fixList)
+import Preprocessor
 
 
 {-| MMarkdown.toHtml renders a string of Markdown text to Html
@@ -24,6 +25,7 @@ import MMRender exposing (fixList)
 toHtml : List (Html.Attribute msg) -> String -> Html msg
 toHtml attrList str =
     str
+        |> Preprocessor.transform
         |> MMParagraphs.parse
         |> MMAccumulator.parse MMAccumulator.emptyMMState
         |> MMRender.render

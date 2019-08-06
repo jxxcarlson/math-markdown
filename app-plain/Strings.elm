@@ -10,13 +10,21 @@ used without the math option, as this document
 demonstrates.  MMarkdown is written in pure Elm. See notes on installation
 at the end.
 
+
+MMarkdown extends Markdown with two new elements: Poetry and Verbatim.
+See below.
+
 ## Demo
 
 MMarkdown implements the usual Markdown features such as headings,
 bold, italic, and strike-through, links, images, etc. There is one extension, for poetry (see below).
 
-MMarkdown is *paragraph-centric*, meaning that elements — headings, list elements,
-displayed math, etc., must be separated by blank lines.
+MMarkdown is to some extent *paragraph-centric*, meaning that certain elements, e.g., headings and
+displayed math, like to be surrounded by blank lines.
+
+In general, If you run into
+something that is not working for you, please post an issue on
+[GitHub](https://github.com/jxxcarlson/math-markdown).
 
 MMarkdown is now one of the markup options at [https://knode.io](knode.io).
 
@@ -55,7 +63,7 @@ for n in range(1..100):
 sum
 ```
 
-## 4. Verbatim
+## 4. Verbatim (Extension)
 
 A verabatim block begins and ends with four tick marks.
 It is just like a code block, except that there is no
@@ -124,7 +132,7 @@ Quotations are offset:
 
 — Abraham Lincoln, *Gettysbug Address*
 
-## 8. Poetry
+## 8. Poetry (Extension)
 
 Poetry blocks, an extension of normal Markdown,
  begin with ">>"; line endings are respected.
