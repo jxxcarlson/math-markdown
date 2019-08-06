@@ -16,7 +16,7 @@ MMarkdown implements the usual Markdown features such as headings,
 bold, italic, and strike-through, links, images, etc. There is one extension, for poetry (see below).
 
 MMarkdown is *paragraph-centric*, meaning that elements — headings, list elements,
-displayed math, etc., should be separated by blank lines.
+displayed math, etc., must be separated by blank lines.
 
 MMarkdown is now one of the markup options at [https://knode.io](knode.io).
 

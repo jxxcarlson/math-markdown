@@ -1,8 +1,8 @@
- 
-# Math Markdown
+
+# MMarkdown
 
 
-The aim of the Math Markdown library is
+The aim of the MMarkdown library is
 to provide a tool for rendering Markdown
 text with embedded math-mode TeX, e.g.,
 
@@ -11,7 +11,9 @@ This **is** a test: $a^2 + b^2 = c^2$.
 ```
 
 At the moment, the "version" of Markdown
-we have implemented is primitive. Nonetheless, it is quite serviceable.  See
+we have implemented is primitive and also *paragraph-centric*,
+meaning that elements — headings, list elements,
+displayed math, etc., must be separated by blank lines. Nonetheless, it is quite serviceable.  See
 [markdown.minilatex.app](https://markdown.minilatex.app)
 for a working example.
 
@@ -28,7 +30,7 @@ MMarkdown.toHtml [ ] "This **is** a test: $a^2 + b^2 = c^2$."
 
 ## Demo app
 
-There is a demo in `./app`.  To run
+There is a demo in `./app-math`.  To run
 it, go into that folder and say `sh make.sh`.  Then
 double-click on `index.html`.
 
@@ -57,7 +59,7 @@ in poetry blocks.
 
 ## Technical stuff: the Differ module
 
-Math Markdown exposes only two modules — `MMarkdown` and `Differ`.
+Math Markdown exposes two modules of its six modules — `MMarkdown` and `Differ`.
 The purpose of the Differ module is to speed up the parse-render
 operation by reparsing and rerendering only text that has been
 changed.  This module is used in the demo app.
@@ -65,3 +67,8 @@ changed.  This module is used in the demo app.
 I addition increased speed, using `Differ` results in a smoother
 user experience, since only small parts of the document being
 edited need to be re-processed.
+
+## Running without Math
+
+MMarkdown can also be used as a pure Elm, plain old Markdown parser,
+with the paragraph-centric caveat above.  See `./app-plain`
