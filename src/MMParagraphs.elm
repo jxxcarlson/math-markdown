@@ -45,9 +45,25 @@ type alias ParserRecord =
 
 
 {-| parse text: split text into logical
-parapgraphs, where these are either normal paragraphs, i.e.,
+paragraphs, where these are either normal paragraphs, i.e.,
 blocks text with no blank lines surrounded by blank lines,
-or outer blocks of the form \\begin{_} ... \\end{_}.
+or outer verbatim or code blocks. The latter are of the
+form
+
+    ```newline whatever newline```
+
+or
+
+    ````newline whatever newline````
+
+The returned list of strings always consists of strings termniated
+by a pair of newlines.
+
+Example:
+
+    > parse "\n\n```\n1\n2\n```\n\na\nb\n\n"
+    ["```\n1\n2\n```\n\n","a\nb\n\n"] : List String
+
 -}
 parse : String -> List String
 parse text =
@@ -65,6 +81,7 @@ parse text =
 logicalParagraphParse : String -> ParserRecord
 logicalParagraphParse text =
     (text ++ "\n")
+        -- add "\n" at end of text
         |> String.split "\n"
         |> List.foldl updateParserRecord { currentParagraph = "", paragraphList = [], state = Start }
 
