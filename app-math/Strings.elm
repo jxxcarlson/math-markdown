@@ -2,33 +2,33 @@ module Strings exposing (initialText, mathExampleText)
 
 
 initialText =
-    """# Math Markdown
-
-MathMarkdown is a dialect of Markdown which renders
-formulas written in TeX/LaTeX.  Suppose that you write
-
-```
-f(a) = \\frac{1}{2\\pi i}
-        \\oint\\frac{f(z)}{z-a}dz
-```
-
-Then MathMarkdown
-displays the formula like this using [https://mathjax.org](MathJax):
+    """# MMarkdown
 
 $$
-  f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz
+\\int_{-\\infty}^\\infty e^{-x^2} dx = \\pi
 $$
 
 
+MMarkdown is a dialect of Markdown which can render
+formulas written in TeX/LaTeX.  It is suitable for
+light-weight writting tasks that require
+mathematical notation -- problem sets, short class notes, etc.
 
-The present document illustrates most of the features of MathMarkdown — math, as
-you have just seen, plus the usual Markdown features such as headings,
+
+For installation, see the notes
+at the end. The MMarkdown package is written in pure Elm.
+It uses MathJax.js to render formulas.
+
+## Demo
+
+The present document illustrates most of the features of MMarkdown, minus the
+math.  MMarkdown implements the usual Markdown features such as headings,
 bold, italic, and strike-through, links, images, etc. There is one extension, for poetry (see below).
 
-MathMarkdown is *paragraph-centric*, meaning that elements — headings, list elements,
-displayed math, etc., should be separated by blank lines.
+MMarkdown is *paragraph-centric*, meaning that elements — headings, list elements,
+displayed math, etc., must be separated by blank lines.
 
-MathMarkdown is now one of the markup options at [https://knode.io](knode.io).
+MMarkdown is one of the markup options on [https://knode.io](knode.io).
 
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
@@ -107,7 +107,6 @@ are separated by blank lines.
 
 ### Problem Set 18
 
-
 1. Compute the coefficient of $a^5b^2$ in $(a + b)^7$.
 
     1. Do also: coefficient of $a^5b^5$ in $(a + 2b)^{10}$
@@ -116,8 +115,8 @@ are separated by blank lines.
 
 4. If $f'(2) = 0$, what can you say about the graph of $f$ at $x = 2$?
 
-
 6. Suppose that in addition, $f''(2) > 0$. What else can say about the graph?
+
 
 ### Problem Set 19
 
@@ -128,6 +127,7 @@ are separated by blank lines.
 2. In what direction does the wave defined by $u(x,t) = f(x - ct)$ move?
 
 4.  Find a solution of the wave equation that represents a pulse moving in the opposite direction.
+
 
 
 ## 7. Quotations
@@ -164,12 +164,23 @@ Etcetera!
 ___
 
 
-NOTE: Math Markdown is also implemented as an option for [https://knode.io](knode.io).
+NOTE: MMarkdown is also implemented as an option for [https://knode.io](knode.io).
 knode offers MiniLaTeX, a web-friendly subset of TeX/LaTex.  To see
 how it works without a sign-in, please see [https://demo.minilatex.app](demo.minilatex.app).
 
 
 ___
+
+## Installation
+
+
+To compile, use
+
+```
+elm make --output=Main.js
+```
+
+Then open `index.html` to run the app.
 
 
 ##  To do

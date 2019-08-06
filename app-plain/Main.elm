@@ -1,12 +1,12 @@
 module Main exposing (main)
 
 import Browser
-import MMDiffer exposing (EditRecord)
 import Html exposing (..)
 import Html.Attributes as HA exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Html.Keyed as Keyed
 import Json.Encode
+import MMDiffer exposing (EditRecord)
 import MMarkdown
 import Random
 import Strings
@@ -133,9 +133,9 @@ view model =
 display : Model -> Html Msg
 display model =
     div []
-        [ h1 [ style "margin-left" "20px" ] [ text "Math + Markdown Demo" ]
-        , p [ style "margin-left" "20px", style "margin-bottom" "0", style "margin-top" "0" ] [ text "This project is in its very earliest stages ... quite incomplete" ]
-        , p [ style "margin-left" "20px", style "margin-top" "0" ] [ text "Edit or write new Math + Markdown below." ]
+        [ h1 [ style "margin-left" "20px" ] [ text "MMarkdown Demo (Plain)" ]
+        , p [ style "margin-left" "20px", style "margin-bottom" "0", style "margin-top" "0" ] [ text "This project is in its very earliest stages ..." ]
+        , p [ style "margin-left" "20px", style "margin-top" "0" ] [ text "Edit or write new MMarkdown below." ]
         , editor model
         , renderedSource model
         , p [ style "clear" "left", style "margin-left" "20px", style "margin-top" "-20px" ] [ clearButton 60, restoreTextButton 80, refreshButton 80 ]
