@@ -11,8 +11,8 @@ $$
 
 MMarkdown is a dialect of Markdown which can render
 formulas written in TeX/LaTeX.  It is suitable for
-light-weight writting tasks that require
-mathematical notation -- problem sets, short class notes, etc.
+light-weight writing tasks that require
+mathematical notation — problem sets, short class notes, etc.
 
 
 For installation, see the notes
