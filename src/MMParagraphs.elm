@@ -1,7 +1,7 @@
 module MMParagraphs exposing (parse)
 
 {-| This module exports just one function,
-intended to turn a string into a lisst
+intended to turn a string into a list
 of logical paragraphs. It operates as a
 finite-state machine.
 
