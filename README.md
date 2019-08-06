@@ -10,15 +10,13 @@ text with embedded math-mode TeX, e.g.,
 This **is** a test: $a^2 + b^2 = c^2$.
 ```
 
-At the moment, the "version" of Markdown
-we have implemented is primitive and also *paragraph-centric*,
-meaning that elements — headings, list elements,
-displayed math, etc., must be separated by blank lines. Nonetheless, it is quite serviceable.  See
-[markdown.minilatex.app](https://markdown.minilatex.app)
-for a working example.
+MMarkdown is to some extent *paragraph-centric*, meaning that certain elements, e.g., headings and
+displayed math, like to be surrounded by blank lines.
 
-We will be working to expand the coverage
-of Math Markdown.
+In general, if you run into
+something that is not working for you, please post an issue on
+[https://github.com/jxxcarlson/math-markdown](GitHub).
+
 
 ## Example
 
@@ -52,10 +50,12 @@ verbatim for your own app.
 
 I am trying to be conservative about extensions to
 Markdown.  However, there is one that I thought
-important enough to add: poetry blocks.  These
+important enough to add: poetry and verbatim blocks.  Poetry
 are like quotation blocks, except that they begin
 with ">>" instead of ">".  Line endings are respected
-in poetry blocks.
+in poetry blocks.  Verbatim blocks are like code blocks,
+except that they are set of by four tick marks instead of three,
+and no syntax highlighting is applied.
 
 ## Technical stuff: the Differ module
 
@@ -70,5 +70,5 @@ edited need to be re-processed.
 
 ## Running without Math
 
-MMarkdown can also be used as a pure Elm, plain old Markdown parser,
+MMarkdown can also be used as a plain old Markdown parser,
 with the paragraph-centric caveat above.  See `./app-plain`

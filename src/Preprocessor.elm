@@ -32,4 +32,4 @@ startsBlock str =
 
 startsBlockRegex : Regex.Regex
 startsBlockRegex =
-    Maybe.withDefault Regex.never <| Regex.fromString " *[->!0123456789]"
+    Maybe.withDefault Regex.never <| Regex.fromString " *[->!\\[0123456789]"

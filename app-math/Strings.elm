@@ -32,9 +32,9 @@ bold, italic, and strike-through, links, images, etc. There is one extension, fo
 MMarkdown is to some extent *paragraph-centric*, meaning that certain elements, e.g., headings and
 displayed math, like to be surrounded by blank lines.
 
-In general, If you run into
+In general, if you run into
 something that is not working for you, please post an issue on
-[GitHub](https://github.com/jxxcarlson/math-markdown).
+[https://github.com/jxxcarlson/math-markdown](GitHub).
 
 MMarkdown is one of the markup options on [https://knode.io](knode.io).
 
