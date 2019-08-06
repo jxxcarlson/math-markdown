@@ -14,9 +14,9 @@ albeit serviceable. See XXX for a demo.
 import Html exposing (Html)
 import Html.Attributes as HA
 import MMAccumulator exposing (MMData, MMState)
+import MMParagraphs
 import MMParser exposing (MMBlock)
 import MMRender exposing (fixList)
-import MMParagraphs
 
 
 {-| MMarkdown.toHtml renders a string of Markdown text to Html
@@ -27,4 +27,4 @@ toHtml attrList str =
         |> MMParagraphs.parse
         |> MMAccumulator.parse MMAccumulator.emptyMMState
         |> MMRender.render
-        |> (\x -> Html.div [] x)
+        |> (\x -> Html.div attrList x)
