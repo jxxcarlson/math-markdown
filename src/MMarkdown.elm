@@ -1,6 +1,6 @@
 module MMarkdown exposing
     ( toHtml
-    , parse
+    -- , parse
     )
 
 {-| MMarkdown is an experimental package for rendering
