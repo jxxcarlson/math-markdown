@@ -23,12 +23,9 @@ For installation, see the notes
 at the end. The MMarkdown package is written in pure Elm.
 It uses MathJax.js to render formulas.
 
-## Demo
+## Notes
 
-The present document illustrates most of the features of MMarkdown, minus the
-math.  MMarkdown implements the usual Markdown features such as headings,
-bold, italic, and strike-through, links, images, etc. There is one extension, for poetry (see below).
-
+This document shows what MMarkdown can do.
 MMarkdown is to some extent *paragraph-centric*, meaning that certain elements, e.g., headings and
 displayed math, like to be surrounded by blank lines.
 
@@ -101,7 +98,7 @@ are separated by blank lines.
 
         - Iron disulfide (Pyrite): $FeS_2$, crystalline
 
-        - Iron(II) sulfed $FeS$, not stable, amorphous
+        - Iron(II) sulfide $FeS$, not stable, amorphous
 
     - Selenium *(use for solar cells)*
 
@@ -189,20 +186,6 @@ elm make --output=Main.js
 ```
 
 Then open `index.html` to run the app.
-
-
-##  To do
-
-
-- Tight lists ??
-
-- Html ??
-
-- Better error handling/messages
-
-- Better recursion
-
-- Spacing issues
 
 """
 
