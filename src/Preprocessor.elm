@@ -7,7 +7,7 @@ transform : String -> String
 transform input =
     String.split "\n" input
         |> List.map fixBlockPrefix
-        |> String.join "\n"
+        |> String.join " "
 
 
 fixBlockPrefix : String -> String
