@@ -17,6 +17,7 @@ module MMParser exposing
     , paragraphs
     , runBlocks
     , runInlineList
+    , unorderedListItemBlock
     )
 
 import Parser.Advanced exposing (..)

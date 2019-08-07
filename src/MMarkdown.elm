@@ -1,4 +1,7 @@
-module MMarkdown exposing (toHtml)
+module MMarkdown exposing
+    ( toHtml
+    , parse
+    )
 
 {-| MMarkdown is an experimental package for rendering
 Markdown that contains mathematical text. It uses MathJax
@@ -30,3 +33,13 @@ toHtml attrList str =
         |> MMAccumulator.parse MMAccumulator.emptyMMState
         |> MMRender.render
         |> (\x -> Html.div attrList x)
+
+
+parse : String -> List MMBlock
+parse str =
+    str
+        --|> Preprocessor.transform
+        |> MMParagraphs.parse
+        |> MMAccumulator.parse MMAccumulator.emptyMMState
+        |> List.map Tuple.first
+        |> List.concat
