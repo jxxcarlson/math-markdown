@@ -49,11 +49,11 @@ verbatim for your own app.
 ## Markdown extensions
 
 I am trying to be conservative about extensions to
-Markdown.  However, there is one that I thought
+Markdown.  However, there are two that I thought
 important enough to add: poetry and verbatim blocks.  Poetry
-are like quotation blocks, except that they begin
-with ">>" instead of ">".  Line endings are respected
-in poetry blocks.  Verbatim blocks are like code blocks,
+blocks are like quotation blocks, except that they begin
+with ">>" instead of ">".  Line endings are respected.
+Verbatim blocks are like code blocks,
 except that they are set of by four tick marks instead of three,
 and no syntax highlighting is applied.
 

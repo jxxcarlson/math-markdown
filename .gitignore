@@ -3,3 +3,6 @@ Main.js
 haskell/
 .idea/
 app/package-lock.json
+demo-plain/package-lock.json
+
+demo-math/package-lock.json

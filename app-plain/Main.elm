@@ -39,7 +39,6 @@ type Msg
     | NewSeed Int
     | RestoreText
     | RefreshText
-    | ExampleText
 
 
 type alias Flags =
@@ -108,14 +107,6 @@ update msg model =
             , Cmd.none
             )
 
-        ExampleText ->
-            ( { model
-                | counter = model.counter + 1
-                , sourceText = Strings.mathExampleText
-              }
-            , Cmd.none
-            )
-
 
 
 --
@@ -179,7 +170,3 @@ restoreTextButton width =
 
 refreshButton width =
     button ([ onClick RefreshText ] ++ buttonStyle colorBlue width) [ text "Refresh" ]
-
-
-exampleButton width =
-    button ([ onClick ExampleText ] ++ buttonStyle colorBlue width) [ text "Example 2" ]
