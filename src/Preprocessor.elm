@@ -5,9 +5,22 @@ import Regex
 
 transform : String -> String
 transform input =
+    let
+        isVerbatim =
+            String.startsWith "```" input
+
+        join : Bool -> List String -> String
+        join bit stringList =
+            case bit of
+                True ->
+                    String.join "\n" stringList
+
+                False ->
+                    String.join " " stringList
+    in
     String.split "\n" input
         |> List.map fixBlockPrefix
-        |> String.join " "
+        |> join isVerbatim
 
 
 fixBlockPrefix : String -> String
