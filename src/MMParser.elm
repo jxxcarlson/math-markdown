@@ -462,7 +462,7 @@ linkOrBracket ps =
             BracketedText ps.prefix
 
         _ ->
-            Link ps.prefix ps.text
+            Link ps.text ps.prefix
 
 
 linkLabel : Parser String

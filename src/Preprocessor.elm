@@ -6,8 +6,8 @@ import Regex
 transform : String -> String
 transform input =
     let
-        isVerbatim =
-            String.startsWith "```" input
+        isSpecial =
+            String.startsWith "```" input || String.startsWith "$$" input
 
         join : Bool -> List String -> String
         join bit stringList =
@@ -20,7 +20,7 @@ transform input =
     in
     String.split "\n" input
         |> List.map fixBlockPrefix
-        |> join isVerbatim
+        |> join isSpecial
 
 
 fixBlockPrefix : String -> String

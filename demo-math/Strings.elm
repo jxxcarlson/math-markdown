@@ -34,15 +34,15 @@ displayed math, like to be surrounded by blank lines.
 
 In general, if you run into
 something that is not working for you, please post an issue on
-[https://github.com/jxxcarlson/math-markdown](GitHub).
+[GitHub](https://github.com/jxxcarlson/math-markdown).
 
-MMarkdown is one of the markup options on [https://knode.io](knode.io).
+MMarkdown is one of the markup options on [knode.io](https://knode.io).
 
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
 Hummingbird (Meditation)
 
-Link: [http://nytimes.com](New York Times)
+Link: [New York Times](http://nytimes.com)
 
 Text styles: **bold** *italic* ~~strike it out~~
 
@@ -172,9 +172,9 @@ Etcetera!
 ___
 
 
-NOTE: MMarkdown is also implemented as an option for [https://knode.io](knode.io).
+NOTE: MMarkdown is also implemented as an option for [knode.io](https://knode.io).
 knode offers MiniLaTeX, a web-friendly subset of TeX/LaTex.  To see
-how it works without a sign-in, please see [https://demo.minilatex.app](demo.minilatex.app).
+how it works without a sign-in, please see [demo.minilatex.app](https://demo.minilatex.app).
 
 
 ___
