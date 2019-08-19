@@ -4,7 +4,7 @@
         "../src",
         "."
     ],
-    "elm-version": "0.19.1",
+    "elm-version": "0.19.0",
     "dependencies": {
         "direct": {
             "Punie/elm-parser-extras": "1.0.0",

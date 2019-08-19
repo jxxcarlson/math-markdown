@@ -5,21 +5,21 @@ module MMarkdown exposing
 
 {-| MMarkdown is an experimental package for rendering
 Markdown that contains mathematical text. It uses MathJax
-for the math text. See `index.html` for the needed MathJax setup.
+for the math text. See `index.html` in `./app-math`
+for the needed MathJax setup.
 
-At the present time, the version of Markdown is quite limited,
-albeit serviceable. See XXX for a demo.
+At the present time, the version of Markdown is limited,
+albeit serviceable. See the demo at https://markdown.minilatex.app/ .
 
 @docs toHtml
 
 -}
 
 import Html exposing (Html)
-import Html.Attributes as HA
 import MMAccumulator exposing (MMData, MMState)
 import MMParagraphs
 import MMParser exposing (MMBlock)
-import MMRender exposing (fixList)
+import MMRender
 import Preprocessor
 
 

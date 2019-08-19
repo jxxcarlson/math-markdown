@@ -1,48 +1,36 @@
+ 
+# Math Markdown
 
-# MMarkdown
 
-
-The aim of the MMarkdown library is
+The aim of the Math Markdown library is
 to provide a tool for rendering Markdown
-text with embedded math-mode TeX/LaTeX, e.g.,
+text with embedded math-mode TeX, e.g.,
 
 ```
 This **is** a test: $a^2 + b^2 = c^2$.
 ```
 
-Converting Markdown text to Html can be accomplished in one line:
+At the moment, the "version" of Markdown
+we have implemented is primitive. Nonetheless, it is quite serviceable.  See
+[markdown.minilatex.app](https://markdown.minilatex.app)
+for a working example.
+
+We will be working to expand the coverage
+of Math Markdown.
+
+## Example
+
+To convert text to Html, do something like this:
 
 ```
 MMarkdown.toHtml [ ] "This **is** a test: $a^2 + b^2 = c^2$."
 ```
 
-MMarkdown is a pure Elm package.  No native code.  It relies on MathJax to render
-mathematical formulas using a custom element.
+## Demo app
 
-## Notes
-
-MMarkdown is to some extent *paragraph-centric*, meaning that certain elements, e.g.,
-headings and displayed math, like to be surrounded by blank lines.
-
-MMarkdwn uses MathJax.js to render formulas. It can, of course, be used
-as a plain vanilla Markdown parser.  See the examples in
-`./demo-plain` and `./app-plain`.
-
-If you run into
-something in MMarkdown that is not working for you, please post an issue on
-[GitHub](https://github.com/jxxcarlson/math-markdown).
-
-## Math demo apps
-
-There are two demo apps.  The first, `demo-math` renders Markdown + Math
-text using `MMarkdown.toHtml`.  The second, `app-math`, offers an interactive,
-two-pane editor. To compile either, run `sh make.sh` and click on `index.html`
-
-## MMarkdown without math
-
-MMarkdown can be run without its math capabilities.  See the
-`demo-plain` and `app-plain`.
-To compile, proceed as above: run `sh make.sh`  and click on `index.html.
+There is a demo in `./app`.  To run
+it, go into that folder and say `sh make.sh`.  Then
+double-click on `index.html`.
 
 ## Style
 
@@ -56,28 +44,28 @@ application yuo have in mind.
 
 The javascript code in `.app/index.html` is essential to the
 proper rendering of mathematical text.  It should be copied
-verbatim for your own app. For `./demo-plain` and `/app-plain`,
-this code is not needed.
+verbatim for your own app.
 
 ## Markdown extensions
 
 I am trying to be conservative about extensions to
 Markdown.  However, there are two that I thought
-important enough to add: poetry and verbatim blocks.  Poetry
-blocks are like quotation blocks, except that they begin
-with ">>" instead of ">".  Line endings are respected.
-Verbatim blocks are like code blocks,
-except that they are set of by four tick marks instead of three,
-and no syntax highlighting is applied.
+important enough to add: poetry blocks and verbatim text.  
+Poetry blocks are
+are like quotation blocks, except that they begin
+with ">>" instead of ">".  Line endings are respected
+in poetry blocks.  Verbatim blocks are like code blocks,
+except that they are set off by four backticks instead of 
+three.  No syntax coloring is applied to verbatim blocks.
 
 ## Technical stuff: the Differ module
 
-Math Markdown exposes two of its six modules — `MMarkdown` and `Differ`.
+Math Markdown exposes only two modules — `MMarkdown` and `Differ`.
 The purpose of the Differ module is to speed up the parse-render
 operation by reparsing and rerendering only text that has been
-changed.  This module is used in `app-math` and `app-plain`, but
-not in the "read-only" examples `demo-math` and `demo-plain`.
+changed.  This module is used in the demo app.
 
 I addition increased speed, using `Differ` results in a smoother
 user experience, since only small parts of the document being
 edited need to be re-processed.
+
