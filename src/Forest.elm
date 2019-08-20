@@ -41,3 +41,7 @@ depth f =
 listMax : List Int -> Int
 listMax ints =
     List.foldl (\i acc -> max i acc) 0 ints
+
+addSibling : a -> Forest a -> Forest a
+addSibling x f =
+    f
