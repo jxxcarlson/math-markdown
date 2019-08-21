@@ -1,4 +1,4 @@
-module LineType exposing (BlockType(..), BalancedType(..), MarkdownType(..), parse)
+module LineType exposing (BlockType(..), BalancedType(..), MarkdownType(..), parse, codeBlock)
 
 import Parser.Advanced exposing (..)
 
