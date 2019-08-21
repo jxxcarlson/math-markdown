@@ -1,21 +1,26 @@
-module OutlineReader exposing (tree, string, normalString, depth, nodeCount)
+module OutlineReader exposing (tree, lineParser, string, normalString, depth, nodeCount)
 
 import Tree exposing(Tree, singleton)
 import Tree.Zipper as Zipper exposing(Zipper    )
 import Parser exposing(Parser, succeed, chompWhile, getChompedString, (|.))
 import Element exposing(Element(..), level)
 
+
 type alias Line = String
 type alias OutlineText = String
 type alias Outline = Tree Element
 
 
+lineParser : String -> List String
+lineParser str =
+   str
+     |> String.lines
+     |> List.filter (\l -> String.length l > 0)
 
-tree : OutlineText -> Tree Element
-tree ot =
+tree : (String -> List String) ->  OutlineText -> Tree Element
+tree textParser ot =
     ot
-      |> String.lines
-      |> List.filter (\l -> String.length l > 0)
+      |> textParser
       |> List.foldl (\s z -> step s z) z0
       |> Zipper.toTree
 

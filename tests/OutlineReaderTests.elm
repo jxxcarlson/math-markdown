@@ -18,7 +18,11 @@ a string, then see if the result is the same as as the original
 string, modulo trimming strings.
 -}
 identityTest str =
-    str |> OutlineReader.tree |> OutlineReader.normalString |> String.trim |> Expect.equal (String.trim str)
+    str
+      |> OutlineReader.tree OutlineReader.lineParser
+      |> OutlineReader.normalString
+      |> String.trim
+      |> Expect.equal (String.trim str)
 
 
 lineTests =
