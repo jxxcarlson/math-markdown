@@ -187,7 +187,7 @@ inlineParserTests =
                         )
         , test "links" <|
             \_ ->
-                "[http://nytimes.com](New York Times)"
+                "[New York Times](http://nytimes.com)"
                     |> run inline
                     |> Expect.equal (Ok (Link "http://nytimes.com" "New York Times"))
         , test "bracketedText" <|

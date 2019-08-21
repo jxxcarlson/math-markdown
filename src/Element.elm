@@ -1,4 +1,4 @@
-module Element exposing (..)
+module Element exposing (Element(..), level, string)
 
 type Element = Element Int String
 

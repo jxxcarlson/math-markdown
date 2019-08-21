@@ -1,10 +1,9 @@
-module OutlineReader exposing (..)
+module OutlineReader exposing (tree, string, normalString, depth, nodeCount)
 
-import Tree exposing(Tree, tree, singleton)
+import Tree exposing(Tree, singleton)
 import Tree.Zipper as Zipper exposing(Zipper    )
 import Parser exposing(Parser, succeed, chompWhile, getChompedString, (|.))
-import Maybe.Extra
-import Element exposing(..)
+import Element exposing(Element(..), level)
 
 type alias Line = String
 type alias OutlineText = String
@@ -12,138 +11,56 @@ type alias Outline = Tree Element
 
 
 
-{-
-ALGORITHM.
-
-Set current node to Node * []
-Set current level to 0
-Read line and find level
-If line level = current level, add the line as Leaf Line to the current node's list
-If line level < current level,
-
-
-
-
--}
-
--- EXAMPLES --
-
-o1 =
-    """A
-B
-C
-"""
-
-
-o2 =
-    """A
-  p
-  q
-B
-  r
-  s
-C
-"""
-
-
-o2b = """
-A
-  c
-  d
-E
-"""
-
-o2bx = """
-A
-  c
-  d
-"""
-
-o2c =
-    """
-A
-B
-  p
-  q
-C
-"""
-
-o2cx =
-    """
-A
-B
-  p
-  q
-"""
-
-o3 =
-    """A
-  p
-    1
-    2
-    3
-  q
-B
-  r
-  s
-C
-"""
-
-o4 =
-    """A
-  p
-    1
-    2
-    3
-      alpha
-      beta
-  q
-B
-  r
-  s
-C
-"""
-
--- FUNCTIONS --
-
+tree : OutlineText -> Tree Element
+tree ot =
+    ot
+      |> String.lines
+      |> List.filter (\l -> String.length l > 0)
+      |> List.foldl (\s z -> step s z) z0
+      |> Zipper.toTree
 
 t0 = Tree.singleton (Element 0 "*")
 z0 = Zipper.fromTree t0
 
+step : String ->  Zipper Element -> Zipper Element
+step s z =
+    let
+        lDiff =  levelDifference s z
+        ls = level s
+    in
+      case lDiff of
+        Nothing ->  appendStringAtFocus s z
+        Just 0 -> appendStringAtFocus s z
+        Just 1 -> addChildAtFocus s z
+        _ ->
+            Zipper.root z |> appendStringAtFocus s
 
---depth : Tree Element -> Int
---depth t =
---    case t of
---        ((Tree Element) _ []) -> 0
---        ((Tree a) _ children) -> 1 + listMax (List.map depth children)
---
---zDepth : Zipper a -> Int
---zDepth z =
---    Zipper.toTree z |> depth
+
+string : Tree Element -> String
+string t =
+    let
+        c = Tree.children t
+        lab_ = Tree.label t
+        lev_ = lab_ |> Element.level
+        n  = 2 * (lev_ - 1 )
+        prefix = String.repeat n " "
+        lab =  prefix ++ Element.string lab_
+    in
+      if c == [] then
+       lab
+      else
+        lab ++ "\n" ++ (List.map string c |> String.join "\n")
+
+normalString : Tree Element -> String
+normalString  t =
+    String.replace "*" "" (string t)
+      |> String.trim
 
 
-listMax : List Int -> Int
-listMax ints =
-    List.foldl (\i acc -> max i acc) 0 ints
 
-{-|
+-- ADDING THINGS --
 
-    > t0 = tree (Element 0 "*") []
-    Tree (Element 0 "*") [] : Tree Element
 
-    > z0 = Zipper.fromTree t0
-    Zipper { after = [], before = [], crumbs = [], focus = Tree (Element 0 "*") [] }
-      : Zipper Element
-
-    > appendStringAtFocus "A" z0
-    Zipper { after = [], before = [], crumbs = [], focus = Tree (Element 0 "*") [Tree (Element 1 "A") []] }
-      : Zipper Element
-
-    > appendStringAtFocus "A" z0 |> appendStringAtFocus "B"
-    Zipper { after = [], before = [], crumbs = [], focus = Tree (Element 0 "*") [Tree (Element 1 "A") [],Tree (Element 1 "B") []] }
-        : Zipper Element
-
- -}
 appendStringAtFocus : String -> Zipper Element -> Zipper Element
 appendStringAtFocus s z =
     let
@@ -153,14 +70,6 @@ appendStringAtFocus s z =
     in
       Zipper.replaceTree newTree z
 
-prependStringAtFocus : String -> Zipper Element -> Zipper Element
-prependStringAtFocus s z =
-    let
-        t = Zipper.tree z
-        element = Element (level s) (String.trim s)
-        newTree = Tree.prependChild (singleton element) t
-    in
-      Zipper.replaceTree newTree z
 
 addChildAtFocus : String -> Zipper Element -> Zipper Element
 addChildAtFocus s z =
@@ -174,15 +83,13 @@ addChildAtNthParentOfFocus k s z =
         Nothing -> z
         Just zz -> appendStringAtFocus s zz
 
-addChildAtRoot : String -> Zipper Element -> Zipper Element
-addChildAtRoot s z =
-    addChildAtFocus s (Zipper.root z)
-
 nthParentOfFocus : Int -> Zipper Element -> Zipper Element
 nthParentOfFocus k z =
     case manyBackward k z of
         Nothing -> z
         Just zz -> zz
+
+-- MOVING AROUND --
 
 manyBackward : Int -> Zipper a -> Maybe (Zipper a)
 manyBackward k z =
@@ -197,10 +104,13 @@ manyBackward k z =
         iterate k (\zi -> Maybe.andThen Zipper.backward zi) zz
 
 
-
 iterate : Int -> (a -> a) -> a -> a
 iterate k f x =
     List.foldl (\i acc -> f acc) x (List.range 1 k)
+
+
+
+-- LEVELS --
 
 
 levelOfLastChild : Zipper Element -> Maybe Int
@@ -215,48 +125,6 @@ levelDifference : String -> Zipper Element -> Maybe Int
 levelDifference s z =
      Maybe.map2 (-) (Just <| level s) (levelOfLastChild z)
 
-tree : OutlineText -> Tree Element
-tree ot =
-    ot
-      |> String.lines
-      |> List.filter (\l -> String.length l > 0)
-      |> List.foldl (\s z -> step s z) z0
-      |> Zipper.toTree
-
-zipper : OutlineText -> Zipper Element
-zipper ot =
-    ot
-      |> String.lines
-      |> List.filter (\l -> String.length l > 0)
-      |> List.foldl (\s z -> step s z) z0
-
-step1 : String ->  Zipper Element -> Zipper Element
-step1 s z =
-    let
-        n =   levelDifference s z
-    in
-      case n of
-        Nothing ->  appendStringAtFocus s z
-        Just 0 -> appendStringAtFocus s z
-        Just 1 -> addChildAtFocus s z
-        _ ->
-           case Maybe.map negate n of
-               Just k ->addChildAtNthParentOfFocus k s z
-               _ -> z
-
-
-step : String ->  Zipper Element -> Zipper Element
-step s z =
-    let
-        lDiff =  levelDifference s z
-        ls = level s
-    in
-      case lDiff of
-        Nothing ->  appendStringAtFocus s z
-        Just 0 -> appendStringAtFocus s z
-        Just 1 -> addChildAtFocus s z
-        _ ->
-            Zipper.root z |> appendStringAtFocus s
 
 
 numberOfLeadingBlanks : Parser Int
@@ -282,6 +150,59 @@ levels outline =
       |> List.filter (\l -> String.length l > 0)
       |> List.map level
 
+
+
+
+-- STANDARD TREE FUNCTIONS --
+
+
+
+depth : Tree Element -> Int
+depth t =
+    let
+       c = Tree.children t
+    in
+    if c == [] then
+      0
+    else
+     1 + listMax (List.map depth c)
+
+nodeCount : Tree Element -> Int
+nodeCount t =
+    let
+           c = Tree.children t
+     in
+     if c == [] then
+           1
+         else
+          1 + List.sum (List.map nodeCount c)
+
+
+listMax : List Int -> Int
+listMax ints =
+    List.foldl (\i acc -> max i acc) 0 ints
+
+
+-- DEPRECATED --
+
+{-
+
+    > t0 = tree (Element 0 "*") []
+    Tree (Element 0 "*") [] : Tree Element
+
+    > z0 = Zipper.fromTree t0
+    Zipper { after = [], before = [], crumbs = [], focus = Tree (Element 0 "*") [] }
+      : Zipper Element
+
+    > appendStringAtFocus "A" z0
+    Zipper { after = [], before = [], crumbs = [], focus = Tree (Element 0 "*") [Tree (Element 1 "A") []] }
+      : Zipper Element
+
+    > appendStringAtFocus "A" z0 |> appendStringAtFocus "B"
+    Zipper { after = [], before = [], crumbs = [], focus = Tree (Element 0 "*") [Tree (Element 1 "A") [],Tree (Element 1 "B") []] }
+        : Zipper Element
+
+ -}
 
 {-
 
