@@ -38,8 +38,27 @@ parse str =
     List.foldl folder initialFSM (String.lines str)
       |> blockListOfFSM
 
+nextState1 : String -> FSM -> FSM
+nextState1 str fsm = fsm
+
 nextState : String -> FSM -> FSM
-nextState str fsm = fsm
+nextState str fsm =
+    case stateOfFSM fsm of
+        Start -> nextStateS str fsm
+        InBlock _ -> nextStateB str fsm
+
+nextStateS : String -> FSM -> FSM
+nextStateS line fsm = fsm
+
+--nextStateS2 : String -> FSM -> FSM
+--nextStateS2 line fsm =
+--    let
+--
+--    case stateOfFSM fsm of
+--        Start ->
+
+nextStateB : String -> FSM -> FSM
+nextStateB line fsm = fsm
 
 initialFSM : FSM
 initialFSM = FSM Start initialBlockInfo

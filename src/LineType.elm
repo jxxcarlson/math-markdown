@@ -1,7 +1,6 @@
-module LineType exposing (BlockType(..), BalancedType(..), MarkdownType(..), parse, codeBlock)
+module LineType exposing (BlockType(..), BalancedType(..), MarkdownType(..), Level, parse, get, dropLeadingBlanks)
 
 import Parser.Advanced exposing (..)
-
 
 type alias Parser a =
     Parser.Advanced.Parser Context Problem a
@@ -32,6 +31,42 @@ type MarkdownType =
   | Italic
   | Plain
   | Image
+
+
+type alias Level = Int
+type alias Line = String
+
+get : String -> (Level, Maybe BlockType )
+get str =
+    case run parse (dropLeadingBlanks str) of
+        Ok result -> (level str, Just result)
+        Err _ -> (-1, Nothing)
+
+
+numberOfLeadingBlanks : Parser Int
+numberOfLeadingBlanks =
+    (succeed ()
+        |. chompWhile (\c -> c == ' ')
+    )
+        |> getChompedString
+        |> map String.length
+
+getNumberOfLeadingBlanks : String -> Int
+getNumberOfLeadingBlanks str =
+    run numberOfLeadingBlanks str
+      |> Result.toMaybe
+      |> Maybe.withDefault 0
+
+dropLeadingBlanks : String -> String
+dropLeadingBlanks str =
+    String.dropLeft (getNumberOfLeadingBlanks str) str
+
+level : Line -> Int
+level ln =
+    run numberOfLeadingBlanks ln
+      |> Result.toMaybe
+      |> Maybe.map (\l -> 1 + l//2)
+      |> Maybe.withDefault 0
 
 parse : Parser BlockType
 parse =
