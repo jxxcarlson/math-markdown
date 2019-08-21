@@ -89,6 +89,20 @@ B
 C
 """
 
+o4 =
+    """A
+  p
+    1
+    2
+    3
+      alpha
+      beta
+  q
+B
+  r
+  s
+C
+"""
 
 -- FUNCTIONS --
 
@@ -160,11 +174,15 @@ addChildAtNthParentOfFocus k s z =
         Nothing -> z
         Just zz -> appendStringAtFocus s zz
 
-appendStringAtNthParentOfFocus : Int -> String -> Zipper Element -> Zipper Element
-appendStringAtNthParentOfFocus k s z =
+addChildAtRoot : String -> Zipper Element -> Zipper Element
+addChildAtRoot s z =
+    addChildAtFocus s (Zipper.root z)
+
+nthParentOfFocus : Int -> Zipper Element -> Zipper Element
+nthParentOfFocus k z =
     case manyBackward k z of
         Nothing -> z
-        Just zz -> appendStringAtFocus s zz
+        Just zz -> zz
 
 manyBackward : Int -> Zipper a -> Maybe (Zipper a)
 manyBackward k z =
@@ -212,10 +230,10 @@ zipper ot =
       |> List.filter (\l -> String.length l > 0)
       |> List.foldl (\s z -> step s z) z0
 
-step : String ->  Zipper Element -> Zipper Element
-step s z =
+step1 : String ->  Zipper Element -> Zipper Element
+step1 s z =
     let
-        n =  levelDifference s z
+        n =   levelDifference s z
     in
       case n of
         Nothing ->  appendStringAtFocus s z
@@ -226,6 +244,19 @@ step s z =
                Just k ->addChildAtNthParentOfFocus k s z
                _ -> z
 
+
+step : String ->  Zipper Element -> Zipper Element
+step s z =
+    let
+        lDiff =  levelDifference s z
+        ls = level s
+    in
+      case lDiff of
+        Nothing ->  appendStringAtFocus s z
+        Just 0 -> appendStringAtFocus s z
+        Just 1 -> addChildAtFocus s z
+        _ ->
+            Zipper.root z |> appendStringAtFocus s
 
 
 numberOfLeadingBlanks : Parser Int
