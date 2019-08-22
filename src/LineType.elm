@@ -1,4 +1,5 @@
-module LineType exposing (BlockType(..), BalancedType(..), MarkdownType(..), Level, parse, get, dropLeadingBlanks)
+module LineType exposing (BlockType(..), BalancedType(..), MarkdownType(..), Level, parse, get, dropLeadingBlanks
+   , isBalanced)
 
 import Parser.Advanced exposing (..)
 
@@ -24,6 +25,13 @@ type BlockType
 type BalancedType =
    DisplayCode | Verbatim | DisplayMath
 
+
+isBalanced : BlockType -> Bool
+isBalanced bt =
+    case bt of
+        (BalancedBlock _) -> True
+        (MarkdownBlock _) -> False
+
 type MarkdownType =
      UListItem
   | OListItem
@@ -31,6 +39,8 @@ type MarkdownType =
   | Italic
   | Plain
   | Image
+  | Blank
+
 
 
 type alias Level = Int
@@ -38,9 +48,12 @@ type alias Line = String
 
 get : String -> (Level, Maybe BlockType )
 get str =
+    if str == "\n" then
+      (0, Just (MarkdownBlock Blank))
+    else
     case run parse (dropLeadingBlanks str) of
         Ok result -> (level str, Just result)
-        Err _ -> (-1, Nothing)
+        Err _ -> (0, Just (MarkdownBlock Plain))
 
 
 numberOfLeadingBlanks : Parser Int

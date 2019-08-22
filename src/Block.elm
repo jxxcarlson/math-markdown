@@ -14,20 +14,48 @@ finite-state machine.
 import LineType exposing(BlockType(..), BalancedType(..), MarkdownType(..))
 
 
-type FSM = FSM State BlockInfo
+type FSM = FSM State (List Block)
+
+
+type Block = Block  BlockType Level Content
+type alias Level = Int
+type alias Content = String
+
+type_ : Block -> BlockType
+type_ ( Block  bt _ _) = bt
+
+typeOfState : State -> Maybe BlockType
+typeOfState s =
+    case s of
+        Start -> Nothing
+        InBlock b -> Just (type_ b)
+        Error -> Nothing
+
+type State
+    = Start
+    | InBlock Block
+    | Error
 
 
 stateOfFSM : FSM -> State
 stateOfFSM (FSM state_ _) = state_
 
-blockInfoOfFSM : FSM -> BlockInfo
-blockInfoOfFSM (FSM _ blockInfo_) = blockInfo_
-
 blockListOfFSM : FSM -> List Block
-blockListOfFSM fsm =
-    blockInfoOfFSM fsm |> .list
+blockListOfFSM (FSM _ blockList_) = blockList_
 
 
+splitIntoLines : String -> List String
+splitIntoLines str =
+    str |> String.lines |> List.map (\l -> l ++ "\n")
+
+
+runFSM : String -> FSM
+runFSM str =
+    let
+        folder : String -> FSM -> FSM
+        folder = (\line fsm -> nextState line fsm)
+    in
+    List.foldl folder initialFSM (splitIntoLines str)
 
 parse : String -> List Block
 parse str =
@@ -35,50 +63,64 @@ parse str =
         folder : String -> FSM -> FSM
         folder = (\line fsm -> nextState line fsm)
     in
-    List.foldl folder initialFSM (String.lines str)
+    List.foldl folder initialFSM (splitIntoLines str)
       |> blockListOfFSM
 
-nextState1 : String -> FSM -> FSM
-nextState1 str fsm = fsm
+initialFSM : FSM
+initialFSM = FSM Start []
 
 nextState : String -> FSM -> FSM
 nextState str fsm =
     case stateOfFSM fsm of
         Start -> nextStateS str fsm
         InBlock _ -> nextStateB str fsm
+        Error -> fsm
 
 nextStateS : String -> FSM -> FSM
-nextStateS line fsm = fsm
+nextStateS line fsm =
+    case LineType.get line of
+        (_, Nothing) -> FSM Error (blockListOfFSM fsm)
+        (level, Just blockType) -> FSM (InBlock (Block blockType level line)) []
 
---nextStateS2 : String -> FSM -> FSM
---nextStateS2 line fsm =
---    let
---
---    case stateOfFSM fsm of
---        Start ->
+
+nextStateB1 : String -> FSM -> FSM
+nextStateB1 line fsm = fsm
+
 
 nextStateB : String -> FSM -> FSM
-nextStateB line fsm = fsm
-
-initialFSM : FSM
-initialFSM = FSM Start initialBlockInfo
-
-initialBlockInfo : BlockInfo
-initialBlockInfo = { current  = Nothing, list = []}
-
-
-type Block = Block  BlockType Level Content
-type alias Level = Int
-type alias Content = String
-
-
-type alias BlockInfo =
-    { current : Maybe Block
-    , list : List Block
-    }
-
-type State
-    = Start
-    | InBlock Block
+nextStateB line fsm =
+    case LineType.get line of
+        (_, Nothing) -> FSM Error (blockListOfFSM fsm)
+        (level, Just lineType) ->
+           -- close balanced block
+           if LineType.isBalanced lineType && Just lineType == typeOfState (stateOfFSM fsm) then
+             case stateOfFSM fsm of
+                 InBlock block_ ->  FSM Start ((addLineToBlock line block_) :: blockListOfFSM fsm  )
+                 _ -> fsm
+           else if lineType == MarkdownBlock Plain then
+             addLineToFSM line fsm
+           else
+             fsm
 
 
+
+
+
+addLineToFSM : String -> FSM -> FSM
+addLineToFSM str (FSM state_ blocks_) =
+    case state_ of
+        Start -> (FSM state_ blocks_)
+        Error -> (FSM state_ blocks_)
+        InBlock block_ -> (FSM (addLineToState str state_) blocks_)
+
+
+addLineToState : String -> State -> State
+addLineToState str state_ =
+    case state_ of
+        Start -> Start
+        Error -> Error
+        InBlock block_ -> InBlock (addLineToBlock str block_)
+
+addLineToBlock : String -> Block -> Block
+addLineToBlock  str (Block  blockType_ level_ content_) =
+     (Block  blockType_ level_ (content_ ++ str))
