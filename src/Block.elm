@@ -36,6 +36,14 @@ type State
     | InBlock Block
     | Error
 
+flush : FSM -> List Block
+flush fsm =
+    case stateOfFSM fsm of
+        Start -> List.reverse (blockListOfFSM fsm)
+        Error -> List.reverse (blockListOfFSM fsm)
+        InBlock b -> List.reverse (b :: blockListOfFSM fsm)
+
+
 
 stateOfFSM : FSM -> State
 stateOfFSM (FSM state_ _) = state_
@@ -57,14 +65,11 @@ runFSM str =
     in
     List.foldl folder initialFSM (splitIntoLines str)
 
+
+
 parse : String -> List Block
 parse str =
-    let
-        folder : String -> FSM -> FSM
-        folder = (\line fsm -> nextState line fsm)
-    in
-    List.foldl folder initialFSM (splitIntoLines str)
-      |> blockListOfFSM
+    runFSM str |> flush
 
 initialFSM : FSM
 initialFSM = FSM Start []
@@ -97,8 +102,16 @@ nextStateB line fsm =
              case stateOfFSM fsm of
                  InBlock block_ ->  FSM Start ((addLineToBlock line block_) :: blockListOfFSM fsm  )
                  _ -> fsm
+           -- add text to block
            else if lineType == MarkdownBlock Plain then
              addLineToFSM line fsm
+           -- start new block
+           else if LineType.isMarkDown lineType then
+             case stateOfFSM fsm of
+                 InBlock block_ ->
+                    FSM (InBlock (Block  lineType (LineType.level line) line))
+                      ((addLineToBlock line block_) ::blockListOfFSM fsm)
+                 _ -> fsm
            else
              fsm
 

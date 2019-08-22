@@ -1,5 +1,5 @@
-module LineType exposing (BlockType(..), BalancedType(..), MarkdownType(..), Level, parse, get, dropLeadingBlanks
-   , isBalanced)
+module LineType exposing (BlockType(..), BalancedType(..), MarkdownType(..), Level, level, parse, get, dropLeadingBlanks
+   , isBalanced, isMarkDown)
 
 import Parser.Advanced exposing (..)
 
@@ -31,6 +31,12 @@ isBalanced bt =
     case bt of
         (BalancedBlock _) -> True
         (MarkdownBlock _) -> False
+
+isMarkDown : BlockType -> Bool
+isMarkDown bt =
+    case bt of
+        (BalancedBlock _) -> False
+        (MarkdownBlock _) -> True
 
 type MarkdownType =
      UListItem
