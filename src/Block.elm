@@ -1,4 +1,4 @@
-module Block exposing (..)
+module Block exposing (parse, runFSM)
 
 {-| This module exports just one function,
 intended to turn a string into a list
