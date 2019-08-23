@@ -1,4 +1,4 @@
-module OutlineReader exposing (tree, lineParser, string, normalString, depth, nodeCount)
+module OutlineReader exposing (tree, lineParser, string, normalString, depth, nodeCount, level, levels)
 
 import Tree exposing(Tree, singleton)
 import Tree.Zipper as Zipper exposing(Zipper    )
@@ -30,8 +30,7 @@ z0 = Zipper.fromTree t0
 step : String ->  Zipper Element -> Zipper Element
 step s z =
     let
-        lDiff =  levelDifference s z
-        ls = level s
+        lDiff =  Debug.log "LD" <| levelDifference s z
     in
       case lDiff of
         Nothing ->  appendStringAtFocus s z
