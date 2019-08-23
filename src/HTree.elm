@@ -1,4 +1,6 @@
-module HTree exposing (fromList, fromListZ, tag, toList, depth, nodeCount, nthParentOfFocus, iterate, manyParent, levelDifference)
+module HTree exposing (fromList, fromListZ, tag, toList, depth
+   , nodeCount, nthParentOfFocus, iterate, manyParent, levelDifference
+   , step)
 
 {-|
 
@@ -51,7 +53,7 @@ divided by 3. For another example, consider the list
 ```
 
 The function HTree.fromList converts a hierarchical list into
-a tree of items. See MakeTreeExample.elm.
+a tree of items. See HTreeExamplem.
 
 @docs fromList, tag, depth, nodeCount
 
@@ -59,9 +61,8 @@ a tree of items. See MakeTreeExample.elm.
 
 
 import Tree exposing(Tree, singleton)
-import Tree.Zipper as Zipper exposing(Zipper    )
+import Tree.Zipper as Zipper exposing(Zipper)
 
-t
 
 
 {-|  fromList takes three arguments: an initial tree of items
@@ -70,29 +71,16 @@ and a list of items.  It returns the associated tree.
 
 
 -}
-fromList : Tree a -> (a -> Int) -> (List a) -> Tree a
-fromList initialTree level lst =
+fromList : a -> (a -> Int) -> (List a) -> Tree a
+fromList rooLabel  level lst =
     lst
-      |> List.foldl (\s z -> step level s z) (Zipper.fromTree initialTree)
+      |> List.foldl (\s z -> step level s z) (Zipper.fromTree (Tree.singleton rooLabel))
       |> Zipper.toTree
 
-fromListZ : Tree a -> (a -> Int) -> (List a) -> Zipper a
-fromListZ initialTree level lst =
+fromListZ : a -> (a -> Int) -> (List a) -> Zipper a
+fromListZ rooLabel level lst =
     lst
-      |> List.foldl (\s z -> step level s z) (Zipper.fromTree initialTree)
-
-step1 : (a -> Int) -> a ->  Zipper a -> Zipper a
-step1 level s z =
-    let
-        levelDifference_ =  Debug.log "LD" <| levelDifference level s z
-    in
-      case levelDifference_ of
-        Nothing ->  appendElementFocus level s z
-        Just 0 -> appendElementFocus level s z
-        Just 1 -> addChildAtFocus level s z
-        _ ->
-            Zipper.root z |> appendElementFocus level s
-
+      |> List.foldl (\s z -> step level s z) (Zipper.fromTree (Tree.singleton rooLabel))
 
 step : (a -> Int) -> a ->  Zipper a -> Zipper a
 step level s z =
@@ -100,16 +88,16 @@ step level s z =
         ld = levelDifference level s z
     in
       case ld of
-        Nothing ->  appendElementFocus level s z
-        Just 0 -> appendElementFocus level s z
+        Nothing ->  appendAtFocus level s z
+        Just 0 -> appendAtFocus level s z
         Just 1 -> addChildAtFocus level s z
         _ ->
            let
-              levelsBack = Debug.log "LB" <| (negate (ld |> Maybe.withDefault 0) + 1)
+              levelsBack = Debug.log "LB" <| (negate (ld |> Maybe.withDefault 0))
+
            in
-           addChildAtNthParentOfFocus level levelsBack s z
-           -- addChildAtNthParentOfFocus level (negate (ld |> Maybe.withDefault 0)) s z
-            -- Zipper.root z |> appendElementFocus level s
+           addAtNthParent level levelsBack s z
+
 
 {-| The `tag` function transforms a tree of items into
 a tree of tuples of the form `(a, k)`, where `k` is the
@@ -133,8 +121,8 @@ toList t =
 -- ADDING THINGS --
 
 
-appendElementFocus : (a -> Int) -> a -> Zipper a -> Zipper a
-appendElementFocus level s z =
+appendAtFocus : (a -> Int) -> a -> Zipper a -> Zipper a
+appendAtFocus level s z =
     let
         t = Zipper.tree z
         newTree = Tree.appendChild (singleton s) t
@@ -146,19 +134,19 @@ addChildAtFocus : (a -> Int) -> a -> Zipper a -> Zipper a
 addChildAtFocus level s z =
     case Zipper.lastChild z of
         Nothing -> z
-        Just zz -> appendElementFocus level s zz
+        Just zz -> appendAtFocus level s zz
 
 addChildAtParentOfFocus : (a -> Int) -> a -> Zipper a -> Zipper a
 addChildAtParentOfFocus level s z =
     case Zipper.parent z of
         Nothing -> z
-        Just zz -> appendElementFocus level s zz
+        Just zz -> appendAtFocus level s zz
 
-addChildAtNthParentOfFocus : (a -> Int) -> Int -> a -> Zipper a -> Zipper a
-addChildAtNthParentOfFocus level k s z =
-    case manyBackward k z of
+addAtNthParent : (a -> Int) -> Int -> a -> Zipper a -> Zipper a
+addAtNthParent level k s z =
+    case manyParent k z of
         Nothing -> z
-        Just zz -> appendElementFocus level s zz
+        Just zz -> appendAtFocus level s zz
 
 nthParentOfFocus : Int -> Zipper a -> Zipper a
 nthParentOfFocus k z =
