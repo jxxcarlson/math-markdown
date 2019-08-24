@@ -99,9 +99,6 @@ typeOfState s =
             Nothing
 
 
-
-
-
 rootBlock =
     Block (MarkdownBlock Plain) 0 "*"
 
