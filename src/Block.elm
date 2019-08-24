@@ -6,7 +6,7 @@ of logical paragraphs. It operates as a
 finite-state machine.
 
 
-
+@docs parse, runFSM
 
 -}
 
@@ -36,6 +36,39 @@ type State
     | InBlock Block
     | Error
 
+
+
+{-|
+
+    parse "- One\nsome stuff\n- Two\nMore stuff"
+    --> [ Block (MarkdownBlock UListItem)
+    -->    1 ("- One\nsome stuff\n- Two\n")
+    -->  ,Block (MarkdownBlock UListItem)
+    -->    1 ("- Two\nMore stuff\n")
+    --> ]
+
+-}
+parse : String -> List Block
+parse str =
+    runFSM str |> flush
+
+{-|
+
+    runFSM  "- One\nsome stuff\n- Two\nMore stuff"
+    --> FSM (InBlock (Block (MarkdownBlock UListItem)
+    -->        1 ("- Two\nMore stuff\n")))
+    -->     [Block (MarkdownBlock UListItem)
+    -->        1 ("- One\nsome stuff\n- Two\n")]
+-}
+runFSM : String -> FSM
+runFSM str =
+    let
+        folder : String -> FSM -> FSM
+        folder = (\line fsm -> nextState line fsm)
+    in
+    List.foldl folder initialFSM (splitIntoLines str)
+
+
 flush : FSM -> List Block
 flush fsm =
     case stateOfFSM fsm of
@@ -57,19 +90,6 @@ splitIntoLines str =
     str |> String.lines |> List.map (\l -> l ++ "\n")
 
 
-runFSM : String -> FSM
-runFSM str =
-    let
-        folder : String -> FSM -> FSM
-        folder = (\line fsm -> nextState line fsm)
-    in
-    List.foldl folder initialFSM (splitIntoLines str)
-
-
-
-parse : String -> List Block
-parse str =
-    runFSM str |> flush
 
 initialFSM : FSM
 initialFSM = FSM Start []
