@@ -1,7 +1,6 @@
 module Block exposing
     ( parseToTree, parse, runFSM
-    , Block, stringOfBlockTree
-    )
+    , Block, stringOfBlockTree)
 
 {-| A markdown document is parsed into a tree
 of Blocks using
@@ -206,13 +205,13 @@ nextState str fsm =
 
 
 nextStateS : String -> FSM -> FSM
-nextStateS line fsm =
+nextStateS line (FSM state blockList) =
     case LineType.get line of
         ( _, Nothing ) ->
-            FSM Error (blockListOfFSM fsm)
+            FSM Error blockList
 
         ( level, Just blockType ) ->
-            FSM (InBlock (Block blockType level line)) []
+            FSM (InBlock (Block blockType level (Debug.log "START" line))) blockList
 
 
 nextStateB1 : String -> FSM -> FSM
@@ -227,25 +226,22 @@ nextStateB line fsm =
             FSM Error (blockListOfFSM fsm)
 
         ( level, Just lineType ) ->
-            -- close balanced block
-            if LineType.isBalanced lineType && Just lineType == typeOfState (stateOfFSM fsm) then
-                case stateOfFSM fsm of
-                    InBlock block_ ->
-                        FSM Start (addLineToBlock line block_ :: blockListOfFSM fsm)
 
-                    _ ->
-                        fsm
-             -- open balanced block
-                -- add text to block
+            -- process balanced block
+            if LineType.isBalanced lineType then
+              processBalancedBlock lineType line fsm
 
+                -- add text
             else if lineType == MarkdownBlock Plain then
-                addLineToFSM line fsm
-                -- start new block
+                addLineToFSM (Debug.log "PLAIN" line) fsm
+
 
             else if LineType.isMarkDown lineType then
                 case stateOfFSM fsm of
+                    -- add current block to block list and
+                    -- start new block with the current line and lineType
                     InBlock block_ ->
-                        FSM (InBlock (Block lineType (LineType.level line) line))
+                        FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1" line)) line))
                             (block_ :: blockListOfFSM fsm)
 
                     _ ->
@@ -254,6 +250,38 @@ nextStateB line fsm =
             else
                 fsm
 
+processBalancedBlock1 : BlockType -> String -> FSM -> FSM
+processBalancedBlock1 lineType line fsm =
+    if Just lineType == typeOfState (stateOfFSM fsm) then
+         -- the currently processed block should be closed
+        case stateOfFSM fsm of
+            InBlock block_ ->
+                FSM Start (addLineToBlock line block_ :: blockListOfFSM fsm)
+
+            _ ->
+                fsm
+    -- open balanced block
+    else
+      fsm
+
+processBalancedBlock : BlockType -> String -> FSM -> FSM
+processBalancedBlock lineType line fsm =
+    if Just lineType == typeOfState (stateOfFSM fsm) then
+         -- the currently processed block should be closed
+        case stateOfFSM fsm of
+            InBlock block_ ->
+                FSM Start (addLineToBlock (Debug.log "CLOSE" line) block_ :: blockListOfFSM fsm)
+
+            _ ->
+                fsm
+    -- open balanced block
+    else
+      case stateOfFSM fsm of
+        InBlock block_ ->
+            FSM (InBlock (Block lineType (LineType.level (Debug.log "OPEN" line)) line)) (block_ :: blockListOfFSM fsm)
+
+        _ ->
+            fsm
 
 
 nextStateB2 : String -> FSM -> FSM
@@ -343,7 +371,7 @@ stringOfBlock (Block bt lev_ content_) =
     LineType.stringOfBlockType bt
     ++
     " (" ++ String.fromInt lev_ ++ ") "
-    ++ indent lev_ content_
+    ++ "\n" ++ indent lev_ content_
 
 indent : Int -> String -> String
 indent k str =

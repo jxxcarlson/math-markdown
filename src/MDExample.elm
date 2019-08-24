@@ -1,6 +1,20 @@
 module MDExample exposing (..)
 
-md1 = """# Test document
+
+md1 = """
+$$
+a^2 + b^2 = c^2
+$$
+"""
+
+md1a = """
+one
+$$
+a^2 + b^2 = c^2
+$$
+"""
+
+md2 = """# Test document
 
 This is a test.
 I repeat.  A test.
