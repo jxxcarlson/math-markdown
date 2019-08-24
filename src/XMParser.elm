@@ -1,3 +1,5 @@
-module XMParser exposing (..)
+module XMParser exposing (foo)
 
-foo = 1
+
+foo =
+    1

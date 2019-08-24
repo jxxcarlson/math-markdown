@@ -9,7 +9,7 @@ for the math text. See `index.html` in `./app-math`
 for the needed MathJax setup.
 
 At the present time, the version of Markdown is limited,
-albeit serviceable. See the demo at https://markdown.minilatex.app/ .
+albeit serviceable. See the demo at <https://markdown.minilatex.app/> .
 
 @docs toHtml
 

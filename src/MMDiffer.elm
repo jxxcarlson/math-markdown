@@ -10,8 +10,8 @@ then parsing and rendering the changed paragraphs.
 
 import Html exposing (Html)
 import MMAccumulator
-import MMRender
 import MMParagraphs
+import MMRender
 
 
 
