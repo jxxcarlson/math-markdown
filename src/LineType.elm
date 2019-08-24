@@ -39,6 +39,19 @@ type BalancedType
     | DisplayMath
 
 
+
+type MarkdownType
+    = UListItem
+    | OListItem
+    | Heading Int
+    | HorizontalRule
+    | Quotation
+    | Poetry
+    | Plain
+    | Image
+    | Blank
+
+
 isBalanced : BlockType -> Bool
 isBalanced bt =
     case bt of
@@ -57,14 +70,6 @@ isMarkDown bt =
 
         MarkdownBlock _ ->
             True
-
-
-type MarkdownType
-    = UListItem
-    | OListItem
-    | Plain
-    | Image
-    | Blank
 
 
 type alias Level =
@@ -124,9 +129,60 @@ parse =
         [ imageBlock
         , mathBlock
         , unorderedListItemBlock
+        , orderedListItemBlock
+        , quotationBlock
+        , poetryBlock
         , backtrackable verbatimBlock
         , codeBlock
+        , headingBlock
+        , horizontalRuleBlock
         ]
+
+
+-- PARSERS --
+
+poetryBlock : Parser BlockType
+poetryBlock =
+    (succeed ()
+        |. symbol (Token ">> " (Expecting "expecting '>> ' to begin poetry block"))
+    )
+        |> map (\_ -> MarkdownBlock Poetry)
+
+
+quotationBlock : Parser BlockType
+quotationBlock =
+    (succeed ()
+        |. symbol (Token "> " (Expecting "expecting '> ' to begin quotation"))
+    )
+        |> map (\_ -> MarkdownBlock Quotation)
+
+
+orderedListItemBlock : Parser BlockType
+orderedListItemBlock =
+    (succeed ()
+        |. parseWhile (\c -> c == ' ')
+        |. chompIf (\c -> Char.isDigit c) (Expecting "Expecting digit to begin ordered list item")
+        |. chompWhile (\c -> Char.isDigit c)
+        |. symbol (Token ". " (Expecting "expecting period"))
+       ) |> map (\_ -> (MarkdownBlock OListItem))
+
+
+horizontalRuleBlock : Parser BlockType
+horizontalRuleBlock =
+    (succeed ()
+        |. spaces
+        |. symbol (Token "___" (Expecting "Expecting at least three underscores to begin thematic break"))
+    )
+        |> map (\x -> MarkdownBlock HorizontalRule)
+
+
+headingBlock : Parser BlockType
+headingBlock =
+    (succeed identity
+        |. spaces
+        |. symbol (Token "#" (Expecting "Expecting '#' to begin heading block"))
+        |= parseWhile (\c -> c == '#')
+    ) |> map (\s -> (MarkdownBlock (Heading ((String.length s) + 1))))
 
 
 codeBlock : Parser BlockType
