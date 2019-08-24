@@ -1,6 +1,6 @@
 module Block exposing
     ( parseToTree, parse, runFSM
-    , Block
+    , Block, stringOfBlockTree
     )
 
 {-| A markdown document is parsed into a tree
@@ -182,7 +182,9 @@ blockListOfFSM (FSM _ blockList_) =
 
 splitIntoLines : String -> List String
 splitIntoLines str =
-    str |> String.lines |> List.map (\l -> l ++ "\n")
+    str |> String.lines
+        |> List.map (\l -> l ++ "\n")
+
 
 
 initialFSM : FSM
@@ -233,6 +235,7 @@ nextStateB line fsm =
 
                     _ ->
                         fsm
+             -- open balanced block
                 -- add text to block
 
             else if lineType == MarkdownBlock Plain then
@@ -251,6 +254,46 @@ nextStateB line fsm =
             else
                 fsm
 
+
+
+nextStateB2 : String -> FSM -> FSM
+nextStateB2 line fsm =
+    case LineType.get line of
+        ( _, Nothing ) ->
+            FSM Error (blockListOfFSM fsm)
+
+        ( level, Just lineType ) ->
+            -- close balanced block
+            if LineType.isBalanced lineType then
+              if  Just lineType == typeOfState (stateOfFSM fsm) then
+                case stateOfFSM fsm of
+                    InBlock block_ ->
+                        FSM Start (addLineToBlock line block_ :: blockListOfFSM fsm)
+
+                    _ ->
+                        fsm
+              -- open balanced block
+              else
+                FSM (InBlock (Block lineType (LineType.level line) line)) (blockListOfFSM fsm)
+
+
+                -- add text to block
+
+            else if lineType == MarkdownBlock Plain then
+                addLineToFSM line fsm
+                -- start new block
+
+            else if LineType.isMarkDown lineType then
+                case stateOfFSM fsm of
+                    InBlock block_ ->
+                        FSM (InBlock (Block lineType (LineType.level line) line))
+                            (block_ :: blockListOfFSM fsm)
+
+                    _ ->
+                        fsm
+
+            else
+                fsm
 
 addLineToFSM : String -> FSM -> FSM
 addLineToFSM str (FSM state_ blocks_) =
@@ -281,3 +324,30 @@ addLineToState str state_ =
 addLineToBlock : String -> Block -> Block
 addLineToBlock str (Block blockType_ level_ content_) =
     Block blockType_ level_ (content_ ++ str)
+
+
+-- STRING --
+
+stringOfBlockTree : Tree Block -> String
+stringOfBlockTree tree =
+    tree
+     |> Tree.flatten
+     |> List.map stringOfBlock
+     |> String.join "\n"
+
+
+stringOfBlock : Block -> String
+stringOfBlock (Block bt lev_ content_) =
+    String.repeat (2 * lev_) " "
+    ++
+    LineType.stringOfBlockType bt
+    ++
+    " (" ++ String.fromInt lev_ ++ ") "
+    ++ indent lev_ content_
+
+indent : Int -> String -> String
+indent k str =
+    str
+      |> String.split "\n"
+      |> List.map (\s -> (String.repeat (2 * k) " ") ++ s)
+      |> String.join "\n"

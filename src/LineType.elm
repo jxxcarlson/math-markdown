@@ -9,6 +9,7 @@ module LineType exposing
     , isMarkDown
     , level
     , parse
+    , stringOfBlockType
     )
 
 import Parser.Advanced exposing (..)
@@ -51,6 +52,33 @@ type MarkdownType
     | Image
     | Blank
 
+
+stringOfBlockType : BlockType -> String
+stringOfBlockType bt =
+    case bt of
+        BalancedBlock bt_ -> stringOfBalancedType bt_
+        MarkdownBlock mt -> stringOfMarkDownType mt
+
+
+stringOfBalancedType : BalancedType -> String
+stringOfBalancedType bt =
+    case bt of
+      DisplayCode -> "DisplayCode"
+      Verbatim -> "Verbatim"
+      DisplayMath -> "DisplayMath"
+
+stringOfMarkDownType : MarkdownType -> String
+stringOfMarkDownType mt =
+    case mt of
+        UListItem -> "UListItem"
+        OListItem -> "OListItem"
+        Heading _ -> "Heading"
+        HorizontalRule -> "HorizontalRule"
+        Poetry -> "Poetry"
+        Quotation -> "Quotation"
+        Plain -> "Plain"
+        Image -> "Image"
+        Blank -> "Blank"
 
 isBalanced : BlockType -> Bool
 isBalanced bt =
