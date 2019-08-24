@@ -42,7 +42,7 @@ type State
 
     parse "- One\nsome stuff\n- Two\nMore stuff"
     --> [ Block (MarkdownBlock UListItem)
-    -->    1 ("- One\nsome stuff\n- Two\n")
+    -->    1 ("- One\nsome stuff\n")
     -->  ,Block (MarkdownBlock UListItem)
     -->    1 ("- Two\nMore stuff\n")
     --> ]
@@ -58,7 +58,7 @@ parse str =
     --> FSM (InBlock (Block (MarkdownBlock UListItem)
     -->        1 ("- Two\nMore stuff\n")))
     -->     [Block (MarkdownBlock UListItem)
-    -->        1 ("- One\nsome stuff\n- Two\n")]
+    -->        1 ("- One\nsome stuff\n")]
 -}
 runFSM : String -> FSM
 runFSM str =
@@ -130,7 +130,7 @@ nextStateB line fsm =
              case stateOfFSM fsm of
                  InBlock block_ ->
                     FSM (InBlock (Block  lineType (LineType.level line) line))
-                      ((addLineToBlock line block_) ::blockListOfFSM fsm)
+                      (block_ :: blockListOfFSM fsm)
                  _ -> fsm
            else
              fsm
