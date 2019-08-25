@@ -1,4 +1,4 @@
-module MMInline exposing (MMInline(..), parseLine, parse, inlineList, string)
+module MMInline exposing (MMInline(..), parseLine, parse, inlineList, string, render)
 
 import Parser.Advanced exposing (..)
 
@@ -48,6 +48,21 @@ string mmInline =
         Link a b -> "Link [" ++ a ++"](" ++ b ++ ")"
         Line arg -> "Line [" ++ (List.map string arg |> String.join " ") ++"]"
         Paragraph arg -> "Paragraph [" ++  (List.map string arg |> List.map indentLine |> String.join "\n") ++"]"
+        Error arg -> "Ordinary [" ++ (List.map string arg |> String.join " ") ++"]"
+
+render : MMInline -> String
+render mmInline =
+    case mmInline of
+        OrdinaryText str -> str
+        ItalicText str -> "<i>" ++ str ++"</i>"
+        BoldText str -> "<b>" ++ str ++"</b>"
+        Code str ->  "<code>" ++ str ++"</code>"
+        InlineMath str -> "$" ++ str ++"$"
+        StrikeThroughText str -> "<strikethrough>" ++ str ++ "</strikethrough>"
+        BracketedText str -> "[" ++ str ++"]"
+        Link a b -> "Link [" ++ a ++"](" ++ b ++ ")"
+        Line arg -> List.map render arg |> String.join " "
+        Paragraph arg -> "<p>\n" ++ (List.map render arg |> List.map indentLine |> String.join "\n") ++ "\n</p>"
         Error arg -> "Ordinary [" ++ (List.map string arg |> String.join " ") ++"]"
 
 
@@ -213,6 +228,7 @@ italicText =
     )
         |> getChompedString
         |> map (String.replace "*" "")
+        |> map String.trim
         |> map ItalicText
 
 
