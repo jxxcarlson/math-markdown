@@ -136,7 +136,7 @@ type alias Line =
 get : String -> ( Level, Maybe BlockType )
 get str =
     if str == "\n" then
-        ( 0, Just (MarkdownBlock Plain) )
+        ( 0, Just (MarkdownBlock Blank) )
 
     else
         case run parse (dropLeadingBlanks str) of

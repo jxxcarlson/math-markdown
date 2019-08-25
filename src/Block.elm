@@ -44,7 +44,7 @@ import LineType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
 import Tree exposing (Tree)
 import MMInline exposing(MMInline(..))
 
--- BLOCKS --
+-- BLOCK --
 
 {-| A Block is defined as follows:
 
@@ -72,16 +72,16 @@ type alias Content =
 
 -- FSM --
 
-type State
-    = Start
-    | InBlock Block
-    | Error
+
 
 type FSM
     = FSM State (List Block)
 
 
-
+type State
+    = Start
+    | InBlock Block
+    | Error
 
 {-|
 
@@ -248,7 +248,7 @@ nextStateB1 line fsm =
 
 
 nextStateB : String -> FSM -> FSM
-nextStateB line fsm =
+nextStateB line ((FSM state_ blocks_) as fsm) =
     case LineType.get line of
         ( _, Nothing ) ->
             FSM Error (blockListOfFSM fsm)
@@ -259,17 +259,17 @@ nextStateB line fsm =
             if LineType.isBalanced lineType then
               processBalancedBlock lineType line fsm
 
-                -- add text
-            else if lineType == MarkdownBlock Plain then
-                addLineToFSM (Debug.log "PLAIN" line) fsm
+            -- add text
+            else if (lineType == MarkdownBlock Plain) || (lineType == MarkdownBlock Blank) then
+              processBlankLine lineType line fsm
 
 
             else if LineType.isMarkDown lineType then
                 case stateOfFSM fsm of
                     -- add current block to block list and
                     -- start new block with the current line and lineType
-                    InBlock block_ ->
-                        FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1" line)) line))
+                    InBlock ((Block bt lev_ content_) as block_) ->
+                          FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1" line)) line))
                             (block_ :: blockListOfFSM fsm)
 
                     _ ->
@@ -278,6 +278,15 @@ nextStateB line fsm =
             else
                 fsm
 
+processBlankLine lineType line ((FSM state_ blocks_) as fsm) =
+    case (Debug.log "BLANK (STATE)" state_) of
+        InBlock block_ ->
+            if type_ block_ == MarkdownBlock Blank && lineType == MarkdownBlock Blank then
+              -- we have found a paragraph
+              FSM Start ((Debug.log "BLANK (NP)" block_) :: blockListOfFSM fsm)
+            else
+              addLineToFSM (Debug.log "BLANK (ADD)" line) fsm
+        _ -> fsm
 
 processBalancedBlock : BlockType -> String -> FSM -> FSM
 processBalancedBlock lineType line fsm =
