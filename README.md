@@ -15,8 +15,8 @@ we have implemented is primitive. Nonetheless, it is quite serviceable.  See
 [markdown.minilatex.app](https://markdown.minilatex.app)
 for a working example.
 
-We will be working to expand the coverage
-of Math Markdown.
+I am currently working on a much better parser.  See the `Block.elm`
+file.
 
 ## Example
 
