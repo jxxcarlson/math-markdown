@@ -10,6 +10,7 @@ module LineType exposing
     , level
     , parse
     , stringOfBlockType
+    , prefixOfMarkdownType
     )
 
 import Parser.Advanced exposing (..)
@@ -53,11 +54,25 @@ type MarkdownType
     | Blank
 
 
+prefixOfMarkdownType : MarkdownType -> String
+prefixOfMarkdownType mdt =
+    case mdt of
+        UListItem -> "- "
+        OListItem -> "1. "
+        Heading k -> String.repeat k "#" ++ " "
+        HorizontalRule -> "___"
+        Quotation -> "> "
+        Poetry -> ">> "
+        Plain -> ""
+        Image -> "!["
+        Blank -> ""
+
 stringOfBlockType : BlockType -> String
 stringOfBlockType bt =
     case bt of
         BalancedBlock bt_ -> stringOfBalancedType bt_
         MarkdownBlock mt -> stringOfMarkDownType mt
+
 
 
 stringOfBalancedType : BalancedType -> String

@@ -1,4 +1,4 @@
-module MMInline exposing (..)
+module MMInline exposing (MMInline(..), parseLine, parse, inlineList)
 
 import Parser.Advanced exposing (..)
 
@@ -28,6 +28,9 @@ type MMInline
     | BracketedText String
     | Link String String
     | MMInlineList (List MMInline)
+    | MathText String
+    | CodeText String
+    | VerbatimText String
     | Error (List MMInline)
 
 
@@ -35,7 +38,39 @@ type alias PrefixedString =
     { prefix : String, text : String }
 
 
+parse : String -> MMInline
+parse str =
+    str
+      |> String.split "\n"
+      |> List.map parseLine
+      |> MMInlineList
 
+
+parseLine : String -> MMInline
+parseLine str =
+    run inlineList str
+      |> resolveInlineResult
+
+
+{-|
+
+ > run inline "$a^5 = 1$"
+ > Ok (InlineMath ("a^5 = 1"))
+
+ > run inline "_abc_"
+ > Ok (ItalicText "abc")
+
+ > run inline "hahaha"
+ > Ok (OrdinaryText "hahaha")
+
+ -}
+inline : Parser MMInline
+inline =
+     oneOf [ code, link, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
+
+
+
+-- THE GUTS --
 
 {-|
 
@@ -161,21 +196,6 @@ italicText =
         |> map ItalicText
 
 
-
--- boldText : Parser MMInline
--- boldText =
---     (succeed ()
---         |. symbol "**"
---         |. chompWhile (\c -> c /= '*')
---         |. symbol "**"
---         |. spaces
---     )
---         |> getChompedString
---         |> map (String.dropLeft 2)
---         |> map (String.replace "**" "")
---         |> map BoldText
-
-
 {-|
 
 > run inlineMath "$a^5 = 3$"
@@ -212,27 +232,12 @@ code =
         |> map Code
 
 
-{-|
-
-> run inline "$a^5 = 1$"
-> Ok (InlineMath ("a^5 = 1"))
-
-> run inline "_abc_"
-> Ok (ItalicText "abc")
-
-> run inline "hahaha"
-> Ok (OrdinaryText "hahaha")
-
--}
-inline : Parser MMInline
-inline =
-    oneOf [ code, link, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
 
 
 {-|
 
-> run inlineList "_foo_ hahaha\\nnhohoh\\nn$a^6 + 2$"
-> Ok [ItalicText ("foo "),OrdinaryText "hahaha",OrdinaryText "nhohoh",OrdinaryText "n",InlineMath ("a^6 + 2")]
+    > MMInline.parse "*foo* hahaha: hohoho, $a^6 + 2$"
+    MMInlineList [ItalicText ("foo "),OrdinaryText ("hahaha: hohoho, "),InlineMath ("a^6 + 2")]
 
 -}
 inlineList : Parser (List MMInline)
@@ -240,10 +245,7 @@ inlineList =
     many inline
 
 
-runInlineList : String -> MMInline
-runInlineList str =
-    run inlineList str
-        |> resolveInlineResult
+
 
 
 resolveInlineResult : Result (List (DeadEnd Context Problem)) (List MMInline) -> MMInline

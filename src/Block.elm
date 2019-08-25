@@ -1,5 +1,5 @@
 module Block exposing
-    ( parseToTree, parse, runFSM
+    ( parseToBlockTree, parseToMMBlockTree, parse, runFSM
     , Block, stringOfBlockTree)
 
 {-| A markdown document is parsed into a tree
@@ -42,6 +42,7 @@ the result of parsing the input string into blocks.
 import HTree
 import LineType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
 import Tree exposing (Tree)
+import MMInline exposing(MMInline(..))
 
 
 type State
@@ -67,6 +68,11 @@ type FSM
 -}
 type Block = Block BlockType Level Content
 
+type MMBlock = MMBlock BlockType Level BlockContent
+
+type BlockContent = M MMInline | T String
+
+
 
 type alias Level =
     Int
@@ -74,33 +80,6 @@ type alias Level =
 
 type alias Content =
     String
-
-
-blockLevel : Block -> Int
-blockLevel (Block _ k _) =
-    k
-
-
-type_ : Block -> BlockType
-type_ (Block bt _ _) =
-    bt
-
-
-typeOfState : State -> Maybe BlockType
-typeOfState s =
-    case s of
-        Start ->
-            Nothing
-
-        InBlock b ->
-            Just (type_ b)
-
-        Error ->
-            Nothing
-
-
-rootBlock =
-    Block (MarkdownBlock Plain) 0 "*"
 
 
 {-|
@@ -112,12 +91,32 @@ rootBlock =
     -->    ]
 
 -}
-parseToTree : String -> Tree Block
-parseToTree str =
+parseToBlockTree : String -> Tree Block
+parseToBlockTree str =
     str
         |> parse
         |> HTree.fromList rootBlock blockLevel
 
+
+
+parseToMMBlockTree : String -> Tree MMBlock
+parseToMMBlockTree str =
+    let
+       normalize bt str_ =
+           case bt of
+               BalancedBlock _ ->  str_
+               MarkdownBlock mt -> String.replace (Debug.log "PREFIX" (LineType.prefixOfMarkdownType mt)) "" str_
+       mapper : Block -> MMBlock
+       mapper (Block bt level_ content_) =
+           case bt of
+               MarkdownBlock mt -> (MMBlock (MarkdownBlock mt) level_ (M  (MMInline.parse (normalize bt content_))))
+               BalancedBlock DisplayCode -> (MMBlock (BalancedBlock DisplayCode)) level_ (T content_)
+               BalancedBlock Verbatim -> (MMBlock (BalancedBlock Verbatim)) level_ (T content_)
+               BalancedBlock DisplayMath -> (MMBlock (BalancedBlock DisplayMath)) level_ (T content_)
+    in
+    str
+        |> parseToBlockTree
+        |> Tree.map mapper
 
 {-|
 
@@ -151,6 +150,37 @@ runFSM str =
             \line fsm -> nextState line fsm
     in
     List.foldl folder initialFSM (splitIntoLines str)
+
+
+
+
+
+
+blockLevel : Block -> Int
+blockLevel (Block _ k _) =
+    k
+
+
+type_ : Block -> BlockType
+type_ (Block bt _ _) =
+    bt
+
+
+typeOfState : State -> Maybe BlockType
+typeOfState s =
+    case s of
+        Start ->
+            Nothing
+
+        InBlock b ->
+            Just (type_ b)
+
+        Error ->
+            Nothing
+
+
+rootBlock =
+    Block (MarkdownBlock Plain) 0 "*"
 
 
 flush : FSM -> List Block
@@ -247,19 +277,6 @@ nextStateB line fsm =
             else
                 fsm
 
-processBalancedBlock1 : BlockType -> String -> FSM -> FSM
-processBalancedBlock1 lineType line fsm =
-    if Just lineType == typeOfState (stateOfFSM fsm) then
-         -- the currently processed block should be closed
-        case stateOfFSM fsm of
-            InBlock block_ ->
-                FSM Start (addLineToBlock line block_ :: blockListOfFSM fsm)
-
-            _ ->
-                fsm
-    -- open balanced block
-    else
-      fsm
 
 processBalancedBlock : BlockType -> String -> FSM -> FSM
 processBalancedBlock lineType line fsm =
