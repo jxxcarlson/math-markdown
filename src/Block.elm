@@ -96,9 +96,13 @@ parseToBlockTree : String -> Tree Block
 parseToBlockTree str =
     str
         |> parse
+        |> List.map (changeLevel 1)
         |> HTree.fromList rootBlock blockLevel
 
 
+changeLevel : Int -> Block -> Block
+changeLevel k (Block bt_ level_ content_) =
+     Block bt_ (level_ + k) content_
 
 parseToMMBlockTree : String -> Tree MMBlock
 parseToMMBlockTree str =
@@ -259,11 +263,7 @@ nextStateB line ((FSM state_ blocks_) as fsm) =
             if LineType.isBalanced lineType then
               processBalancedBlock lineType line fsm
 
-            -- add text
---            else if (lineType == MarkdownBlock Plain) || (lineType == MarkdownBlock Blank) then
---              processBlankLine lineType line fsm
-
-
+            -- add markDown block d
             else if LineType.isMarkDown lineType then
               processMarkDownBlock lineType line fsm
 
@@ -275,22 +275,23 @@ processMarkDownBlock lineType line fsm =
    case stateOfFSM fsm of
         -- add current block to block list and
         -- start new block with the current line and lineType
+
         InBlock ((Block bt lev_ content_) as block_) ->
-              FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1" line)) line))
-                (block_ :: blockListOfFSM fsm)
+           -- start new block
+           if lineType == MarkdownBlock Blank then
+             FSM Start ((Debug.log "MD1 (START)" block_) :: blockListOfFSM fsm)
+
+           -- continue, add content to current block
+           else if lineType == MarkdownBlock Plain then
+              addLineToFSM (Debug.log "MD1 (ADD)" line) fsm
+           -- start new block
+           else
+              FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1 START(2)" line)) line)) (block_ :: blockListOfFSM fsm)
+
 
         _ ->
             fsm
 
-processBlankLine lineType line ((FSM state_ blocks_) as fsm) =
-    case (Debug.log "BLANK (STATE)" state_) of
-        InBlock block_ ->
-            if type_ block_ == MarkdownBlock Plain && lineType == MarkdownBlock Blank then
-              -- we have found a paragraph
-              FSM Start ((Debug.log "BLANK (NP)" block_) :: blockListOfFSM fsm)
-            else
-              addLineToFSM (Debug.log "BLANK (ADD)" line) fsm
-        _ -> fsm
 
 processBalancedBlock : BlockType -> String -> FSM -> FSM
 processBalancedBlock lineType line fsm =
@@ -312,45 +313,6 @@ processBalancedBlock lineType line fsm =
             fsm
 
 
-nextStateB2 : String -> FSM -> FSM
-nextStateB2 line fsm =
-    case LineType.get line of
-        ( _, Nothing ) ->
-            FSM Error (blockListOfFSM fsm)
-
-        ( level, Just lineType ) ->
-            -- close balanced block
-            if LineType.isBalanced lineType then
-              if  Just lineType == typeOfState (stateOfFSM fsm) then
-                case stateOfFSM fsm of
-                    InBlock block_ ->
-                        FSM Start (addLineToBlock line block_ :: blockListOfFSM fsm)
-
-                    _ ->
-                        fsm
-              -- open balanced block
-              else
-                FSM (InBlock (Block lineType (LineType.level line) line)) (blockListOfFSM fsm)
-
-
-                -- add text to block
-
-            else if lineType == MarkdownBlock Plain then
-                addLineToFSM line fsm
-                -- start new block
-
-            else if LineType.isMarkDown lineType then
-                case stateOfFSM fsm of
-                    InBlock block_ ->
-                        FSM (InBlock (Block lineType (LineType.level line) line))
-                            (block_ :: blockListOfFSM fsm)
-
-                    _ ->
-                        fsm
-
-            else
-                fsm
-
 addLineToFSM : String -> FSM -> FSM
 addLineToFSM str (FSM state_ blocks_) =
     case state_ of
@@ -360,7 +322,7 @@ addLineToFSM str (FSM state_ blocks_) =
         Error ->
             FSM state_ blocks_
 
-        InBlock block_ ->
+        InBlock _ ->
             FSM (addLineToState str state_) blocks_
 
 

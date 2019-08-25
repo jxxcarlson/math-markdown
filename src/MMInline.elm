@@ -47,11 +47,12 @@ string mmInline =
         BracketedText str -> "Bracketed [" ++ str ++"]"
         Link a b -> "Link [" ++ a ++"](" ++ b ++ ")"
         Line arg -> "Line [" ++ (List.map string arg |> String.join " ") ++"]"
-        Paragraph arg -> "Paragraph [" ++  (List.map string arg |> String.join "\n\n") ++"]"
+        Paragraph arg -> "Paragraph [" ++  (List.map string arg |> List.map indentLine |> String.join "\n") ++"]"
         Error arg -> "Ordinary [" ++ (List.map string arg |> String.join " ") ++"]"
 
 
-
+indentLine : String -> String
+indentLine s = "  " ++ s
 
 type alias PrefixedString =
     { prefix : String, text : String }

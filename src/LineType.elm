@@ -172,7 +172,7 @@ level : Line -> Int
 level ln =
     run numberOfLeadingBlanks ln
         |> Result.toMaybe
-        |> Maybe.map (\l -> 1 + l // 2)
+        |> Maybe.map (\l -> l // 2)
         |> Maybe.withDefault 0
 
 

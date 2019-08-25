@@ -63,14 +63,24 @@ did follow the damn borogroves
 """
 
 par1 = """# Test document
+
 This *is* a test.
 I repeat.  A test.
+I repeat!!!
+a
+b
+c
 """
 
-par1a = """# Test document
+par1a = """# Test document:
+a second try
 
 This *is* a test.
 I repeat.  A test.
+I repeat!!!
+a
+b
+c
 """
 
 par2 = """# Test document
