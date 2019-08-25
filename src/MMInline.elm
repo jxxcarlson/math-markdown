@@ -1,4 +1,4 @@
-module MMInline exposing (MMInline(..), parseLine, parse, inlineList)
+module MMInline exposing (MMInline(..), parseLine, parse, inlineList, string)
 
 import Parser.Advanced exposing (..)
 
@@ -27,11 +27,30 @@ type MMInline
     | StrikeThroughText String
     | BracketedText String
     | Link String String
-    | MMInlineList (List MMInline)
-    | MathText String
-    | CodeText String
-    | VerbatimText String
+    | Line (List MMInline)
+    | Paragraph (List MMInline)
+--    | MathText String
+--    | CodeText String
+--    | VerbatimText String
     | Error (List MMInline)
+
+
+string : MMInline -> String
+string mmInline =
+    case mmInline of
+        OrdinaryText str -> "Text [" ++ str ++"]"
+        ItalicText str -> "Italic [" ++ str ++"]"
+        BoldText str -> "Bold [" ++ str ++"]"
+        Code str ->  "Code [" ++ str ++"]"
+        InlineMath str -> "InlineMath [" ++ str ++"]"
+        StrikeThroughText str -> "StrikeThroughText [" ++ str ++"]"
+        BracketedText str -> "Bracketed [" ++ str ++"]"
+        Link a b -> "Link [" ++ a ++"](" ++ b ++ ")"
+        Line arg -> "Line [" ++ (List.map string arg |> String.join " ") ++"]"
+        Paragraph arg -> "Paragraph [" ++  (List.map string arg |> String.join "\n\n") ++"]"
+        Error arg -> "Ordinary [" ++ (List.map string arg |> String.join " ") ++"]"
+
+
 
 
 type alias PrefixedString =
@@ -43,7 +62,7 @@ parse str =
     str
       |> String.split "\n"
       |> List.map parseLine
-      |> MMInlineList
+      |> Paragraph
 
 
 parseLine : String -> MMInline
@@ -252,7 +271,7 @@ resolveInlineResult : Result (List (DeadEnd Context Problem)) (List MMInline) ->
 resolveInlineResult result =
     case result of
         Ok res_ ->
-            res_ |> MMInlineList
+            res_ |> Line
 
         Err list ->
             decodeInlineError list
@@ -290,11 +309,11 @@ displayDeadEnd deadend =
 joinMMInlineLists : MMInline -> MMInline -> MMInline
 joinMMInlineLists a b =
     case ( a, b ) of
-        ( MMInlineList aList, MMInlineList bList ) ->
-            MMInlineList (aList ++ bList)
+        ( Line aList, Line bList ) ->
+            Line (aList ++ bList)
 
         ( _, _ ) ->
-            MMInlineList []
+            Line []
 
 
 many : Parser a -> Parser (List a)

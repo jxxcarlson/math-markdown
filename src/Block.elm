@@ -1,6 +1,6 @@
 module Block exposing
     ( parseToBlockTree, parseToMMBlockTree, parse, runFSM
-    , Block, stringOfBlockTree)
+    , Block, stringOfBlockTree, stringOfMMBlockTree)
 
 {-| A markdown document is parsed into a tree
 of Blocks using
@@ -260,23 +260,27 @@ nextStateB line ((FSM state_ blocks_) as fsm) =
               processBalancedBlock lineType line fsm
 
             -- add text
-            else if (lineType == MarkdownBlock Plain) || (lineType == MarkdownBlock Blank) then
-              processBlankLine lineType line fsm
+--            else if (lineType == MarkdownBlock Plain) || (lineType == MarkdownBlock Blank) then
+--              processBlankLine lineType line fsm
 
 
             else if LineType.isMarkDown lineType then
-                case stateOfFSM fsm of
-                    -- add current block to block list and
-                    -- start new block with the current line and lineType
-                    InBlock ((Block bt lev_ content_) as block_) ->
-                          FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1" line)) line))
-                            (block_ :: blockListOfFSM fsm)
-
-                    _ ->
-                        fsm
+              processMarkDownBlock lineType line fsm
 
             else
                 fsm
+
+processMarkDownBlock : BlockType -> String -> FSM -> FSM
+processMarkDownBlock lineType line fsm =
+   case stateOfFSM fsm of
+        -- add current block to block list and
+        -- start new block with the current line and lineType
+        InBlock ((Block bt lev_ content_) as block_) ->
+              FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1" line)) line))
+                (block_ :: blockListOfFSM fsm)
+
+        _ ->
+            fsm
 
 processBlankLine lineType line ((FSM state_ blocks_) as fsm) =
     case (Debug.log "BLANK (STATE)" state_) of
@@ -290,8 +294,8 @@ processBlankLine lineType line ((FSM state_ blocks_) as fsm) =
 
 processBalancedBlock : BlockType -> String -> FSM -> FSM
 processBalancedBlock lineType line fsm =
+    -- the currently processed block should be closed and a new one opened
     if Just lineType == typeOfState (stateOfFSM fsm) then
-         -- the currently processed block should be closed
         case stateOfFSM fsm of
             InBlock block_ ->
                 FSM Start (addLineToBlock (Debug.log "CLOSE" line) block_ :: blockListOfFSM fsm)
@@ -403,3 +407,34 @@ indent k str =
       |> String.split "\n"
       |> List.map (\s -> (String.repeat (2 * k) " ") ++ s)
       |> String.join "\n"
+
+
+-- STRING --
+
+stringOfMMBlockTree : Tree MMBlock -> String
+stringOfMMBlockTree tree =
+    tree
+     |> Tree.flatten
+     |> List.map stringOfMMBlock
+     |> String.join "\n"
+
+stringOfMMBlock : MMBlock -> String
+stringOfMMBlock (MMBlock bt lev_ content_) =
+    String.repeat (2 * lev_) " "
+    ++
+    LineType.stringOfBlockType bt
+    ++
+    " (" ++ String.fromInt lev_ ++ ") "
+    ++ indent lev_ (stringOfBlockContent content_)
+
+stringOfBlockContent : BlockContent -> String
+stringOfBlockContent blockContent =
+      case blockContent of
+          M mmInline -> stringOfMMInline mmInline
+          T str -> str
+
+
+
+stringOfMMInline : MMInline -> String
+stringOfMMInline mmInline =
+     MMInline.string mmInline

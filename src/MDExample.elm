@@ -62,10 +62,36 @@ did follow the damn borogroves
 
 """
 
-md3a = """# Test document
+par1 = """# Test document
+This *is* a test.
+I repeat.  A test.
+"""
+
+par1a = """# Test document
 
 This *is* a test.
 I repeat.  A test.
+"""
+
+par2 = """# Test document
+
+This *is* a test.
+I repeat.  A test.
+
+New paragaph:
+red
+blue
+green
+"""
+
+par2a = """
+This *is* a test.
+I repeat.  A test.
+
+New paragaph:
+red
+blue
+green
 """
 
 md3b = """# Test document
