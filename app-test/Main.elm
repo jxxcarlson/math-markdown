@@ -1,17 +1,18 @@
 module Main exposing (main)
 
+import Block
 import Browser
 import Html exposing (..)
-import Html.Attributes as HA exposing (..)
+import Html.Attributes as HA exposing (style)
 import Html.Events exposing (onClick, onInput)
 import Html.Keyed as Keyed
 import Json.Encode
-import MMDiffer exposing (EditRecord)
-import MMarkdown
+import Markdown.Elm exposing (toHtml)
 import Random
 import Strings
 import Style exposing (..)
 import Task
+import Tree
 
 
 main : Program Flags Model Msg
@@ -26,7 +27,6 @@ main =
 
 type alias Model =
     { sourceText : String
-    , editRecord : EditRecord (Html Msg)
     , counter : Int
     , seed : Int
     }
@@ -52,7 +52,6 @@ init flags =
             { sourceText = Strings.initialText
             , counter = 0
             , seed = 0
-            , editRecord = MMDiffer.createRecord (MMarkdown.toHtml []) Strings.initialText
             }
     in
     ( model, Cmd.none )
@@ -69,7 +68,6 @@ update msg model =
         GetContent str ->
             ( { model
                 | sourceText = str
-                , editRecord = MMDiffer.update (model.counter + 1) (MMarkdown.toHtml []) model.editRecord str
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -84,7 +82,6 @@ update msg model =
         Clear ->
             ( { model
                 | sourceText = ""
-                , editRecord = MMDiffer.createRecord (MMarkdown.toHtml []) ""
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -94,7 +91,6 @@ update msg model =
             ( { model
                 | counter = model.counter + 1
                 , sourceText = Strings.initialText
-                , editRecord = MMDiffer.createRecord (MMarkdown.toHtml []) Strings.initialText
               }
             , Cmd.none
             )
@@ -102,7 +98,6 @@ update msg model =
         RefreshText ->
             ( { model
                 | counter = model.counter + 1
-                , editRecord = MMDiffer.createRecord (MMarkdown.toHtml []) model.sourceText
               }
             , Cmd.none
             )
@@ -139,7 +134,7 @@ label text_ =
 
 editor : Model -> Html Msg
 editor model =
-    textarea (editorTextStyle ++ [ onInput GetContent, value model.sourceText ]) []
+    textarea (editorTextStyle ++ [ onInput GetContent, HA.value model.sourceText ]) []
 
 
 renderedSource : Model -> Html Msg
@@ -148,9 +143,9 @@ renderedSource model =
         token =
             String.fromInt model.counter
     in
-    Keyed.node "div"
+    Html.div
         renderedSourceStyle
-        (List.map2 (\x y -> ( x, y )) model.editRecord.idList model.editRecord.renderedParagraphs)
+        [ Block.parseToMMBlockTree model.sourceText |> Markdown.Elm.toHtml ]
 
 
 

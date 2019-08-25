@@ -1,4 +1,4 @@
-module Render exposing (..)
+module Markdown.String exposing (toHtml)
 
 import Block exposing(MMBlock(..), BlockContent(..))
 import LineType exposing(BlockType(..), MarkdownType(..))
@@ -6,13 +6,11 @@ import MMInline exposing(MMInline(..))
 import Tree exposing(Tree)
 
 
-toHtmlString1 : Tree MMBlock -> String
-toHtmlString1 tree =
-    "... rendered content ..."
 
 
-toHtmlString : Tree MMBlock -> String
-toHtmlString tree =
+
+toHtml : Tree MMBlock -> String
+toHtml tree =
     Tree.foldl (\block str -> renderBlock block ++ str) "" tree
 
 renderBlock : MMBlock -> String
