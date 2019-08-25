@@ -44,15 +44,7 @@ import LineType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
 import Tree exposing (Tree)
 import MMInline exposing(MMInline(..))
 
-
-type State
-    = Start
-    | InBlock Block
-    | Error
-
-type FSM
-    = FSM State (List Block)
-
+-- BLOCKS --
 
 {-| A Block is defined as follows:
 
@@ -72,14 +64,23 @@ type MMBlock = MMBlock BlockType Level BlockContent
 
 type BlockContent = M MMInline | T String
 
-
-
 type alias Level =
     Int
 
-
 type alias Content =
     String
+
+-- FSM --
+
+type State
+    = Start
+    | InBlock Block
+    | Error
+
+type FSM
+    = FSM State (List Block)
+
+
 
 
 {-|
@@ -180,7 +181,7 @@ typeOfState s =
 
 
 rootBlock =
-    Block (MarkdownBlock Plain) 0 "*"
+    Block (MarkdownBlock Plain) 0 "DOCUMENT"
 
 
 flush : FSM -> List Block
