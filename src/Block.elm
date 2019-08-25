@@ -104,15 +104,15 @@ parseToMMBlockTree str =
     let
        normalize bt str_ =
            case bt of
-               BalancedBlock _ ->  str_
-               MarkdownBlock mt -> String.replace (Debug.log "PREFIX" (LineType.prefixOfMarkdownType mt)) "" str_
+               BalancedBlock bt_ -> String.replace (LineType.prefixOfBalancedType bt_) "" str_
+               MarkdownBlock mt -> String.replace (LineType.prefixOfMarkdownType mt) "" str_
        mapper : Block -> MMBlock
        mapper (Block bt level_ content_) =
            case bt of
                MarkdownBlock mt -> (MMBlock (MarkdownBlock mt) level_ (M  (MMInline.parse (normalize bt content_))))
-               BalancedBlock DisplayCode -> (MMBlock (BalancedBlock DisplayCode)) level_ (T content_)
-               BalancedBlock Verbatim -> (MMBlock (BalancedBlock Verbatim)) level_ (T content_)
-               BalancedBlock DisplayMath -> (MMBlock (BalancedBlock DisplayMath)) level_ (T content_)
+               BalancedBlock DisplayCode -> (MMBlock (BalancedBlock DisplayCode)) level_ (T (normalize bt content_))
+               BalancedBlock Verbatim -> (MMBlock (BalancedBlock Verbatim)) level_ (T (normalize bt content_))
+               BalancedBlock DisplayMath -> (MMBlock (BalancedBlock DisplayMath)) level_ (T (normalize bt content_))
     in
     str
         |> parseToBlockTree

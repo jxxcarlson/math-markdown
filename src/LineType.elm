@@ -11,6 +11,7 @@ module LineType exposing
     , parse
     , stringOfBlockType
     , prefixOfMarkdownType
+    , prefixOfBalancedType
     )
 
 import Parser.Advanced exposing (..)
@@ -54,6 +55,14 @@ type MarkdownType
     | Blank
 
 
+prefixOfBalancedType : BalancedType -> String
+prefixOfBalancedType bt =
+    case bt of
+        DisplayCode -> "```"
+        Verbatim -> "````"
+        DisplayMath -> ""
+
+
 prefixOfMarkdownType : MarkdownType -> String
 prefixOfMarkdownType mdt =
     case mdt of
@@ -66,6 +75,7 @@ prefixOfMarkdownType mdt =
         Plain -> ""
         Image -> "!["
         Blank -> ""
+
 
 stringOfBlockType : BlockType -> String
 stringOfBlockType bt =
