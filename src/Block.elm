@@ -281,7 +281,7 @@ nextStateB line ((FSM state_ blocks_) as fsm) =
 processBlankLine lineType line ((FSM state_ blocks_) as fsm) =
     case (Debug.log "BLANK (STATE)" state_) of
         InBlock block_ ->
-            if type_ block_ == MarkdownBlock Blank && lineType == MarkdownBlock Blank then
+            if type_ block_ == MarkdownBlock Plain && lineType == MarkdownBlock Blank then
               -- we have found a paragraph
               FSM Start ((Debug.log "BLANK (NP)" block_) :: blockListOfFSM fsm)
             else
