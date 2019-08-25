@@ -9,9 +9,9 @@ module LineType exposing
     , isMarkDown
     , level
     , parse
-    , stringOfBlockType
-    , prefixOfMarkdownType
     , prefixOfBalancedType
+    , prefixOfMarkdownType
+    , stringOfBlockType
     )
 
 import Parser.Advanced exposing (..)
@@ -42,7 +42,6 @@ type BalancedType
     | DisplayMath
 
 
-
 type MarkdownType
     = UListItem
     | OListItem
@@ -58,52 +57,100 @@ type MarkdownType
 prefixOfBalancedType : BalancedType -> String
 prefixOfBalancedType bt =
     case bt of
-        DisplayCode -> "```"
-        Verbatim -> "````"
-        DisplayMath -> ""
+        DisplayCode ->
+            "```"
+
+        Verbatim ->
+            "````"
+
+        DisplayMath ->
+            "$$"
 
 
 prefixOfMarkdownType : MarkdownType -> String
 prefixOfMarkdownType mdt =
     case mdt of
-        UListItem -> "- "
-        OListItem -> "1. "
-        Heading k -> String.repeat k "#" ++ " "
-        HorizontalRule -> "___"
-        Quotation -> "> "
-        Poetry -> ">> "
-        Plain -> ""
-        Image -> "!["
-        Blank -> ""
+        UListItem ->
+            "- "
+
+        OListItem ->
+            "1. "
+
+        Heading k ->
+            String.repeat k "#" ++ " "
+
+        HorizontalRule ->
+            "___"
+
+        Quotation ->
+            "> "
+
+        Poetry ->
+            ">> "
+
+        Plain ->
+            ""
+
+        Image ->
+            "!["
+
+        Blank ->
+            ""
 
 
 stringOfBlockType : BlockType -> String
 stringOfBlockType bt =
     case bt of
-        BalancedBlock bt_ -> stringOfBalancedType bt_
-        MarkdownBlock mt -> stringOfMarkDownType mt
+        BalancedBlock bt_ ->
+            stringOfBalancedType bt_
 
+        MarkdownBlock mt ->
+            stringOfMarkDownType mt
 
 
 stringOfBalancedType : BalancedType -> String
 stringOfBalancedType bt =
     case bt of
-      DisplayCode -> "DisplayCode"
-      Verbatim -> "Verbatim"
-      DisplayMath -> "DisplayMath"
+        DisplayCode ->
+            "DisplayCode"
+
+        Verbatim ->
+            "Verbatim"
+
+        DisplayMath ->
+            "DisplayMath"
+
 
 stringOfMarkDownType : MarkdownType -> String
 stringOfMarkDownType mt =
     case mt of
-        UListItem -> "UListItem"
-        OListItem -> "OListItem"
-        Heading _ -> "Heading"
-        HorizontalRule -> "HorizontalRule"
-        Poetry -> "Poetry"
-        Quotation -> "Quotation"
-        Plain -> "Plain"
-        Image -> "Image"
-        Blank -> "Blank"
+        UListItem ->
+            "UListItem"
+
+        OListItem ->
+            "OListItem"
+
+        Heading _ ->
+            "Heading"
+
+        HorizontalRule ->
+            "HorizontalRule"
+
+        Poetry ->
+            "Poetry"
+
+        Quotation ->
+            "Quotation"
+
+        Plain ->
+            "Plain"
+
+        Image ->
+            "Image"
+
+        Blank ->
+            "Blank"
+
 
 isBalanced : BlockType -> Bool
 isBalanced bt =
@@ -192,7 +239,9 @@ parse =
         ]
 
 
+
 -- PARSERS --
+
 
 poetryBlock : Parser BlockType
 poetryBlock =
@@ -217,7 +266,8 @@ orderedListItemBlock =
         |. chompIf (\c -> Char.isDigit c) (Expecting "Expecting digit to begin ordered list item")
         |. chompWhile (\c -> Char.isDigit c)
         |. symbol (Token ". " (Expecting "expecting period"))
-       ) |> map (\_ -> (MarkdownBlock OListItem))
+    )
+        |> map (\_ -> MarkdownBlock OListItem)
 
 
 horizontalRuleBlock : Parser BlockType
@@ -235,7 +285,8 @@ headingBlock =
         |. spaces
         |. symbol (Token "#" (Expecting "Expecting '#' to begin heading block"))
         |= parseWhile (\c -> c == '#')
-    ) |> map (\s -> (MarkdownBlock (Heading ((String.length s) + 1))))
+    )
+        |> map (\s -> MarkdownBlock (Heading (String.length s + 1)))
 
 
 codeBlock : Parser BlockType

@@ -4,7 +4,7 @@ import Block exposing (BlockContent(..), MMBlock(..))
 import Html exposing (Html)
 import Html.Attributes as HA exposing (style)
 import Json.Encode
-import LineType exposing (BlockType(..), MarkdownType(..))
+import LineType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
 import MMInline exposing (MMInline(..))
 import Tree exposing (Tree)
 
@@ -12,7 +12,7 @@ import Tree exposing (Tree)
 toHtml : Tree MMBlock -> Html msg
 toHtml tree =
     Tree.foldl (\block elements -> renderBlock block :: elements) [] tree
-        |> (\x -> Html.div [] x)
+        |> (\x -> Html.div [] (List.reverse x))
 
 
 renderBlock : MMBlock -> Html msg
@@ -21,8 +21,54 @@ renderBlock block =
         MMBlock (MarkdownBlock Plain) level blockContent ->
             renderBlockContent blockContent
 
+        MMBlock (MarkdownBlock (Heading k)) level blockContent ->
+            renderHeading k blockContent
+
+        MMBlock (BalancedBlock DisplayMath) level blockContent ->
+            case blockContent of
+                T str ->
+                    displayMathText str
+
+                _ ->
+                    displayMathText ""
+
+        MMBlock (BalancedBlock Verbatim) level blockContent ->
+            case blockContent of
+                T str ->
+                    Html.pre [] [ Html.text str ]
+
+                _ ->
+                    displayMathText ""
+
+        MMBlock (BalancedBlock DisplayCode) level blockContent ->
+            case blockContent of
+                T str ->
+                    Html.pre [] [ Html.text str ]
+
+                _ ->
+                    displayMathText ""
+
         _ ->
             Html.div [] [ Html.text "Not implemented" ]
+
+
+renderHeading : Int -> BlockContent -> Html msg
+renderHeading k blockContent =
+    case k of
+        1 ->
+            Html.h1 [] [ renderBlockContent blockContent ]
+
+        2 ->
+            Html.h2 [] [ renderBlockContent blockContent ]
+
+        3 ->
+            Html.h3 [] [ renderBlockContent blockContent ]
+
+        4 ->
+            Html.h4 [] [ renderBlockContent blockContent ]
+
+        _ ->
+            Html.h5 [] [ renderBlockContent blockContent ]
 
 
 renderBlockContent : BlockContent -> Html msg
@@ -59,7 +105,7 @@ renderToHtmlMsg mmInline =
         BracketedText str ->
             Html.span [] [ Html.text <| "[" ++ str ++ "]" ]
 
-        Link label url ->
+        Link url label ->
             Html.a [ HA.href url ] [ Html.text label ]
 
         Line arg ->

@@ -1,6 +1,7 @@
 module Block exposing
-    ( Block(..), MMBlock(..), BlockContent(..), parseToBlockTree, parseToMMBlockTree, parse, runFSM
-    , stringOfBlockTree, stringOfMMBlockTree, stringOfBlockContent)
+    ( Block(..), parse, runFSM
+    , BlockContent(..), MMBlock(..), parseToBlockTree, parseToMMBlockTree, stringOfBlockContent, stringOfBlockTree, stringOfMMBlockTree
+    )
 
 {-| A markdown document is parsed into a tree
 of Blocks using
@@ -41,10 +42,13 @@ the result of parsing the input string into blocks.
 
 import HTree
 import LineType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
+import MMInline exposing (MMInline(..))
 import Tree exposing (Tree)
-import MMInline exposing(MMInline(..))
+
+
 
 -- BLOCK --
+
 
 {-| A Block is defined as follows:
 
@@ -58,20 +62,29 @@ import MMInline exposing(MMInline(..))
         String
 
 -}
-type Block = Block BlockType Level Content
+type Block
+    = Block BlockType Level Content
 
-type MMBlock = MMBlock BlockType Level BlockContent
 
-type BlockContent = M MMInline | T String
+type MMBlock
+    = MMBlock BlockType Level BlockContent
+
+
+type BlockContent
+    = M MMInline
+    | T String
+
 
 type alias Level =
     Int
 
+
 type alias Content =
     String
 
--- FSM --
 
+
+-- FSM --
 
 
 type FSM
@@ -82,6 +95,7 @@ type State
     = Start
     | InBlock Block
     | Error
+
 
 {-|
 
@@ -102,26 +116,39 @@ parseToBlockTree str =
 
 changeLevel : Int -> Block -> Block
 changeLevel k (Block bt_ level_ content_) =
-     Block bt_ (level_ + k) content_
+    Block bt_ (level_ + k) content_
+
 
 parseToMMBlockTree : String -> Tree MMBlock
 parseToMMBlockTree str =
     let
-       normalize bt str_ =
-           case bt of
-               BalancedBlock bt_ -> String.replace (LineType.prefixOfBalancedType bt_) "" str_
-               MarkdownBlock mt -> String.replace (LineType.prefixOfMarkdownType mt) "" str_
-       mapper : Block -> MMBlock
-       mapper (Block bt level_ content_) =
-           case bt of
-               MarkdownBlock mt -> (MMBlock (MarkdownBlock mt) level_ (M  (MMInline.parse (normalize bt content_))))
-               BalancedBlock DisplayCode -> (MMBlock (BalancedBlock DisplayCode)) level_ (T (normalize bt content_))
-               BalancedBlock Verbatim -> (MMBlock (BalancedBlock Verbatim)) level_ (T (normalize bt content_))
-               BalancedBlock DisplayMath -> (MMBlock (BalancedBlock DisplayMath)) level_ (T (normalize bt content_))
+        normalize bt str_ =
+            case bt of
+                BalancedBlock bt_ ->
+                    String.replace (LineType.prefixOfBalancedType bt_) "" str_
+
+                MarkdownBlock mt ->
+                    String.replace (LineType.prefixOfMarkdownType mt) "" str_
+
+        mapper : Block -> MMBlock
+        mapper (Block bt level_ content_) =
+            case bt of
+                MarkdownBlock mt ->
+                    MMBlock (MarkdownBlock mt) level_ (M (MMInline.parse (normalize bt content_)))
+
+                BalancedBlock DisplayCode ->
+                    MMBlock (BalancedBlock DisplayCode) level_ (T (normalize bt content_))
+
+                BalancedBlock Verbatim ->
+                    MMBlock (BalancedBlock Verbatim) level_ (T (normalize bt content_))
+
+                BalancedBlock DisplayMath ->
+                    MMBlock (BalancedBlock DisplayMath) level_ (T (normalize bt content_))
     in
     str
         |> parseToBlockTree
         |> Tree.map mapper
+
 
 {-|
 
@@ -155,10 +182,6 @@ runFSM str =
             \line fsm -> nextState line fsm
     in
     List.foldl folder initialFSM (splitIntoLines str)
-
-
-
-
 
 
 blockLevel : Block -> Int
@@ -213,9 +236,9 @@ blockListOfFSM (FSM _ blockList_) =
 
 splitIntoLines : String -> List String
 splitIntoLines str =
-    str |> String.lines
+    str
+        |> String.lines
         |> List.map (\l -> l ++ "\n")
-
 
 
 initialFSM : FSM
@@ -230,7 +253,7 @@ nextState str fsm =
             nextStateS str fsm
 
         InBlock _ ->
-            nextStateB str fsm
+            nextStateIB str fsm
 
         Error ->
             fsm
@@ -246,48 +269,46 @@ nextStateS line (FSM state blockList) =
             FSM (InBlock (Block blockType level (Debug.log "START" line))) blockList
 
 
-nextStateB1 : String -> FSM -> FSM
-nextStateB1 line fsm =
-    fsm
-
-
-nextStateB : String -> FSM -> FSM
-nextStateB line ((FSM state_ blocks_) as fsm) =
+nextStateIB : String -> FSM -> FSM
+nextStateIB line ((FSM state_ blocks_) as fsm) =
     case LineType.get line of
         ( _, Nothing ) ->
             FSM Error (blockListOfFSM fsm)
 
         ( level, Just lineType ) ->
-
             -- process balanced block
             if LineType.isBalanced lineType then
-              processBalancedBlock lineType line fsm
+                processBalancedBlock lineType line fsm
+                -- add markDown block d
 
-            -- add markDown block d
             else if LineType.isMarkDown lineType then
-              processMarkDownBlock lineType line fsm
+                processMarkDownBlock lineType line fsm
 
             else
                 fsm
 
+
 processMarkDownBlock : BlockType -> String -> FSM -> FSM
 processMarkDownBlock lineType line fsm =
-   case stateOfFSM fsm of
+    case stateOfFSM fsm of
         -- add current block to block list and
         -- start new block with the current line and lineType
-
         InBlock ((Block bt lev_ content_) as block_) ->
-           -- start new block
-           if lineType == MarkdownBlock Blank then
-             FSM Start ((Debug.log "MD1 (START)" block_) :: blockListOfFSM fsm)
+            -- start new block
+            if lineType == MarkdownBlock Blank || LineType.isBalanced bt then
+                if LineType.isBalanced bt then
+                    addLineToFSM (Debug.log "MD1 (ADD BALANCED)" line) fsm
 
-           -- continue, add content to current block
-           else if lineType == MarkdownBlock Plain then
-              addLineToFSM (Debug.log "MD1 (ADD)" line) fsm
-           -- start new block
-           else
-              FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1 START(2)" line)) line)) (block_ :: blockListOfFSM fsm)
+                else
+                    FSM Start (Debug.log "MD1 (START)" block_ :: blockListOfFSM fsm)
+                -- continue, add content to current block
 
+            else if lineType == MarkdownBlock Plain then
+                addLineToFSM (Debug.log "MD1 (ADD)" line) fsm
+                -- start new block
+
+            else
+                FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1 START(2)" line)) line)) (block_ :: blockListOfFSM fsm)
 
         _ ->
             fsm
@@ -303,14 +324,15 @@ processBalancedBlock lineType line fsm =
 
             _ ->
                 fsm
-    -- open balanced block
-    else
-      case stateOfFSM fsm of
-        InBlock block_ ->
-            FSM (InBlock (Block lineType (LineType.level (Debug.log "OPEN" line)) line)) (block_ :: blockListOfFSM fsm)
+        -- open balanced block
 
-        _ ->
-            fsm
+    else
+        case stateOfFSM fsm of
+            InBlock block_ ->
+                FSM (InBlock (Block lineType (LineType.level (Debug.log "OPEN" line)) line)) (block_ :: blockListOfFSM fsm)
+
+            _ ->
+                fsm
 
 
 addLineToFSM : String -> FSM -> FSM
@@ -344,59 +366,69 @@ addLineToBlock str (Block blockType_ level_ content_) =
     Block blockType_ level_ (content_ ++ str)
 
 
+
 -- STRING --
+
 
 stringOfBlockTree : Tree Block -> String
 stringOfBlockTree tree =
     tree
-     |> Tree.flatten
-     |> List.map stringOfBlock
-     |> String.join "\n"
+        |> Tree.flatten
+        |> List.map stringOfBlock
+        |> String.join "\n"
 
 
 stringOfBlock : Block -> String
 stringOfBlock (Block bt lev_ content_) =
     String.repeat (2 * lev_) " "
-    ++
-    LineType.stringOfBlockType bt
-    ++
-    " (" ++ String.fromInt lev_ ++ ") "
-    ++ "\n" ++ indent lev_ content_
+        ++ LineType.stringOfBlockType bt
+        ++ " ("
+        ++ String.fromInt lev_
+        ++ ") "
+        ++ "\n"
+        ++ indent lev_ content_
+
 
 indent : Int -> String -> String
 indent k str =
     str
-      |> String.split "\n"
-      |> List.map (\s -> (String.repeat (2 * k) " ") ++ s)
-      |> String.join "\n"
+        |> String.split "\n"
+        |> List.map (\s -> String.repeat (2 * k) " " ++ s)
+        |> String.join "\n"
+
 
 
 -- STRING --
 
+
 stringOfMMBlockTree : Tree MMBlock -> String
 stringOfMMBlockTree tree =
     tree
-     |> Tree.flatten
-     |> List.map stringOfMMBlock
-     |> String.join "\n"
+        |> Tree.flatten
+        |> List.map stringOfMMBlock
+        |> String.join "\n"
+
 
 stringOfMMBlock : MMBlock -> String
 stringOfMMBlock (MMBlock bt lev_ content_) =
     String.repeat (2 * lev_) " "
-    ++
-    LineType.stringOfBlockType bt
-    ++
-    " (" ++ String.fromInt lev_ ++ ") "
-    ++ indent lev_ (stringOfBlockContent content_)
+        ++ LineType.stringOfBlockType bt
+        ++ " ("
+        ++ String.fromInt lev_
+        ++ ") "
+        ++ indent lev_ (stringOfBlockContent content_)
+
 
 stringOfBlockContent : BlockContent -> String
 stringOfBlockContent blockContent =
-      case blockContent of
-          M mmInline -> stringOfMMInline mmInline
-          T str -> str
+    case blockContent of
+        M mmInline ->
+            stringOfMMInline mmInline
 
+        T str ->
+            str
 
 
 stringOfMMInline : MMInline -> String
 stringOfMMInline mmInline =
-     MMInline.string mmInline
+    MMInline.string mmInline

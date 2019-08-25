@@ -1,20 +1,75 @@
-module MDExample exposing (..)
+module MDExample exposing (code, ll, math, md1, md1a, md2, md3, md3b, par1, par1a, par2, par2a, verbatim1, verbatim2, verbatim3)
 
 
-md1 = """
+md1 =
+    """
 $$
 a^2 + b^2 = c^2
 $$
 """
 
-md1a = """
+
+math =
+    """# MMarkdown
+
+$$
+\\int_{-\\infty}^\\infty e^{-x^2} dx = \\pi
+$$
+"""
+
+
+verbatim1 =
+    """````
+one
+  two
+    three
+"""
+
+
+verbatim2 =
+    """````
+one
+  two
+    three
+
+three
+   four
+      five
+"""
+
+
+verbatim3 =
+    """````
+one
+  two
+    three
+
+
+
+three
+   four
+      five
+"""
+
+
+code =
+    """```
+one == two
+```
+"""
+
+
+md1a =
+    """
 one
 $$
 a^2 + b^2 = c^2
 $$
 """
 
-ll = """
+
+ll =
+    """
 - A
 - B
   - uuu
@@ -22,7 +77,9 @@ ll = """
 - C
 """
 
-md2 = """# Test document
+
+md2 =
+    """# Test document
 
 This is a test.
 I repeat.  A test.
@@ -62,7 +119,9 @@ did follow the damn borogroves
 
 """
 
-par1 = """# Test document
+
+par1 =
+    """# Test document
 
 This *is* a test.
 I repeat.  A test.
@@ -72,7 +131,9 @@ b
 c
 """
 
-par1a = """# Test document:
+
+par1a =
+    """# Test document:
 a second try
 
 This *is* a test.
@@ -83,7 +144,9 @@ b
 c
 """
 
-par2 = """# Test document
+
+par2 =
+    """# Test document
 
 This *is* a test.
 I repeat.  A test.
@@ -94,7 +157,9 @@ blue
 green
 """
 
-par2a = """
+
+par2a =
+    """
 This *is* a test.
 I repeat.  A test.
 
@@ -104,14 +169,18 @@ blue
 green
 """
 
-md3b = """# Test document
+
+md3b =
+    """# Test document
 
 - One
 This *is* a test.
 I repeat.  A test.
 """
 
-md3 = """# Test document
+
+md3 =
+    """# Test document
 
 This *is* a test.
 I repeat.  A test.

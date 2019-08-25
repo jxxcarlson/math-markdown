@@ -4,19 +4,29 @@ module Strings exposing (initialText, notes)
 initialText =
     """# MMarkdown
 
+$$
+\\int_{-\\infty}^\\infty e^{-x^2} dx = \\pi
+$$
+
+
 MMarkdown is a dialect of Markdown which can render
-formulas written in TeX/LaTeX.  It can, however, be
-used without the math option, as this document
-demonstrates.  MMarkdown is written in pure Elm. See notes on installation
-at the end.
+formulas written in TeX/LaTeX.  It is suitable for
+light-weight writing tasks that require
+mathematical notation — problem sets, short class notes, etc.
 
 
 MMarkdown extends Markdown with two new elements: Poetry and Verbatim.
 See below.
 
+
+For installation, see the notes
+at the end. The MMarkdown package is written in pure Elm.
+It uses MathJax.js to render formulas.
+
 ## Demo
 
-MMarkdown implements the usual Markdown features such as headings,
+The present document illustrates most of the features of MMarkdown, minus the
+math.  MMarkdown implements the usual Markdown features such as headings,
 bold, italic, and strike-through, links, images, etc. There is one extension, for poetry (see below).
 
 MMarkdown is to some extent *paragraph-centric*, meaning that certain elements, e.g., headings and
@@ -26,7 +36,7 @@ In general, if you run into
 something that is not working for you, please post an issue on
 [GitHub](https://github.com/jxxcarlson/math-markdown).
 
-MMarkdown is now one of the markup options at [knode.io](https://knode.io).
+MMarkdown is one of the markup options on [knode.io](https://knode.io).
 
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
@@ -37,7 +47,20 @@ Link: [New York Times](http://nytimes.com)
 Text styles: **bold** *italic* ~~strike it out~~
 
 
-## 1. Code
+## 1 Inline Math
+
+This is a test: $a^2 + b^2 = c^2$.
+
+## 2 Display Math
+
+So is this:
+
+$$
+\\int_0^1 x^n dx = \\frac{1}{n+1}
+$$
+
+
+## 3. Code
 
 He said that `a := 0` is an initialization statement.
 
@@ -50,7 +73,7 @@ for n in range(1..100):
 sum
 ```
 
-## 2. Verbatim (Extension)
+## 4. Verbatim (Extension)
 
 A verabatim block begins and ends with four tick marks.
 It is just like a code block, except that there is no
@@ -67,7 +90,7 @@ Verbatim text has many uses:
    Certium    |    9/5
 ````
 
-## 3. Lists
+## 5. Lists
 
 Indent by four spaces for each level.  List items
 are separated by blank lines.
@@ -76,9 +99,9 @@ are separated by blank lines.
 
     - Iron *(metal)*
 
-        - Iron disulfide (Pyrite), crystalline
+        - Iron disulfide (Pyrite): $FeS_2$, crystalline
 
-        - Iron(II) sulfide, not stable, amorphous
+        - Iron(II) sulfed $FeS$, not stable, amorphous
 
     - Selenium *(use for solar cells)*
 
@@ -88,25 +111,34 @@ are separated by blank lines.
 
     - Water *(Ok to drink)*
 
-## 4. Numbered lists
+## 6. Numbered lists
 
-### Final Exam
+### Problem Set 18
 
+1. Compute the coefficient of $a^5b^2$ in $(a + b)^7$.
 
-1. Discuss the shape of the earth, now viewed as a sphere.
+    1. Do also: coefficient of $a^5b^5$ in $(a + 2b)^{10}$
 
-  1. What is the earliest textual evidence that the earth was viewed as a sphere?
+    2. Do also: coefficient of $a^7b^5$ in $(a - b)^{12}$
 
-  2. Discuss the problem of navigation at sea as it relates to the shape of the earth.
+4. If $f'(2) = 0$, what can you say about the graph of $f$ at $x = 2$?
 
-
-4. The earth is said to be some 4 billion years old. How does one justify such a statement?
-
-
-6. The universe is said to be some 14 billion years old.  How do we know that this is so?
+6. Suppose that in addition, $f''(2) > 0$. What else can say about the graph?
 
 
-## 5. Quotations
+### Problem Set 19
+
+4. Show that $u(x,t) = f(x - ct)$ is a solution to the equation $\\partial u(x,t)/\\partial x + c^{-1} \\partial u(x,t)/\\partial = 0$.
+
+3. State the wave equation and show that $u(x,t)$ as above is a solution to it.
+
+2. In what direction does the wave defined by $u(x,t) = f(x - ct)$ move?
+
+4.  Find a solution of the wave equation that represents a pulse moving in the opposite direction.
+
+
+
+## 7. Quotations
 
 
 Quotations are offset:
@@ -119,7 +151,7 @@ Quotations are offset:
 
 — Abraham Lincoln, *Gettysbug Address*
 
-## 6. Poetry (Extension)
+## 8. Poetry (Extension)
 
 Poetry blocks, an extension of normal Markdown,
  begin with ">>"; line endings are respected.
@@ -140,7 +172,7 @@ Etcetera!
 ___
 
 
-NOTE: Math Markdown is also implemented as an option for [knode.io](https://knode.io).
+NOTE: MMarkdown is also implemented as an option for [knode.io](https://knode.io).
 knode offers MiniLaTeX, a web-friendly subset of TeX/LaTex.  To see
 how it works without a sign-in, please see [demo.minilatex.app](https://demo.minilatex.app).
 
@@ -149,22 +181,14 @@ ___
 
 ## Installation
 
-MMarkdown is designed to work with some CSS definitions. See the file `./index.html`
-for these.
-Compile using
+
+To compile, use
 
 ```
-elm make --optimize --output=Main.js
+elm make --output=Main.js
 ```
 
-You can change the CSS to suit your needs.
-You could also use
-
-```
-elm make --optimize --output=plain.html
-```
-
-However, at the present time, the text is not rendered properly in this case.
+Then open `index.html` to run the app.
 
 
 """
