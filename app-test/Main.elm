@@ -143,9 +143,9 @@ renderedSource model =
         token =
             String.fromInt model.counter
     in
-    Html.div
+    Keyed.node "div"
         renderedSourceStyle
-        [ Block.parseToMMBlockTree model.sourceText |> Markdown.Elm.toHtml ]
+        [ ( token, Block.parseToMMBlockTree model.sourceText |> Markdown.Elm.toHtml ) ]
 
 
 
