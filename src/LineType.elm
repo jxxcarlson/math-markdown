@@ -92,7 +92,7 @@ prefixOfMarkdownType mdt =
             ""
 
         Image ->
-            "!["
+            ""
 
         Blank ->
             ""

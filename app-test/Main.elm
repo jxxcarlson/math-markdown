@@ -119,7 +119,7 @@ view model =
 display : Model -> Html Msg
 display model =
     div []
-        [ h1 [ style "margin-left" "20px" ] [ text "MMarkdown Demo (Plain)" ]
+        [ h1 [ style "margin-left" "20px" ] [ text "MMarkdown Demo (Experimental)" ]
         , p [ style "margin-left" "20px", style "margin-bottom" "0", style "margin-top" "0" ] [ text "This project is in its very earliest stages ..." ]
         , p [ style "margin-left" "20px", style "margin-top" "0" ] [ text "Edit or write new MMarkdown below." ]
         , editor model

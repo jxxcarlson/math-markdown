@@ -26,6 +26,7 @@ type MMInline
     | StrikeThroughText String
     | BracketedText String
     | Link String String
+    | Image String String
     | Line (List MMInline)
     | Paragraph (List MMInline)
       --    | MathText String
@@ -60,6 +61,9 @@ string mmInline =
 
         Link a b ->
             "Link [" ++ a ++ "](" ++ b ++ ")"
+
+        Image a b ->
+            "Image [" ++ a ++ "](" ++ b ++ ")"
 
         Line arg ->
             "Line [" ++ (List.map string arg |> String.join " ") ++ "]"
@@ -98,6 +102,9 @@ render mmInline =
         Link a b ->
             "Link [" ++ a ++ "](" ++ b ++ ")"
 
+        Image a b ->
+            "Image [" ++ a ++ "](" ++ b ++ ")"
+
         Line arg ->
             List.map render arg |> String.join " "
 
@@ -115,16 +122,6 @@ indentLine s =
 
 type alias PrefixedString =
     { prefix : String, text : String }
-
-
-parse2 : String -> MMInline
-parse2 str =
-    str
-        |> String.replace "\n" " "
-        |> String.replace "." ".\n"
-        |> String.split "\n"
-        |> List.map parseLine
-        |> Paragraph
 
 
 parse : String -> MMInline
@@ -164,7 +161,7 @@ wrapper str acc =
 
 endsWithPumctuation : String -> Bool
 endsWithPumctuation str =
-    List.member (String.right 1 str) [ ".", "!" ]
+    List.member (String.right 1 str) [ "." ]
 
 
 parseLine : String -> MMInline
@@ -187,7 +184,7 @@ parseLine str =
 -}
 inline : Parser MMInline
 inline =
-    oneOf [ code, link, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
+    oneOf [ code, image, link, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
 
 
 
@@ -230,6 +227,20 @@ ordinaryText =
     )
         |> getChompedString
         |> map OrdinaryText
+
+
+image : Parser MMInline
+image =
+    (succeed PrefixedString
+        |. symbol (Token "![" (Expecting "Expecting '![' to begin image block"))
+        |= parseWhile (\c -> c /= ']')
+        |. symbol (Token "](" (Expecting "Expecting '](' in image block"))
+        |= parseWhile (\c -> c /= ')')
+        |. symbol (Token ")" (Expecting "Expecting ')' to end image block"))
+        |. chompWhile (\c -> c == '\n')
+    )
+        -- xxx
+        |> map (\ps -> Image ps.prefix ps.text)
 
 
 {-|

@@ -28,6 +28,25 @@ renderBlock block =
         MMBlock (MarkdownBlock (Heading k)) level blockContent ->
             renderHeading k blockContent
 
+        MMBlock (MarkdownBlock Quotation) level blockContent ->
+            renderQuotation blockContent
+
+        MMBlock (MarkdownBlock Poetry) level blockContent ->
+            renderPoetry blockContent
+
+        MMBlock (MarkdownBlock UListItem) level blockContent ->
+            renderUListItem level blockContent
+
+        MMBlock (MarkdownBlock HorizontalRule) level blockContent ->
+            Html.hr [ HA.class "mm-thematic-break" ] []
+
+        MMBlock (MarkdownBlock LineType.Image) level blockContent ->
+            let
+                _ =
+                    Debug.log "IMG (BC)" blockContent
+            in
+            renderBlockContent blockContent
+
         MMBlock (BalancedBlock DisplayMath) level blockContent ->
             case blockContent of
                 T str ->
@@ -56,6 +75,37 @@ renderBlock block =
             Html.div [] [ Html.text "Not implemented" ]
 
 
+renderUListItem : Int -> BlockContent -> Html msg
+renderUListItem k blockContent =
+    let
+        margin =
+            String.fromInt (18 * k)
+                ++ "px"
+
+        label =
+            case k of
+                1 ->
+                    "• "
+
+                2 ->
+                    "◊ "
+
+                3 ->
+                    "† "
+
+                4 ->
+                    "‡ "
+
+                _ ->
+                    "N. "
+    in
+    Html.li
+        [ style "margin-left" margin
+        , HA.class "mm-olist-item"
+        ]
+        [ renderBlockContent blockContent ]
+
+
 renderHeading : Int -> BlockContent -> Html msg
 renderHeading k blockContent =
     case k of
@@ -73,6 +123,20 @@ renderHeading k blockContent =
 
         _ ->
             Html.h5 [] [ renderBlockContent blockContent ]
+
+
+renderQuotation : BlockContent -> Html msg
+renderQuotation blockContent =
+    Html.div
+        [ HA.class "mm-quotation" ]
+        [ renderBlockContent blockContent ]
+
+
+renderPoetry : BlockContent -> Html msg
+renderPoetry blockContent =
+    Html.div
+        [ HA.class "mm-poetry" ]
+        [ renderBlockContent blockContent ]
 
 
 renderBlockContent : BlockContent -> Html msg
@@ -111,6 +175,9 @@ renderToHtmlMsg mmInline =
 
         Link url label ->
             Html.a [ HA.href url ] [ Html.text label ]
+
+        MMInline.Image label url ->
+            Html.img [ HA.src url, HA.class "mm-image" ] [ Html.text label ]
 
         Line arg ->
             let
