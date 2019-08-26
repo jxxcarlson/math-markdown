@@ -1,6 +1,6 @@
 module Block exposing
     ( Block(..), parse, runFSM
-    , BlockContent(..), MMBlock(..), parseToBlockTree, parseToMMBlockTree, stringOfBlockContent, stringOfBlockTree, stringOfMMBlockTree
+    , BlockContent(..), MMBlock(..), parseToBlockTree, parseToMMBlockTree, stringOfBlockContent, stringOfBlockTree, stringOfMMBlockTree, updateRegister
     )
 
 {-| A markdown document is parsed into a tree
@@ -283,7 +283,12 @@ nextStateS line (FSM state blockList register) =
             FSM Error blockList register
 
         ( level, Just blockType ) ->
-            FSM (InBlock (Block blockType level (Debug.log "START" line))) blockList register
+            let
+                newRegister =
+                    Debug.log "START, REG" <|
+                        updateRegister blockType level register
+            in
+            FSM (InBlock (Block blockType level (Debug.log "START" line))) blockList newRegister
 
 
 nextStateIB : String -> FSM -> FSM
@@ -325,7 +330,12 @@ processMarkDownBlock lineType line ((FSM state_ blocks_ register) as fsm) =
                 -- start new block
 
             else
-                FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1 START(2)" line)) line)) (block_ :: blocks_) register
+                let
+                    newRegister =
+                        Debug.log "START, REG" <|
+                            updateRegister bt lev_ register
+                in
+                FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1 START(2)" line)) line)) (block_ :: blocks_) newRegister
 
         _ ->
             fsm
@@ -350,6 +360,46 @@ processBalancedBlock lineType line ((FSM state_ blocks_ register) as fsm) =
 
             _ ->
                 fsm
+
+
+updateRegister : BlockType -> Int -> Register -> Register
+updateRegister blockType level_ register =
+    if blockType == MarkdownBlock OListItem then
+        Debug.log "INC REG" (incrementRegister (Debug.log "INC REG (L)" level_) register)
+
+    else
+        register
+
+
+incrementRegister : Int -> Register -> Register
+incrementRegister level register =
+    case level + 1 of
+        1 ->
+            { register
+                | itemIndex1 = register.itemIndex1 + 1
+                , itemIndex2 = 0
+                , itemIndex3 = 0
+                , itemIndex4 = 0
+            }
+
+        2 ->
+            { register
+                | itemIndex2 = register.itemIndex2 + 1
+                , itemIndex3 = 0
+                , itemIndex4 = 0
+            }
+
+        3 ->
+            { register
+                | itemIndex3 = register.itemIndex3 + 1
+                , itemIndex4 = 0
+            }
+
+        4 ->
+            { register | itemIndex4 = register.itemIndex4 + 1 }
+
+        _ ->
+            register
 
 
 addLineToFSM : String -> FSM -> FSM
