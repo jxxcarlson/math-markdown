@@ -106,6 +106,38 @@ renderUListItem k blockContent =
         [ renderBlockContent blockContent ]
 
 
+
+-- renderOListItem : Int -> BlockContent -> Html msg
+-- renderOListItem k blockContent =
+--     let
+--         margin =
+--             String.fromInt (18 * k)
+--                 ++ "px"
+--
+--         label =
+--             case k of
+--                 1 ->
+--                     String.fromInt mmState.itemIndex1 ++ ". "
+--
+--                 2 ->
+--                     alphabet mmState.itemIndex2 ++ ". "
+--
+--                 3 ->
+--                     romanNumeral mmState.itemIndex2 ++ ". "
+--
+--                 4 ->
+--                     String.fromInt mmState.itemIndex4 ++ ". "
+--
+--                 _ ->
+--                     "N. "
+--     in
+--     li
+--         [ style "margin-left" margin
+--         , HA.class "mm-olist-item"
+--         ]
+--         [ renderBlockContent blockContent ]
+
+
 renderHeading : Int -> BlockContent -> Html msg
 renderHeading k blockContent =
     case k of

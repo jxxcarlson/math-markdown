@@ -88,7 +88,24 @@ type alias Content =
 
 
 type FSM
-    = FSM State (List Block)
+    = FSM State (List Block) Register
+
+
+type alias Register =
+    { itemIndex1 : Int
+    , itemIndex2 : Int
+    , itemIndex3 : Int
+    , itemIndex4 : Int
+    }
+
+
+emptyRegister : Register
+emptyRegister =
+    { itemIndex1 = 0
+    , itemIndex2 = 0
+    , itemIndex3 = 0
+    , itemIndex4 = 0
+    }
 
 
 type State
@@ -225,12 +242,12 @@ flush fsm =
 
 
 stateOfFSM : FSM -> State
-stateOfFSM (FSM state_ _) =
+stateOfFSM (FSM state_ _ _) =
     state_
 
 
 blockListOfFSM : FSM -> List Block
-blockListOfFSM (FSM _ blockList_) =
+blockListOfFSM (FSM _ blockList_ _) =
     blockList_
 
 
@@ -243,7 +260,7 @@ splitIntoLines str =
 
 initialFSM : FSM
 initialFSM =
-    FSM Start []
+    FSM Start [] emptyRegister
 
 
 nextState : String -> FSM -> FSM
@@ -260,20 +277,20 @@ nextState str fsm =
 
 
 nextStateS : String -> FSM -> FSM
-nextStateS line (FSM state blockList) =
+nextStateS line (FSM state blockList register) =
     case LineType.get line of
         ( _, Nothing ) ->
-            FSM Error blockList
+            FSM Error blockList register
 
         ( level, Just blockType ) ->
-            FSM (InBlock (Block blockType level (Debug.log "START" line))) blockList
+            FSM (InBlock (Block blockType level (Debug.log "START" line))) blockList register
 
 
 nextStateIB : String -> FSM -> FSM
-nextStateIB line ((FSM state_ blocks_) as fsm) =
+nextStateIB line ((FSM state_ blocks_ register) as fsm) =
     case LineType.get line of
         ( _, Nothing ) ->
-            FSM Error (blockListOfFSM fsm)
+            FSM Error (blockListOfFSM fsm) register
 
         ( level, Just lineType ) ->
             -- process balanced block
@@ -289,7 +306,7 @@ nextStateIB line ((FSM state_ blocks_) as fsm) =
 
 
 processMarkDownBlock : BlockType -> String -> FSM -> FSM
-processMarkDownBlock lineType line fsm =
+processMarkDownBlock lineType line ((FSM state_ blocks_ register) as fsm) =
     case stateOfFSM fsm of
         -- add current block to block list and
         -- start new block with the current line and lineType
@@ -300,7 +317,7 @@ processMarkDownBlock lineType line fsm =
                     addLineToFSM (Debug.log "MD1 (ADD BALANCED)" line) fsm
 
                 else
-                    FSM Start (Debug.log "MD1 (START)" block_ :: blockListOfFSM fsm)
+                    FSM Start (Debug.log "MD1 (START)" block_ :: blocks_) register
                 -- continue, add content to current block
 
             else if lineType == MarkdownBlock Plain then
@@ -308,19 +325,19 @@ processMarkDownBlock lineType line fsm =
                 -- start new block
 
             else
-                FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1 START(2)" line)) line)) (block_ :: blockListOfFSM fsm)
+                FSM (InBlock (Block lineType (LineType.level (Debug.log "MD1 START(2)" line)) line)) (block_ :: blocks_) register
 
         _ ->
             fsm
 
 
 processBalancedBlock : BlockType -> String -> FSM -> FSM
-processBalancedBlock lineType line fsm =
+processBalancedBlock lineType line ((FSM state_ blocks_ register) as fsm) =
     -- the currently processed block should be closed and a new one opened
     if Just lineType == typeOfState (stateOfFSM fsm) then
         case stateOfFSM fsm of
             InBlock block_ ->
-                FSM Start (addLineToBlock (Debug.log "CLOSE" line) block_ :: blockListOfFSM fsm)
+                FSM Start (addLineToBlock (Debug.log "CLOSE" line) block_ :: blocks_) register
 
             _ ->
                 fsm
@@ -329,23 +346,23 @@ processBalancedBlock lineType line fsm =
     else
         case stateOfFSM fsm of
             InBlock block_ ->
-                FSM (InBlock (Block lineType (LineType.level (Debug.log "OPEN" line)) line)) (block_ :: blockListOfFSM fsm)
+                FSM (InBlock (Block lineType (LineType.level (Debug.log "OPEN" line)) line)) (block_ :: blocks_) register
 
             _ ->
                 fsm
 
 
 addLineToFSM : String -> FSM -> FSM
-addLineToFSM str (FSM state_ blocks_) =
+addLineToFSM str (FSM state_ blocks_ register) =
     case state_ of
         Start ->
-            FSM state_ blocks_
+            FSM state_ blocks_ register
 
         Error ->
-            FSM state_ blocks_
+            FSM state_ blocks_ register
 
         InBlock _ ->
-            FSM (addLineToState str state_) blocks_
+            FSM (addLineToState str state_) blocks_ register
 
 
 addLineToState : String -> State -> State
