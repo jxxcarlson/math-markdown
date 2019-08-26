@@ -1,4 +1,4 @@
-module MMInline exposing (MMInline(..), parseLine, parse, inlineList, string, render)
+module MMInline exposing (MMInline(..), inlineList, parse, parseLine, render, string, wrap)
 
 import Parser.Advanced exposing (..)
 
@@ -17,7 +17,6 @@ type Problem
     = Expecting String
 
 
-
 type MMInline
     = OrdinaryText String
     | ItalicText String
@@ -29,84 +28,171 @@ type MMInline
     | Link String String
     | Line (List MMInline)
     | Paragraph (List MMInline)
---    | MathText String
---    | CodeText String
---    | VerbatimText String
+      --    | MathText String
+      --    | CodeText String
+      --    | VerbatimText String
     | Error (List MMInline)
 
 
 string : MMInline -> String
 string mmInline =
     case mmInline of
-        OrdinaryText str -> "Text [" ++ str ++"]"
-        ItalicText str -> "Italic [" ++ str ++"]"
-        BoldText str -> "Bold [" ++ str ++"]"
-        Code str ->  "Code [" ++ str ++"]"
-        InlineMath str -> "InlineMath [" ++ str ++"]"
-        StrikeThroughText str -> "StrikeThroughText [" ++ str ++"]"
-        BracketedText str -> "Bracketed [" ++ str ++"]"
-        Link a b -> "Link [" ++ a ++"](" ++ b ++ ")"
-        Line arg -> "Line [" ++ (List.map string arg |> String.join " ") ++"]"
-        Paragraph arg -> "Paragraph [" ++  (List.map string arg |> List.map indentLine |> String.join "\n") ++"]"
-        Error arg -> "Ordinary [" ++ (List.map string arg |> String.join " ") ++"]"
+        OrdinaryText str ->
+            "Text [" ++ str ++ "]"
+
+        ItalicText str ->
+            "Italic [" ++ str ++ "]"
+
+        BoldText str ->
+            "Bold [" ++ str ++ "]"
+
+        Code str ->
+            "Code [" ++ str ++ "]"
+
+        InlineMath str ->
+            "InlineMath [" ++ str ++ "]"
+
+        StrikeThroughText str ->
+            "StrikeThroughText [" ++ str ++ "]"
+
+        BracketedText str ->
+            "Bracketed [" ++ str ++ "]"
+
+        Link a b ->
+            "Link [" ++ a ++ "](" ++ b ++ ")"
+
+        Line arg ->
+            "Line [" ++ (List.map string arg |> String.join " ") ++ "]"
+
+        Paragraph arg ->
+            "Paragraph [" ++ (List.map string arg |> List.map indentLine |> String.join "\n") ++ "]"
+
+        Error arg ->
+            "Ordinary [" ++ (List.map string arg |> String.join " ") ++ "]"
+
 
 render : MMInline -> String
 render mmInline =
     case mmInline of
-        OrdinaryText str -> str
-        ItalicText str -> "<i>" ++ str ++"</i>"
-        BoldText str -> "<b>" ++ str ++"</b>"
-        Code str ->  "<code>" ++ str ++"</code>"
-        InlineMath str -> "$" ++ str ++"$"
-        StrikeThroughText str -> "<strikethrough>" ++ str ++ "</strikethrough>"
-        BracketedText str -> "[" ++ str ++"]"
-        Link a b -> "Link [" ++ a ++"](" ++ b ++ ")"
-        Line arg -> List.map render arg |> String.join " "
-        Paragraph arg -> "<p>\n" ++ (List.map render arg |> List.map indentLine |> String.join "\n") ++ "\n</p>"
-        Error arg -> "Ordinary [" ++ (List.map string arg |> String.join " ") ++"]"
+        OrdinaryText str ->
+            str
 
+        ItalicText str ->
+            "<i>" ++ str ++ "</i>"
+
+        BoldText str ->
+            "<b>" ++ str ++ "</b>"
+
+        Code str ->
+            "<code>" ++ str ++ "</code>"
+
+        InlineMath str ->
+            "$" ++ str ++ "$"
+
+        StrikeThroughText str ->
+            "<strikethrough>" ++ str ++ "</strikethrough>"
+
+        BracketedText str ->
+            "[" ++ str ++ "]"
+
+        Link a b ->
+            "Link [" ++ a ++ "](" ++ b ++ ")"
+
+        Line arg ->
+            List.map render arg |> String.join " "
+
+        Paragraph arg ->
+            "<p>\n" ++ (List.map render arg |> List.map indentLine |> String.join "\n") ++ "\n</p>"
+
+        Error arg ->
+            "Ordinary [" ++ (List.map string arg |> String.join " ") ++ "]"
 
 
 indentLine : String -> String
-indentLine s = "  " ++ s
+indentLine s =
+    "  " ++ s
+
 
 type alias PrefixedString =
     { prefix : String, text : String }
 
 
+parse2 : String -> MMInline
+parse2 str =
+    str
+        |> String.replace "\n" " "
+        |> String.replace "." ".\n"
+        |> String.split "\n"
+        |> List.map parseLine
+        |> Paragraph
+
+
 parse : String -> MMInline
 parse str =
     str
-      |> String.split "\n"
-      |> List.map parseLine
-      |> Paragraph
+        |> String.split "\n"
+        |> wrap
+        |> List.map parseLine
+        |> Paragraph
+
+
+
+-- wrap : List String -> List String
+
+
+wrap strList =
+    List.foldl wrapper { currentString = "", lst = [] } strList
+        |> (\acc -> acc.currentString :: acc.lst)
+        |> List.reverse
+
+
+type alias WrapAccumulator =
+    { currentString : String, lst : List String }
+
+
+wrapper : String -> WrapAccumulator -> WrapAccumulator
+wrapper str acc =
+    if acc.currentString == "" then
+        { currentString = str, lst = [] }
+
+    else if endsWithPumctuation acc.currentString then
+        { currentString = str, lst = acc.currentString :: acc.lst }
+
+    else
+        { acc | currentString = acc.currentString ++ " " ++ str }
+
+
+endsWithPumctuation : String -> Bool
+endsWithPumctuation str =
+    List.member (String.right 1 str) [ ".", "!" ]
 
 
 parseLine : String -> MMInline
 parseLine str =
     run inlineList str
-      |> resolveInlineResult
+        |> resolveInlineResult
 
 
 {-|
 
- > run inline "$a^5 = 1$"
- > Ok (InlineMath ("a^5 = 1"))
+> run inline "$a^5 = 1$"
+> Ok (InlineMath ("a^5 = 1"))
 
- > run inline "_abc_"
- > Ok (ItalicText "abc")
+> run inline "_abc_"
+> Ok (ItalicText "abc")
 
- > run inline "hahaha"
- > Ok (OrdinaryText "hahaha")
+> run inline "hahaha"
+> Ok (OrdinaryText "hahaha")
 
- -}
+-}
 inline : Parser MMInline
 inline =
-     oneOf [ code, link, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
+    oneOf [ code, link, boldText, italicText, strikeThroughText, inlineMath, ordinaryText ]
 
 
 
 -- THE GUTS --
+
 
 {-|
 
@@ -269,8 +355,6 @@ code =
         |> map Code
 
 
-
-
 {-|
 
     > MMInline.parse "*foo* hahaha: hohoho, $a^6 + 2$"
@@ -280,9 +364,6 @@ code =
 inlineList : Parser (List MMInline)
 inlineList =
     many inline
-
-
-
 
 
 resolveInlineResult : Result (List (DeadEnd Context Problem)) (List MMInline) -> MMInline

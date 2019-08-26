@@ -22,11 +22,11 @@ renderBlock block =
         MMBlock (MarkdownBlock Plain) level blockContent ->
             renderBlockContent blockContent
 
-        MMBlock (MarkdownBlock (Heading k)) level blockContent ->
-            renderHeading k blockContent
-
         MMBlock (MarkdownBlock Blank) level blockContent ->
             renderBlockContent blockContent
+
+        MMBlock (MarkdownBlock (Heading k)) level blockContent ->
+            renderHeading k blockContent
 
         MMBlock (BalancedBlock DisplayMath) level blockContent ->
             case blockContent of
@@ -116,13 +116,8 @@ renderToHtmlMsg mmInline =
             let
                 renderedLines =
                     List.map renderToHtmlMsg arg
-
-                spacer =
-                    Html.span
-                        [ style "width" "10px" ]
-                        [ Html.text "-" ]
             in
-            Html.span [] (intercalate spacer renderedLines)
+            Html.span [] (List.map (\rl -> Html.span [ style "margin-right" "5px" ] [ rl ]) renderedLines)
 
         Paragraph arg ->
             Html.p [] (List.map renderToHtmlMsg arg)
