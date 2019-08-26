@@ -7,6 +7,7 @@ module LineType exposing
     , get
     , isBalanced
     , isMarkDown
+    , isOListItem
     , level
     , parse
     , prefixOfBalancedType
@@ -44,7 +45,7 @@ type BalancedType
 
 type MarkdownType
     = UListItem
-    | OListItem
+    | OListItem Int
     | Heading Int
     | HorizontalRule
     | Quotation
@@ -73,7 +74,7 @@ prefixOfMarkdownType mdt =
         UListItem ->
             "- "
 
-        OListItem ->
+        OListItem _ ->
             "1. "
 
         Heading k ->
@@ -127,7 +128,7 @@ stringOfMarkDownType mt =
         UListItem ->
             "UListItem"
 
-        OListItem ->
+        OListItem _ ->
             "OListItem"
 
         Heading _ ->
@@ -159,6 +160,16 @@ isBalanced bt =
             True
 
         MarkdownBlock _ ->
+            False
+
+
+isOListItem : BlockType -> Bool
+isOListItem blockType =
+    case blockType of
+        MarkdownBlock (OListItem _) ->
+            True
+
+        _ ->
             False
 
 
@@ -219,7 +230,7 @@ level : Line -> Int
 level ln =
     run numberOfLeadingBlanks ln
         |> Result.toMaybe
-        |> Maybe.map (\l -> l // 2)
+        |> Maybe.map (\l -> l // 3)
         |> Maybe.withDefault 0
 
 
@@ -267,7 +278,7 @@ orderedListItemBlock =
         |. chompWhile (\c -> Char.isDigit c)
         |. symbol (Token ". " (Expecting "expecting period"))
     )
-        |> map (\_ -> MarkdownBlock OListItem)
+        |> map (\_ -> MarkdownBlock (OListItem 0))
 
 
 horizontalRuleBlock : Parser BlockType

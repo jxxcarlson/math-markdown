@@ -103,10 +103,27 @@ renderUListItem k blockContent =
         [ style "margin-left" margin
         , HA.class "mm-olist-item"
         ]
-        [ renderBlockContent blockContent ]
+        [ renderBlockContent <| Debug.log "LIIII" (prependToParagraph (OrdinaryText label) blockContent) ]
+
+
+prependToParagraph : MMInline -> BlockContent -> BlockContent
+prependToParagraph head tail =
+    case tail of
+        T _ ->
+            tail
+
+        M mmInLine ->
+            case mmInLine of
+                Paragraph lst ->
+                    M (Paragraph (head :: lst))
+
+                _ ->
+                    tail
 
 
 
+--
+--
 -- renderOListItem : Int -> BlockContent -> Html msg
 -- renderOListItem k blockContent =
 --     let
@@ -136,6 +153,7 @@ renderUListItem k blockContent =
 --         , HA.class "mm-olist-item"
 --         ]
 --         [ renderBlockContent blockContent ]
+--
 
 
 renderHeading : Int -> BlockContent -> Html msg
@@ -258,3 +276,77 @@ displayMathText str =
             String.trim str
     in
     mathText <| "$$\n" ++ str2 ++ "\n$$"
+
+
+
+-- HELPERS --
+
+
+alphabet : Int -> String
+alphabet k =
+    let
+        alpha =
+            [ "a"
+            , "b"
+            , "c"
+            , "d"
+            , "e"
+            , "f"
+            , "g"
+            , "h"
+            , "i"
+            , "j"
+            , "k"
+            , "l"
+            , "m"
+            , "n"
+            , "o"
+            , "p"
+            , "q"
+            , "r"
+            , "s"
+            , "t"
+            , "u"
+            , "v"
+            , "w"
+            , "x"
+            , "y"
+            , "z"
+            ]
+    in
+    List.drop (k - 1) alpha |> List.head |> Maybe.withDefault "zz"
+
+
+romanNumeral : Int -> String
+romanNumeral k =
+    let
+        alpha =
+            [ "i"
+            , "ii"
+            , "iii"
+            , "iv"
+            , "v"
+            , "vi"
+            , "vii"
+            , "viii"
+            , "ix"
+            , "x"
+            , "xi"
+            , "xii"
+            , "xiii"
+            , "xiv"
+            , "xv"
+            , "xvi"
+            , "xvii"
+            , "xviii"
+            , "xix"
+            , "xx"
+            , "xxi"
+            , "xxii"
+            , "xxiii"
+            , "xiv"
+            , "xv"
+            , "xvi"
+            ]
+    in
+    List.drop (k - 1) alpha |> List.head |> Maybe.withDefault "zz"
