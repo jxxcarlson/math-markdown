@@ -1,4 +1,4 @@
-module MDExample exposing (code, ll, math, md1, md1a, md2, md3, md3b, par1, par1a, par2, par2a, verbatim1, verbatim2, verbatim3)
+module MDExample exposing (code, ll, math, md1, md1a, md2, md3, md3b, p1, par1, par1a, par2, par2a, r1, verbatim1, verbatim2, verbatim3)
 
 
 md1 =
@@ -6,6 +6,23 @@ md1 =
 $$
 a^2 + b^2 = c^2
 $$
+"""
+
+
+p1 =
+    """light-weight writing tasks that require
+mathematical notation — problem sets
+"""
+
+
+r1 =
+    """# MMarkdown
+$$
+\\int_{-\\infty}^\\infty e^{-x^2} dxa = \\pi
+$$
+
+MMarkdown is a dialect of Markdown
+
 """
 
 

@@ -1,10 +1,11 @@
-module Markdown.Elm exposing (toHtml)
+module Markdown.Elm exposing (intercalate, toHtml)
 
 import Block exposing (BlockContent(..), MMBlock(..))
 import Html exposing (Html)
 import Html.Attributes as HA exposing (style)
 import Json.Encode
 import LineType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
+import List.Extra
 import MMInline exposing (MMInline(..))
 import Tree exposing (Tree)
 
@@ -23,6 +24,9 @@ renderBlock block =
 
         MMBlock (MarkdownBlock (Heading k)) level blockContent ->
             renderHeading k blockContent
+
+        MMBlock (MarkdownBlock Blank) level blockContent ->
+            renderBlockContent blockContent
 
         MMBlock (BalancedBlock DisplayMath) level blockContent ->
             case blockContent of
@@ -109,13 +113,27 @@ renderToHtmlMsg mmInline =
             Html.a [ HA.href url ] [ Html.text label ]
 
         Line arg ->
-            Html.span [] (List.map renderToHtmlMsg arg)
+            let
+                renderedLines =
+                    List.map renderToHtmlMsg arg
+
+                spacer =
+                    Html.span
+                        [ style "width" "10px" ]
+                        [ Html.text "-" ]
+            in
+            Html.span [] (intercalate spacer renderedLines)
 
         Paragraph arg ->
             Html.p [] (List.map renderToHtmlMsg arg)
 
         Error arg ->
             Html.p [] (List.map renderToHtmlMsg arg)
+
+
+intercalate : a -> List a -> List a
+intercalate x list =
+    List.Extra.intercalate [ x ] (List.map (\item -> [ item ]) list)
 
 
 strikethrough : String -> Html msg
