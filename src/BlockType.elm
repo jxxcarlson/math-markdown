@@ -8,6 +8,7 @@ module BlockType exposing
     , isBalanced
     , isMarkDown
     , isOListItem
+    , leadingString
     , level
     , oListPrefix
     , parse
@@ -258,6 +259,24 @@ numberOfLeadingBlanks =
     )
         |> getChompedString
         |> map String.length
+
+
+{-|
+
+    run leadingString "   xyz"
+    --> Ok ("   x") : Result (List (DeadEnd Context Problem)) String
+
+-}
+leadingString : Parser String
+leadingString =
+    getChompedString <|
+        succeed ()
+            |. chompWhile (\c -> c == ' ')
+            |. chompIf (\c -> c /= ' ') (Expecting "expecting non-blank character after run of blanks")
+
+
+
+--|> map String.trim
 
 
 getNumberOfLeadingBlanks : String -> Int

@@ -1,10 +1,10 @@
 module Markdown.Elm exposing (intercalate, toHtml)
 
 import Block exposing (BlockContent(..), MMBlock(..))
+import BlockType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
 import Html exposing (Html)
 import Html.Attributes as HA exposing (style)
 import Json.Encode
-import BlockType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
 import List.Extra
 import MMInline exposing (MMInline(..))
 import Tree exposing (Tree)
@@ -250,7 +250,7 @@ intercalate x list =
 
 strikethrough : String -> Html msg
 strikethrough str =
-    Html.span [ HA.class "strikethrough" ] [ Html.text str ]
+    Html.span [ HA.class "mm-strike-through" ] [ Html.text str ]
 
 
 

@@ -40,8 +40,8 @@ the result of parsing the input string into blocks.
 
 -}
 
-import HTree
 import BlockType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
+import HTree
 import MMInline exposing (MMInline(..))
 import Tree exposing (Tree)
 
@@ -301,51 +301,69 @@ nextStateIB line ((FSM state_ blocks_ register) as fsm) =
         ( _, Nothing ) ->
             FSM Error (blockListOfFSM fsm) register
 
-        ( level, Just lineType ) ->
+        ( level, Just blockType ) ->
             -- process balanced block
-            if BlockType.isBalanced lineType then
-                processBalancedBlock lineType line fsm
+            if BlockType.isBalanced blockType then
+                processBalancedBlock blockType line fsm
                 -- add markDown block d
 
-            else if BlockType.isMarkDown lineType then
-                processMarkDownBlock lineType line fsm
+            else if BlockType.isMarkDown blockType then
+                processMarkDownBlock blockType line fsm
 
             else
                 fsm
 
 
 processMarkDownBlock : BlockType -> String -> FSM -> FSM
-processMarkDownBlock lineType line ((FSM state_ blocks_ register) as fsm) =
-    case stateOfFSM fsm of
+processMarkDownBlock blockTypeOfLine line ((FSM state blocks_ register) as fsm) =
+    case state of
         -- add current block to block list and
         -- start new block with the current line and lineType
-        InBlock ((Block bt lev_ content_) as block_) ->
+        InBlock ((Block typeOfCurrentBlock lev_ content_) as currentBlock) ->
+            let
+                adjustedCurrentBlock =
+                    adjustLevel currentBlock
+            in
             -- start new block
-            if lineType == MarkdownBlock Blank || BlockType.isBalanced bt then
-                if BlockType.isBalanced bt then
+            if blockTypeOfLine == MarkdownBlock Blank || BlockType.isBalanced typeOfCurrentBlock then
+                if BlockType.isBalanced typeOfCurrentBlock then
                     addLineToFSM (Debug.log "MD1 (ADD BALANCED)" line) fsm
 
                 else
                     -- xxx
-                    FSM Start (Debug.log "MD1 (START)" block_ :: blocks_) register
+                    FSM Start (Debug.log "MD1 (START)" adjustedCurrentBlock :: blocks_) register
                 -- continue, add content to current block
 
-            else if lineType == MarkdownBlock Plain then
+            else if blockTypeOfLine == MarkdownBlock Plain then
                 addLineToFSM (Debug.log "MD1 (ADD)" line) fsm
                 -- start new block
 
             else
                 let
                     ( newBlockType, newRegister ) =
-                        updateRegister bt lev_ register
+                        updateRegister typeOfCurrentBlock lev_ register
 
                     line_ =
-                        removePrefix bt line
+                        removePrefix typeOfCurrentBlock line
                 in
-                FSM (InBlock (Block newBlockType (BlockType.level line) line_)) (block_ :: blocks_) newRegister
+                FSM (InBlock (Block newBlockType (BlockType.level (Debug.log "MD1 CR" line)) line_)) (adjustedCurrentBlock :: blocks_) newRegister
 
         _ ->
             fsm
+
+
+adjustLevel : Block -> Block
+adjustLevel ((Block blockType level content) as block) =
+    if blockType == MarkdownBlock Plain then
+        let
+            newLevel =
+                Debug.log "NEW LEVEL" <|
+                    BlockType.level content
+        in
+        Block blockType newLevel content
+
+    else
+        block
 
 
 processBalancedBlock : BlockType -> String -> FSM -> FSM
@@ -386,7 +404,7 @@ updateRegister blockType level_ register =
         ( newBlockType, newRegister )
 
     else
-        ( blockType, Debug.log "NO INC REG" register )
+        ( blockType, register )
 
 
 incrementRegister : Int -> Register -> ( Int, Register )
