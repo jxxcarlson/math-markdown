@@ -1,4 +1,4 @@
-module MDExample exposing (code, ll, ll2, ll3, math, md1, md1a, md2, md3, md3b, p1, par1, par1a, par2, par2a, r1, verbatim1, verbatim2, verbatim3)
+module MDExample exposing (b1, code, ll, ll2, ll3, math, md1, md1a, md2, md3, md3b, p1, par1, par1a, par2, par2a, r1, verbatim1, verbatim2, verbatim3)
 
 
 md1 =
@@ -12,6 +12,16 @@ $$
 p1 =
     """light-weight writing tasks that require
 mathematical notation — problem sets
+"""
+
+
+b1 =
+    """aaaa
+xxx
+
+bbbb
+
+   cccc
 """
 
 

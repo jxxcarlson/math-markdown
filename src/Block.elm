@@ -326,6 +326,7 @@ processMarkDownBlock lineType line ((FSM state_ blocks_ register) as fsm) =
                     addLineToFSM (Debug.log "MD1 (ADD BALANCED)" line) fsm
 
                 else
+                    -- xxx
                     FSM Start (Debug.log "MD1 (START)" block_ :: blocks_) register
                 -- continue, add content to current block
 
