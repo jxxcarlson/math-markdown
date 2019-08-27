@@ -44,7 +44,8 @@ type BalancedType
 
 
 type MarkdownType
-    = UListItem
+    = Root
+    | UListItem
     | OListItem Int
     | Heading Int
     | HorizontalRule
@@ -91,6 +92,9 @@ prefixOfMarkdownType mdt line =
                     ""
     in
     case mdt of
+        Root ->
+            ""
+
         UListItem ->
             runPrefix uListPrefix line
 
@@ -164,6 +168,9 @@ stringOfBalancedType bt =
 stringOfMarkDownType : MarkdownType -> String
 stringOfMarkDownType mt =
     case mt of
+        Root ->
+            "Root"
+
         UListItem ->
             "UListItem"
 

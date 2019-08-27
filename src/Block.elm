@@ -217,7 +217,7 @@ typeOfState s =
 
 
 rootBlock =
-    Block (MarkdownBlock Plain) 0 "DOCUMENT"
+    Block (MarkdownBlock Root) 0 "DOCUMENT"
 
 
 flush : FSM -> List Block

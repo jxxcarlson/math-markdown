@@ -19,6 +19,9 @@ toHtml tree =
 renderBlock : MMBlock -> Html msg
 renderBlock block =
     case block of
+        MMBlock (MarkdownBlock Root) _ _ ->
+            Html.div [] []
+
         MMBlock (MarkdownBlock Plain) level blockContent ->
             renderBlockContent blockContent
 
