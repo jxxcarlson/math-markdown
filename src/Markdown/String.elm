@@ -1,7 +1,7 @@
 module Markdown.String exposing (toHtml)
 
 import Block exposing(MMBlock(..), BlockContent(..))
-import LineType exposing(BlockType(..), MarkdownType(..))
+import BlockType exposing(BlockType(..), MarkdownType(..))
 import MMInline exposing(MMInline(..))
 import Tree exposing(Tree)
 

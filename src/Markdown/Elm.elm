@@ -4,7 +4,7 @@ import Block exposing (BlockContent(..), MMBlock(..))
 import Html exposing (Html)
 import Html.Attributes as HA exposing (style)
 import Json.Encode
-import LineType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
+import BlockType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
 import List.Extra
 import MMInline exposing (MMInline(..))
 import Tree exposing (Tree)
@@ -46,7 +46,7 @@ renderBlock block =
         MMBlock (MarkdownBlock HorizontalRule) level blockContent ->
             Html.hr [ HA.class "mm-thematic-break" ] []
 
-        MMBlock (MarkdownBlock LineType.Image) level blockContent ->
+        MMBlock (MarkdownBlock BlockType.Image) level blockContent ->
             let
                 _ =
                     Debug.log "IMG (BC)" blockContent

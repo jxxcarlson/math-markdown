@@ -1,4 +1,4 @@
-module LineType exposing
+module BlockType exposing
     ( BalancedType(..)
     , BlockType(..)
     , Level

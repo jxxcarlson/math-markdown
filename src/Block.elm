@@ -41,7 +41,7 @@ the result of parsing the input string into blocks.
 -}
 
 import HTree
-import LineType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
+import BlockType exposing (BalancedType(..), BlockType(..), MarkdownType(..))
 import MMInline exposing (MMInline(..))
 import Tree exposing (Tree)
 
@@ -270,7 +270,7 @@ nextState str fsm =
 
 nextStateS : String -> FSM -> FSM
 nextStateS line (FSM state blockList register) =
-    case LineType.get line of
+    case BlockType.get line of
         ( _, Nothing ) ->
             FSM Error blockList register
 
@@ -290,24 +290,24 @@ removePrefix : BlockType -> String -> String
 removePrefix blockType line_ =
     let
         p =
-            LineType.prefixOfBlockType blockType line_
+            BlockType.prefixOfBlockType blockType line_
     in
     String.replace p "" line_
 
 
 nextStateIB : String -> FSM -> FSM
 nextStateIB line ((FSM state_ blocks_ register) as fsm) =
-    case LineType.get line of
+    case BlockType.get line of
         ( _, Nothing ) ->
             FSM Error (blockListOfFSM fsm) register
 
         ( level, Just lineType ) ->
             -- process balanced block
-            if LineType.isBalanced lineType then
+            if BlockType.isBalanced lineType then
                 processBalancedBlock lineType line fsm
                 -- add markDown block d
 
-            else if LineType.isMarkDown lineType then
+            else if BlockType.isMarkDown lineType then
                 processMarkDownBlock lineType line fsm
 
             else
@@ -321,8 +321,8 @@ processMarkDownBlock lineType line ((FSM state_ blocks_ register) as fsm) =
         -- start new block with the current line and lineType
         InBlock ((Block bt lev_ content_) as block_) ->
             -- start new block
-            if lineType == MarkdownBlock Blank || LineType.isBalanced bt then
-                if LineType.isBalanced bt then
+            if lineType == MarkdownBlock Blank || BlockType.isBalanced bt then
+                if BlockType.isBalanced bt then
                     addLineToFSM (Debug.log "MD1 (ADD BALANCED)" line) fsm
 
                 else
@@ -342,7 +342,7 @@ processMarkDownBlock lineType line ((FSM state_ blocks_ register) as fsm) =
                     line_ =
                         removePrefix bt line
                 in
-                FSM (InBlock (Block newBlockType (LineType.level line) line_)) (block_ :: blocks_) newRegister
+                FSM (InBlock (Block newBlockType (BlockType.level line) line_)) (block_ :: blocks_) newRegister
 
         _ ->
             fsm
@@ -367,7 +367,7 @@ processBalancedBlock lineType line ((FSM state_ blocks_ register) as fsm) =
     else
         case stateOfFSM fsm of
             InBlock block_ ->
-                FSM (InBlock (Block lineType (LineType.level (Debug.log "OPEN" line)) line)) (block_ :: blocks_) register
+                FSM (InBlock (Block lineType (BlockType.level (Debug.log "OPEN" line)) line)) (block_ :: blocks_) register
 
             _ ->
                 fsm
@@ -375,7 +375,7 @@ processBalancedBlock lineType line ((FSM state_ blocks_ register) as fsm) =
 
 updateRegister : BlockType -> Int -> Register -> ( BlockType, Register )
 updateRegister blockType level_ register =
-    if LineType.isOListItem blockType then
+    if BlockType.isOListItem blockType then
         let
             ( index, newRegister ) =
                 incrementRegister level_ register
@@ -472,7 +472,7 @@ stringOfBlockTree tree =
 stringOfBlock : Block -> String
 stringOfBlock (Block bt lev_ content_) =
     String.repeat (2 * lev_) " "
-        ++ LineType.stringOfBlockType bt
+        ++ BlockType.stringOfBlockType bt
         ++ " ("
         ++ String.fromInt lev_
         ++ ") "
@@ -503,7 +503,7 @@ stringOfMMBlockTree tree =
 stringOfMMBlock : MMBlock -> String
 stringOfMMBlock (MMBlock bt lev_ content_) =
     String.repeat (2 * lev_) " "
-        ++ LineType.stringOfBlockType bt
+        ++ BlockType.stringOfBlockType bt
         ++ " ("
         ++ String.fromInt lev_
         ++ ") "

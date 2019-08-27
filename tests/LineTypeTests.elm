@@ -3,7 +3,7 @@ module LineTypeTests exposing (..)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
-import LineType exposing(..)
+import BlockType exposing(..)
 import Parser.Advanced exposing(run)
 
 suite : Test
@@ -16,7 +16,7 @@ suite =
 
 
 lineTypeTests =
-    describe "LineType.parse"
+    describe "BlockType.parse"
         [ test "code block" <|
                 \_ ->
                  "```foo" |> run parse |>  Expect.equal (Ok (BalancedBlock DisplayCode))
