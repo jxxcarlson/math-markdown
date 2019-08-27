@@ -9,8 +9,10 @@ module LineType exposing
     , isMarkDown
     , isOListItem
     , level
+    , oListPrefix
     , parse
     , prefixOfBalancedType
+    , prefixOfBlockType
     , prefixOfMarkdownType
     , stringOfBlockType
     )
@@ -97,6 +99,76 @@ prefixOfMarkdownType mdt =
 
         Blank ->
             ""
+
+
+prefixOfBlockType : BlockType -> String -> String
+prefixOfBlockType bt line =
+    case bt of
+        BalancedBlock bb ->
+            prefixOfBalancedType bb
+
+        MarkdownBlock mdb ->
+            prefix2OfMarkdownType mdb line
+
+
+prefix2OfMarkdownType : MarkdownType -> String -> String
+prefix2OfMarkdownType mdt line =
+    let
+        runPrefix : Parser String -> String -> String
+        runPrefix prefixParser str =
+            case run uListPrefix str of
+                Ok prefix ->
+                    prefix
+
+                Err _ ->
+                    ""
+    in
+    case mdt of
+        UListItem ->
+            runPrefix uListPrefix line
+
+        OListItem _ ->
+            runPrefix oListPrefix line
+
+        Heading k ->
+            String.repeat k "#" ++ " "
+
+        HorizontalRule ->
+            "___"
+
+        Quotation ->
+            "> "
+
+        Poetry ->
+            ">> "
+
+        Plain ->
+            ""
+
+        Image ->
+            ""
+
+        Blank ->
+            ""
+
+
+oListPrefix : Parser String
+oListPrefix =
+    (getChompedString <|
+        succeed identity
+            |= chompUntil (Token "." (Expecting "expecting '.' to begin OListItem block"))
+    )
+        |> map (\x -> x ++ ". ")
+
+
+uListPrefix : Parser String
+uListPrefix =
+    (getChompedString <|
+        succeed identity
+            |= chompUntil (Token "-" (Expecting "expecting '-' to begin UListItem block"))
+    )
+        |> map
+            (\s -> s ++ " ")
 
 
 stringOfBlockType : BlockType -> String

@@ -287,25 +287,20 @@ nextStateS line (FSM state blockList register) =
             let
                 ( newBlockType, newRegister ) =
                     updateRegister blockType level register
+
+                line_ =
+                    removePrefix blockType line
             in
-            FSM (InBlock (Block newBlockType level line)) blockList newRegister
+            FSM (InBlock (Block newBlockType level line_)) blockList newRegister
 
 
 removePrefix : BlockType -> String -> String
-removePrefix blockType str =
-    case blockType of
-        BalancedBlock bb ->
-            case bb of
-                _ ->
-                    str
-
-        MarkdownBlock mdb ->
-            case mdb of
-                UListItem ->
-                    str
-
-                _ ->
-                    str
+removePrefix blockType line_ =
+    let
+        p =
+            LineType.prefixOfBlockType blockType line_
+    in
+    String.replace p "" line_
 
 
 nextStateIB : String -> FSM -> FSM
@@ -349,10 +344,12 @@ processMarkDownBlock lineType line ((FSM state_ blocks_ register) as fsm) =
             else
                 let
                     ( newBlockType, newRegister ) =
-                        Debug.log "START, REG" <|
-                            updateRegister bt lev_ register
+                        updateRegister bt lev_ register
+
+                    line_ =
+                        removePrefix bt line
                 in
-                FSM (InBlock (Block newBlockType (LineType.level line) line)) (block_ :: blocks_) newRegister
+                FSM (InBlock (Block newBlockType (LineType.level line) line_)) (block_ :: blocks_) newRegister
 
         _ ->
             fsm
@@ -381,10 +378,10 @@ processBalancedBlock lineType line ((FSM state_ blocks_ register) as fsm) =
 
 updateRegister : BlockType -> Int -> Register -> ( BlockType, Register )
 updateRegister blockType level_ register =
-    if Debug.log "IS OLIST ITEM" (LineType.isOListItem (Debug.log "BTYPE" blockType)) then
+    if LineType.isOListItem blockType then
         let
             ( index, newRegister ) =
-                Debug.log "INC REG" (incrementRegister level_ register)
+                incrementRegister level_ register
 
             newBlockType =
                 MarkdownBlock (OListItem index)

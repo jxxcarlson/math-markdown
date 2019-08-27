@@ -1,4 +1,4 @@
-module MDExample exposing (code, ll, ll2, math, md1, md1a, md2, md3, md3b, p1, par1, par1a, par2, par2a, r1, verbatim1, verbatim2, verbatim3)
+module MDExample exposing (code, ll, ll2, ll3, math, md1, md1a, md2, md3, md3b, p1, par1, par1a, par2, par2a, r1, verbatim1, verbatim2, verbatim3)
 
 
 md1 =
@@ -86,8 +86,7 @@ $$
 
 
 ll =
-    """
-- A
+    """- A
 - B
   - uuu
   - vvv
@@ -98,9 +97,22 @@ ll =
 ll2 =
     """1. A
 2. B
-  3. uuu
-  4. vvv
-  5. abc
+   3. uuu
+   4. vvv
+   5. abc
+5. C
+"""
+
+
+ll3 =
+    """1. A
+2. B
+   3. uuu
+   4. vvv
+
+      > Remark: vvv is always tardy
+
+   5. abc
 5. C
 """
 
