@@ -37,6 +37,9 @@ renderBlock block =
         MMBlock (MarkdownBlock UListItem) level blockContent ->
             renderUListItem level blockContent
 
+        MMBlock (MarkdownBlock (OListItem index)) level blockContent ->
+            renderOListItem index level blockContent
+
         MMBlock (MarkdownBlock HorizontalRule) level blockContent ->
             Html.hr [ HA.class "mm-thematic-break" ] []
 
@@ -70,9 +73,6 @@ renderBlock block =
 
                 _ ->
                     displayMathText ""
-
-        _ ->
-            Html.div [] [ Html.text "Not implemented" ]
 
 
 renderUListItem : Int -> BlockContent -> Html msg
@@ -121,39 +121,36 @@ prependToParagraph head tail =
                     tail
 
 
+renderOListItem : Int -> Int -> BlockContent -> Html msg
+renderOListItem index k blockContent =
+    let
+        margin =
+            String.fromInt (18 * k)
+                ++ "px"
 
---
---
--- renderOListItem : Int -> BlockContent -> Html msg
--- renderOListItem k blockContent =
---     let
---         margin =
---             String.fromInt (18 * k)
---                 ++ "px"
---
---         label =
---             case k of
---                 1 ->
---                     String.fromInt mmState.itemIndex1 ++ ". "
---
---                 2 ->
---                     alphabet mmState.itemIndex2 ++ ". "
---
---                 3 ->
---                     romanNumeral mmState.itemIndex2 ++ ". "
---
---                 4 ->
---                     String.fromInt mmState.itemIndex4 ++ ". "
---
---                 _ ->
---                     "N. "
---     in
---     li
---         [ style "margin-left" margin
---         , HA.class "mm-olist-item"
---         ]
---         [ renderBlockContent blockContent ]
---
+        label =
+            Debug.log "N, LABEL" <|
+                case k of
+                    1 ->
+                        String.fromInt index ++ ". "
+
+                    2 ->
+                        alphabet index ++ ". "
+
+                    3 ->
+                        romanNumeral index ++ ". "
+
+                    4 ->
+                        String.fromInt index ++ ". "
+
+                    _ ->
+                        "N. "
+    in
+    Html.li
+        [ style "margin-left" margin
+        , HA.class "mm-olist-item"
+        ]
+        [ renderBlockContent (prependToParagraph (OrdinaryText label) blockContent) ]
 
 
 renderHeading : Int -> BlockContent -> Html msg

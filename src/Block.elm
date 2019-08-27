@@ -282,13 +282,30 @@ nextStateS line (FSM state blockList register) =
         ( _, Nothing ) ->
             FSM Error blockList register
 
+        -- add line
         ( level, Just blockType ) ->
             let
                 ( newBlockType, newRegister ) =
-                    Debug.log "START, REG" <|
-                        updateRegister blockType level register
+                    updateRegister blockType level register
             in
-            FSM (InBlock (Block newBlockType level (Debug.log "START" line))) blockList newRegister
+            FSM (InBlock (Block newBlockType level line)) blockList newRegister
+
+
+removePrefix : BlockType -> String -> String
+removePrefix blockType str =
+    case blockType of
+        BalancedBlock bb ->
+            case bb of
+                _ ->
+                    str
+
+        MarkdownBlock mdb ->
+            case mdb of
+                UListItem ->
+                    str
+
+                _ ->
+                    str
 
 
 nextStateIB : String -> FSM -> FSM
