@@ -11,9 +11,7 @@ module LineType exposing
     , level
     , oListPrefix
     , parse
-    , prefixOfBalancedType
     , prefixOfBlockType
-    , prefixOfMarkdownType
     , stringOfBlockType
     )
 
@@ -70,37 +68,6 @@ prefixOfBalancedType bt =
             "$$"
 
 
-prefixOfMarkdownType : MarkdownType -> String
-prefixOfMarkdownType mdt =
-    case mdt of
-        UListItem ->
-            "- "
-
-        OListItem _ ->
-            "1. "
-
-        Heading k ->
-            String.repeat k "#" ++ " "
-
-        HorizontalRule ->
-            "___"
-
-        Quotation ->
-            "> "
-
-        Poetry ->
-            ">> "
-
-        Plain ->
-            ""
-
-        Image ->
-            ""
-
-        Blank ->
-            ""
-
-
 prefixOfBlockType : BlockType -> String -> String
 prefixOfBlockType bt line =
     case bt of
@@ -108,15 +75,15 @@ prefixOfBlockType bt line =
             prefixOfBalancedType bb
 
         MarkdownBlock mdb ->
-            prefix2OfMarkdownType mdb line
+            prefixOfMarkdownType mdb line
 
 
-prefix2OfMarkdownType : MarkdownType -> String -> String
-prefix2OfMarkdownType mdt line =
+prefixOfMarkdownType : MarkdownType -> String -> String
+prefixOfMarkdownType mdt line =
     let
         runPrefix : Parser String -> String -> String
         runPrefix prefixParser str =
-            case run uListPrefix str of
+            case run prefixParser str of
                 Ok prefix ->
                     prefix
 
@@ -168,7 +135,7 @@ uListPrefix =
             |= chompUntil (Token "-" (Expecting "expecting '-' to begin UListItem block"))
     )
         |> map
-            (\s -> s ++ " ")
+            (\s -> s ++ "- ")
 
 
 stringOfBlockType : BlockType -> String

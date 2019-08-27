@@ -139,28 +139,20 @@ changeLevel k (Block bt_ level_ content_) =
 parseToMMBlockTree : String -> Tree MMBlock
 parseToMMBlockTree str =
     let
-        normalize bt str_ =
-            case bt of
-                BalancedBlock bt_ ->
-                    String.replace (LineType.prefixOfBalancedType bt_) "" str_
-
-                MarkdownBlock mt ->
-                    String.replace (LineType.prefixOfMarkdownType mt) "" str_
-
         mapper : Block -> MMBlock
         mapper (Block bt level_ content_) =
             case bt of
                 MarkdownBlock mt ->
-                    MMBlock (MarkdownBlock mt) level_ (M (MMInline.parse (normalize bt content_)))
+                    MMBlock (MarkdownBlock mt) level_ (M (MMInline.parse content_))
 
                 BalancedBlock DisplayCode ->
-                    MMBlock (BalancedBlock DisplayCode) level_ (T (normalize bt content_))
+                    MMBlock (BalancedBlock DisplayCode) level_ (T content_)
 
                 BalancedBlock Verbatim ->
-                    MMBlock (BalancedBlock Verbatim) level_ (T (normalize bt content_))
+                    MMBlock (BalancedBlock Verbatim) level_ (T content_)
 
                 BalancedBlock DisplayMath ->
-                    MMBlock (BalancedBlock DisplayMath) level_ (T (normalize bt content_))
+                    MMBlock (BalancedBlock DisplayMath) level_ (T content_)
     in
     str
         |> parseToBlockTree
@@ -361,7 +353,11 @@ processBalancedBlock lineType line ((FSM state_ blocks_ register) as fsm) =
     if Just lineType == typeOfState (stateOfFSM fsm) then
         case stateOfFSM fsm of
             InBlock block_ ->
-                FSM Start (addLineToBlock (Debug.log "CLOSE" line) block_ :: blocks_) register
+                let
+                    line_ =
+                        removePrefix lineType line
+                in
+                FSM Start (addLineToBlock (Debug.log "CLOSE" line_) block_ :: blocks_) register
 
             _ ->
                 fsm
