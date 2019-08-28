@@ -316,6 +316,10 @@ nextStateIB line ((FSM state_ blocks_ register) as fsm) =
 
 processMarkDownBlock : BlockType -> String -> FSM -> FSM
 processMarkDownBlock blockTypeOfLine line ((FSM state blocks_ register) as fsm) =
+    let
+        _ =
+            Debug.log "STATE (PMDB)" state
+    in
     case state of
         -- add current block to block list and
         -- start new block with the current line and lineType
@@ -330,15 +334,14 @@ processMarkDownBlock blockTypeOfLine line ((FSM state blocks_ register) as fsm) 
                     addLineToFSM (Debug.log "MD1 (ADD BALANCED)" line) fsm
 
                 else
-                    -- xxx
                     FSM Start (Debug.log "MD1 (START)" adjustedCurrentBlock :: blocks_) register
-                -- continue, add content to current block
 
             else if blockTypeOfLine == MarkdownBlock Plain then
+                -- continue, add content to current block
                 addLineToFSM (Debug.log "MD1 (ADD)" line) fsm
-                -- start new block
 
             else
+                -- start new block
                 let
                     ( newBlockType, newRegister ) =
                         updateRegister typeOfCurrentBlock lev_ register
