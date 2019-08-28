@@ -188,7 +188,7 @@ runFSM str =
     let
         folder : String -> FSM -> FSM
         folder =
-            \line fsm -> nextState line fsm
+            \line fsm -> nextState (Debug.log "\nREAD" line) fsm
     in
     List.foldl folder initialFSM (splitIntoLines str)
 
@@ -247,7 +247,8 @@ splitIntoLines : String -> List String
 splitIntoLines str =
     str
         |> String.lines
-        |> List.map (\l -> l ++ "\n")
+        |> List.map
+            (\l -> l ++ "\n")
 
 
 initialFSM : FSM
@@ -257,7 +258,7 @@ initialFSM =
 
 nextState : String -> FSM -> FSM
 nextState str fsm =
-    case stateOfFSM fsm of
+    case Debug.log "STATE (TOP)" (stateOfFSM fsm) of
         Start ->
             nextStateS str fsm
 
@@ -270,6 +271,13 @@ nextState str fsm =
 
 nextStateS : String -> FSM -> FSM
 nextStateS line (FSM state blockList register) =
+    let
+        _ =
+            Debug.log "NSS, LINE" line
+
+        _ =
+            Debug.log "NSS, STATE" state
+    in
     case BlockType.get line of
         ( _, Nothing ) ->
             FSM Error blockList register
@@ -278,12 +286,14 @@ nextStateS line (FSM state blockList register) =
         ( level, Just blockType ) ->
             let
                 ( newBlockType, newRegister ) =
-                    updateRegister blockType level register
+                    Debug.log "START, blockType, reg" <|
+                        updateRegister blockType level register
 
-                line_ =
+                newLine =
                     removePrefix blockType line
             in
-            FSM (InBlock (Block newBlockType level line_)) blockList newRegister
+            -- xxx
+            FSM (InBlock (Block newBlockType level newLine)) blockList newRegister
 
 
 removePrefix : BlockType -> String -> String
@@ -319,6 +329,10 @@ processMarkDownBlock blockTypeOfLine line ((FSM state blocks register) as fsm) =
     let
         _ =
             Debug.log "STATE (PMDB)" state
+
+        _ =
+            -- xxx
+            Debug.log "LINE, (PMDB)" line
     in
     case state of
         -- add current block to block list and
@@ -335,6 +349,9 @@ processMarkDownBlock blockTypeOfLine line ((FSM state blocks register) as fsm) =
             else if blockTypeOfLine == MarkdownBlock Plain then
                 -- continue, add content to current block
                 addLineToFSM (Debug.log "MD1 (ADD)" line) fsm
+                -- else if blockTypeOfLine /= typeOfCurrentBlock then
+                --     -- start new block
+                --     FSM Start (Debug.log "MD1 (START2)" (adjustLevel currentBlock) :: blocks) register
 
             else
                 addNewMarkdownBlock currentBlock line fsm
@@ -361,21 +378,24 @@ processMarkDownBlock blockTypeOfLine line ((FSM state blocks register) as fsm) =
 -}
 addNewMarkdownBlock : Block -> String -> FSM -> FSM
 addNewMarkdownBlock ((Block typeOfCurrentBlock levelOfCurrentBlock _) as currentBlock) line ((FSM state blocks register) as fsm) =
-    let
-        level =
-            BlockType.level (Debug.log "MD1 CR" line)
+    case BlockType.get line of
+        ( _, Nothing ) ->
+            fsm
 
-        ( newBlockType, newRegister ) =
-            updateRegister typeOfCurrentBlock level register
+        ( level, Just newBlockType_ ) ->
+            let
+                ( newBlockType, newRegister ) =
+                    Debug.log "(NBT, NR)" <|
+                        updateRegister newBlockType_ level register
 
-        newLine =
-            removePrefix typeOfCurrentBlock line
+                newLine =
+                    removePrefix typeOfCurrentBlock line
 
-        newBlock =
-            Debug.log "MD1 NEW MD BLOCK" <|
-                Block typeOfCurrentBlock level newLine
-    in
-    FSM (InBlock newBlock) (adjustLevel currentBlock :: blocks) newRegister
+                newBlock =
+                    Debug.log "MD1 NEW MD BLOCK" <|
+                        Block newBlockType level (removePrefix newBlockType newLine)
+            in
+            FSM (InBlock newBlock) (adjustLevel currentBlock :: blocks) newRegister
 
 
 adjustLevel : Block -> Block

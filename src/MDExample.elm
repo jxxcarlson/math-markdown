@@ -1,4 +1,4 @@
-module MDExample exposing (b1, b2, code, ll, ll2, ll3, math, md1, md1a, md2, md3, md3b, p1, par1, par1a, par2, par2a, r1, verbatim1, verbatim2, verbatim3)
+module MDExample exposing (b1, b2, b2a, b2b, b2c, b2d, b2dx, code, ll, ll2, ll3, math, md1, md1a, md2, md3, md3b, p1, par1, par1a, par2, par2a, r1, verbatim1, verbatim2, verbatim3)
 
 
 md1 =
@@ -33,6 +33,39 @@ b2 =
 ## 1 Inline Math
 
 ## 2 Outline Math
+"""
+
+
+b2a =
+    """Text styles: **bold** *italic* ~~strike it out~~
+"""
+
+
+b2b =
+    """Text styles: **bold** *italic* ~~strike it out~~
+
+"""
+
+
+b2c =
+    """Text styles: **bold** *italic* ~~strike it out~~
+
+
+"""
+
+
+b2d =
+    """Text styles: **bold** *italic* ~~strike it out~~
+
+
+## 1 Inline Math
+"""
+
+
+b2dx =
+    """Text styles: **bold** *italic* ~~strike it out~~
+
+## 1 Inline Math
 """
 
 
