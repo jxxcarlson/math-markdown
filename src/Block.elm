@@ -315,7 +315,7 @@ nextStateIB line ((FSM state_ blocks_ register) as fsm) =
 
 
 processMarkDownBlock : BlockType -> String -> FSM -> FSM
-processMarkDownBlock blockTypeOfLine line ((FSM state blocks_ register) as fsm) =
+processMarkDownBlock blockTypeOfLine line ((FSM state blocks register) as fsm) =
     let
         _ =
             Debug.log "STATE (PMDB)" state
@@ -324,51 +324,58 @@ processMarkDownBlock blockTypeOfLine line ((FSM state blocks_ register) as fsm) 
         -- add current block to block list and
         -- start new block with the current line and lineType
         InBlock ((Block typeOfCurrentBlock levelOfCurrentBlock _) as currentBlock) ->
-            let
-                adjustedCurrentBlock =
-                    adjustLevel currentBlock
-            in
             if BlockType.isBalanced typeOfCurrentBlock then
                 -- add line to current balanced block
                 addLineToFSM (Debug.log "MD1 (ADD BALANCED)" line) fsm
 
             else if blockTypeOfLine == MarkdownBlock Blank then
                 -- start new block
-                FSM Start (Debug.log "MD1 (START)" adjustedCurrentBlock :: blocks_) register
+                FSM Start (Debug.log "MD1 (START)" (adjustLevel currentBlock) :: blocks) register
 
             else if blockTypeOfLine == MarkdownBlock Plain then
                 -- continue, add content to current block
                 addLineToFSM (Debug.log "MD1 (ADD)" line) fsm
 
             else
-                -- start new block
-                let
-                    ( newBlockType, newRegister ) =
-                        updateRegister typeOfCurrentBlock levelOfCurrentBlock register
+                addNewMarkdownBlock currentBlock line fsm
 
-                    line_ =
-                        removePrefix typeOfCurrentBlock line
-                in
-                FSM (InBlock (Block newBlockType (BlockType.level (Debug.log "MD1 CR" line)) line_)) (adjustedCurrentBlock :: blocks_) newRegister
-
+        -- -- add new markdown block
+        -- let
+        --     ( newBlockType, newRegister ) =
+        --         updateRegister typeOfCurrentBlock levelOfCurrentBlock register
+        --
+        --     line_ =
+        --         removePrefix typeOfCurrentBlock line
+        -- in
+        -- FSM (InBlock (Block newBlockType (BlockType.level (Debug.log "MD1 CR" line)) line_)) (adjustLevel currentBlock :: blocks) newRegister
         _ ->
             fsm
 
 
+{-|
 
--- addNewBlock : BlockType -> String -> FSM -> FSM
--- addNewBlock blockType line ((FSM state blocks register) as fsm) =
---     let
---         ( newBlockType, newRegister ) =
---             updateRegister blockType lev_ register
---
---         line_ =
---             removePrefix typeOfCurrentBlock line
---         level = BlockType.level (Debug.log "MD1 CR" line)
---         block =
---             Block blockType level line
---     in
---     FSM Start (Debug.log "MD1 (START)" block :: blocks) register
+1.  add the current block the block list ;
+    (2) replace the current block by a new one derived from the
+    current line and use that line to update the register
+
+-}
+addNewMarkdownBlock : Block -> String -> FSM -> FSM
+addNewMarkdownBlock ((Block typeOfCurrentBlock levelOfCurrentBlock _) as currentBlock) line ((FSM state blocks register) as fsm) =
+    let
+        level =
+            BlockType.level (Debug.log "MD1 CR" line)
+
+        ( newBlockType, newRegister ) =
+            updateRegister typeOfCurrentBlock level register
+
+        newLine =
+            removePrefix typeOfCurrentBlock line
+
+        newBlock =
+            Debug.log "MD1 NEW MD BLOCK" <|
+                Block typeOfCurrentBlock level newLine
+    in
+    FSM (InBlock newBlock) (adjustLevel currentBlock :: blocks) newRegister
 
 
 adjustLevel : Block -> Block
